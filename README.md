@@ -70,6 +70,8 @@ npm install
 npm run demo
 ```
 
+To run only the current Godot fixture foundation, see [`docs/GODOT_FIXTURE.md`](docs/GODOT_FIXTURE.md).
+
 ## Recommended test path
 
 1. Launch Forge.

@@ -26,7 +26,8 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 ### Milestone 1 — Prove one quest from the command line
 
 - [x] Scaffold strict typed contracts and validate the prepared examples.
-- [ ] Create the smallest playable Godot sample project.
+- [x] Create the smallest playable Godot sample project.
+- [x] Add configured Godot 4.7 fixture verification and resettable workspace behavior.
 - [ ] Add a prepared **Enemy Targeting** quest and acceptance criteria.
 - [ ] Implement focused plan, build, and closeout skills.
 - [ ] Invoke Codex against the sample project's working directory.
@@ -119,4 +120,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Workflow state: `PLAN`; implementation approval pending. The proposed task is to build the pinned Godot acquisition boundary and repeatable baseline fixture. See [`docs/plans/2026-07-13-godot-baseline-fixture.md`](docs/plans/2026-07-13-godot-baseline-fixture.md). Do not add Enemy Targeting yet.
+The fixture foundation is `COMPLETE`; see its [plan](docs/plans/2026-07-13-godot-fixture-foundation.md) and [closeout](docs/closeouts/2026-07-13-godot-fixture-foundation-closeout.md). The next smallest task is pinned Godot archive acquisition and SHA-256 verification before extraction, without changing fixture gameplay.

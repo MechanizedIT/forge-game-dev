@@ -1,8 +1,10 @@
-# Pinned Godot Baseline Fixture Plan
+# Pinned Godot Acquisition and Baseline Fixture Plan
 
-- **Workflow state:** `PLAN`
-- **Approval state:** Awaiting creator approval
+- **Workflow state:** `PLAN` for the deferred acquisition work
+- **Approval state:** Superseded by an approved scope reduction
 - **Task:** Build the pinned Godot acquisition boundary and repeatable baseline fixture
+
+The creator reduced the approved implementation to the sample fixture and verification foundation. That completed scope is recorded in [`2026-07-13-godot-fixture-foundation.md`](2026-07-13-godot-fixture-foundation.md). Automatic download, checksum, and extraction remain deferred and require a new approval before implementation.
 
 ## Approved engine input
 
@@ -66,4 +68,4 @@ Default Windows state lives under `%LOCALAPPDATA%\Forge`. A `FORGE_HOME` overrid
 
 ## Approval gate
 
-Do not modify product code, download the archive, create the fixture, or extract Godot until the creator approves this task and its acceptance criteria.
+Do not implement the remaining automatic acquisition, checksum, or extraction work until the creator approves a newly bounded follow-up task.

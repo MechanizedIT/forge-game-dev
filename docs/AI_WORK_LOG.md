@@ -73,3 +73,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** `1951ef5eec9c01cfab7119e1027b96282e9fe573`
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Obtain creator approval for `docs/plans/2026-07-13-godot-baseline-fixture.md` before downloading or implementing anything.
+
+---
+
+## 2026-07-13 — Build the Godot fixture and verification foundation
+
+- **Actor/model surface:** Codex implementation in the Codex desktop app
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Approved a reduced task containing only the Godot 4.7 GDScript fixture, configured/local executable lookup, headless verification, persistent prepare/reset behavior, and focused tests. Explicitly deferred automatic download/extraction, dashboard, Codex runtime, Enemy Targeting, completion, replay, and generalized engine management.
+- **AI contribution:** Created the asset-free playable fixture, safe persistent workspace lifecycle, explicit reset flow, local Godot lookup, play and headless verification commands, focused tests, operational guide, and separate implementation/review/closeout records.
+- **Files changed:** `.gitignore`, `package.json`, `fixtures/godot/baseline/*`, `src/demo/*`, `src/godot/*`, `tests/workspace.test.ts`, `tests/godot-executable.test.ts`, `docs/GODOT_FIXTURE.md`, task plan/handoff/review/closeout, `README.md`, `ROADMAP.md`, `docs/AI_WORK_LOG.md`
+- **Verification:** `npm run check` passed with typecheck success and 11/11 tests. `npm run demo:prepare` preserved the existing workspace. `npm run demo:reset -- confirm-reset` restored it. `npm run godot:verify` passed with Standard Godot `4.7.stable.official.5b4e0cb0f` and `FORGE_FIXTURE_VERIFY_OK player=Player enemy=Enemy baseline=idle`. `git diff --check` passed.
+- **Commit:** Created after this entry; reported in the final task response
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Implement pinned archive download and SHA-256 verification before extraction as a separately approved task.

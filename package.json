@@ -9,8 +9,12 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/contracts.test.ts",
-    "check": "npm run typecheck && npm test"
+    "test": "tsx --test tests/contracts.test.ts tests/workspace.test.ts tests/godot-executable.test.ts",
+    "check": "npm run typecheck && npm test",
+    "demo:prepare": "tsx src/demo/cli.ts prepare",
+    "demo:reset": "tsx src/demo/cli.ts reset",
+    "demo:play": "tsx src/demo/cli.ts play",
+    "godot:verify": "tsx src/godot/verify-fixture.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"

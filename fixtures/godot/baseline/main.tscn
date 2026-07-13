@@ -1,0 +1,72 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="2_enemy"]
+
+[sub_resource type="RectangleShape2D" id="PlayerShape"]
+size = Vector2(44, 44)
+
+[sub_resource type="RectangleShape2D" id="EnemyShape"]
+size = Vector2(52, 52)
+
+[node name="Main" type="Node2D"]
+
+[node name="Backdrop" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 0, 960, 0, 960, 540, 0, 540)
+color = Color(0.039, 0.055, 0.102, 1)
+
+[node name="Ground" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(0, 430, 960, 430, 960, 540, 0, 540)
+color = Color(0.075, 0.11, 0.16, 1)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(250, 360)
+script = ExtResource("1_player")
+
+[node name="Body" type="Polygon2D" parent="Player"]
+polygon = PackedVector2Array(0, -30, 28, 22, 0, 14, -28, 22)
+color = Color(0.16, 0.72, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("PlayerShape")
+
+[node name="Label" type="Label" parent="Player"]
+offset_left = -34.0
+offset_top = 38.0
+offset_right = 62.0
+offset_bottom = 61.0
+theme_override_colors/font_color = Color(0.64, 0.9, 1, 1)
+text = "PLAYER"
+
+[node name="Enemy" type="CharacterBody2D" parent="."]
+position = Vector2(710, 360)
+script = ExtResource("2_enemy")
+
+[node name="Body" type="Polygon2D" parent="Enemy"]
+polygon = PackedVector2Array(-28, -28, 28, -28, 28, 28, -28, 28)
+color = Color(1, 0.29, 0.31, 1)
+
+[node name="EyeLeft" type="Polygon2D" parent="Enemy"]
+polygon = PackedVector2Array(-16, -10, -6, -10, -6, 0, -16, 0)
+color = Color(1, 0.9, 0.62, 1)
+
+[node name="EyeRight" type="Polygon2D" parent="Enemy"]
+polygon = PackedVector2Array(6, -10, 16, -10, 16, 0, 6, 0)
+color = Color(1, 0.9, 0.62, 1)
+
+[node name="Label" type="Label" parent="Enemy"]
+offset_left = -50.0
+offset_top = 38.0
+offset_right = 74.0
+offset_bottom = 61.0
+theme_override_colors/font_color = Color(1, 0.65, 0.66, 1)
+text = "IDLE ENEMY"
+
+[node name="Instructions" type="Label" parent="."]
+offset_left = 32.0
+offset_top = 28.0
+offset_right = 720.0
+offset_bottom = 88.0
+theme_override_colors/font_color = Color(0.88, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "Forge Baseline\nMove with arrow keys. The enemy intentionally stays idle."
