@@ -38,9 +38,9 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ### Milestone 2 — Connect the dashboard
 
-- [ ] Create the visual roadmap with locked, available, active, and completed states.
-- [ ] Add the persistent in-app companion.
-- [ ] Show selected quest purpose, plan, acceptance criteria, and actions.
+- [x] Create a frontend prototype of the visual roadmap with available, planned, active, and completed states.
+- [x] Add the Forge Companion across the five prototype states.
+- [x] Show selected quest purpose, plan, acceptance criteria, scope, proof, and actions in the prototype.
 - [ ] Support **Build with Codex**, **Refine plan**, and a contextual prompt field.
 - [ ] Connect the interface to the real quest workflow.
 

@@ -168,6 +168,34 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Reviewed the governing product, roadmap, architecture, status, quest, plan, contract, runner, and evidence sources; separated implemented, planned, deferred, and owner-review capabilities; defined the user-visible state model, information architecture, main-screen anatomy, screen and overlay map, three judge-critical states, deterministic demonstration path, scope boundary, and next design sequence. Recorded that the current repository contains no React UI, landmark contract, storyboard, or separate dashboard/workspace vision artifact rather than treating those materials as implemented.
 - **Files changed:** `docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`, `docs/AI_WORK_LOG.md`
 - **Verification:** Cross-checked capability claims against repository artifacts and current Git history; verified all 12 requested document sections, Mermaid screen maps, the capability/status distinctions, and the absence of application-code changes; `git diff --check` and local Markdown-link checks passed.
-- **Commit:** Not created in this task
+- **Commit:** `fc4e9b3362e71ea982e30bc87e0f93f7132382ae` (`Add Build Week dashboard capability and screen map documentation`)
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Produce low-fidelity wireframes for World and Quest Brief in the three key states, plus blocked and failed-verification variants, before visual design or React implementation.
+
+---
+
+## 2026-07-13 — Reconcile project and dashboard status
+
+- **Actor/model surface:** Codex repository review in the Codex desktop app
+- **Workflow stage:** Review / Document
+- **Human decisions:** Requested a fresh project/status review after the dashboard capability map was committed.
+- **AI contribution:** Compared the executable quest-completion path, contracts, tests, roadmap, status, screen map, and recent Git history; corrected stale dashboard claims about game launch, creator confirmation, closeout, and persistent completion; kept unimplemented UI and live-run ownership gaps explicit.
+- **Files changed:** `PROJECT_STATUS.md`, `docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`, `docs/AI_WORK_LOG.md`
+- **Verification:** `npm run check` passed TypeScript and 35/35 tests; documentation claims were cross-checked against the completion service, CLI, contracts, reviews, closeout, and commit history.
+- **Commit:** Not created in this review
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Create low-fidelity World and Quest Brief wireframes, then implement the thinnest dashboard connection over the proven runner.
+
+---
+
+## 2026-07-13 — Implement the first Forge Workshop dashboard prototype
+
+- **Actor/model surface:** Codex frontend implementation and browser verification in the Codex desktop app
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Required a focused five-state Enemy Targeting dashboard, Forge Workshop Figma direction, a meaningful approval boundary, understandable progress, automated-versus-creator proof separation, prototype-only completion when persistence is disconnected, minimal React/Vite, and no runner or fixture changes.
+- **AI contribution:** Added a typed React/Vite dashboard with World Ready, Quest Brief, Implementation Running, Ready to Play, and Quest Complete; implemented the visual quest world, companion, scope boundary, five stages, proof summary, creator handoff, technical disclosures, responsive behavior, visible demo labeling, and developer state controls; preserved the existing CLI/runtime contracts.
+- **Files changed:** Dashboard source and configuration, npm manifest/lockfile, README Node requirement, roadmap/status, bounded plan, review, closeout, and this log.
+- **Verification:** Dashboard and backend TypeScript passed; Vite production build passed; existing test suite passed 35/35; browser click-through and 700-pixel responsive checks passed with no console errors or horizontal overflow; npm audit reported zero vulnerabilities.
+- **Commit:** Dashboard milestone closeout commit created after this entry; SHA reported in the task response
+- **Session ID:** `/feedback` ID `019f5da1-c7f5-7652-81af-59482e706067`
+- **Next step:** Add the smallest local host adapter that reads prepared state and invokes the existing quest runner from the dashboard without changing approval, review, launch, or completion semantics.

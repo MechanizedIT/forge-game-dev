@@ -46,7 +46,7 @@ After approval, Forge will give Codex a bounded work packet, translate technical
 ### Planned requirements
 
 - Windows 10 or 11
-- Node.js 20 or newer
+- Node.js 20.19 or newer
 - Git
 - Codex installed and authenticated
 - Internet access during initial setup

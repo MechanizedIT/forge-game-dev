@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** Complete command-line Enemy Targeting quest loop
+**Current milestone:** First usable Forge Workshop dashboard prototype complete; real workflow integration is next
 
-**Overall state:** The terminal golden path works end to end; visual dashboard integration is next
+**Overall state:** The terminal golden path works end to end, and a five-state React dashboard now demonstrates it honestly with mocked UI transitions
 
 ## What works now
 
@@ -31,14 +31,25 @@ Type `APPROVE`, then `LAUNCH` after automated checks pass. In the game, approach
 
 The immutable fixture remains the idle reset baseline. `npm run demo:reset -- confirm-reset` explicitly starts over and removes generated completion state.
 
+## Dashboard prototype
+
+The Forge Workshop dashboard implements World Ready, Quest Brief, Implementation Running, Ready to Play, and Quest Complete as a responsive React/Vite click-through. It mirrors the committed Enemy Targeting quest, plan, scope, progress, and sanitized evidence language, but it does not read those artifacts or invoke the CLI at runtime. A visible prototype label and code comment make clear that dashboard transitions, Godot launch, creator confirmation, Chronicle preview, and completion persistence are mocked and write no Forge state.
+
+Run it with:
+
+```powershell
+npm run dashboard:dev
+```
+
 ## Still incomplete
 
-- Visual roadmap dashboard and companion interface
-- Dashboard completion feedback, animation, and sound
+- Thin local Node/TypeScript host connected to the proven quest workflow
+- Real dashboard approval, progress event, evidence, Godot launch, and creator-confirmation adapters
+- Deterministic dashboard ownership for an in-progress run and return from the Godot process
 - Clean-machine judge rehearsal and replay fallback
 
 ## Next milestone
 
-Connect the proven command-line workflow to the visual roadmap dashboard without changing its safety, verification, or human-confirmation rules.
+Add the smallest local host adapter that reads the prepared bundle and persistent roadmap state, then starts the existing runner only after the dashboard approval action. Do not change runner safety or completion semantics.
 
-Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md).
+Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md). Dashboard specification: [`docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`](docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md).
