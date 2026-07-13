@@ -9,6 +9,7 @@ import {
   implementationHandoffSchema,
   implementationPlanSchema,
   projectManifestSchema,
+  questCompletionSchema,
   questSchema,
   reviewResultSchema,
   roadmapSchema,
@@ -40,6 +41,9 @@ test("all committed JSON artifact examples pass strict validation", async () => 
   const reviewResult = reviewResultSchema.parse(
     await loadTemplate("review-result.template.json"),
   );
+  const questCompletion = questCompletionSchema.parse(
+    await loadTemplate("quest-completion.template.json"),
+  );
 
   assert.equal(projectManifest.projectId, roadmap.projectId);
   assert.equal(roadmap.quests[0]?.questId, "enemy-targeting");
@@ -47,6 +51,8 @@ test("all committed JSON artifact examples pass strict validation", async () => 
   assert.equal(quest.questId, implementationPlan.questId);
   assert.equal(implementationPlan.questId, implementationHandoff.questId);
   assert.equal(implementationHandoff.questId, reviewResult.questId);
+  assert.equal(reviewResult.questId, questCompletion.questId);
+  assert.equal(questCompletion.workflowState, "COMPLETE");
 });
 
 test("workflow and roadmap states are the exact approved sets", () => {

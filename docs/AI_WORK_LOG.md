@@ -143,3 +143,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; reported in the final task response
 - **Session ID:** Live Codex thread `019f5d5f-0f3c-74f0-94c2-7e3146fcd3a5`; primary `/feedback` ID pending
 - **Next step:** Add command-line game launch and explicit “I saw it work” confirmation, then persist completion only behind both automated and human gates.
+
+---
+
+## 2026-07-13 — Complete the command-line quest loop
+
+- **Actor/model surface:** Codex implementation in the Codex desktop app; Forge runtime completion gate
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Accepted CLI vertical-slice commit `ea9887c474b4307342de6067ab39bcf7350f4c23`; required a verified Godot launch, exact post-game creator response, persistent workflow/roadmap completion, safe negative outcomes, no invented confirmation, and dashboard integration next; excluded mechanic changes, repair loops, extra quests, UI effects, and generalized infrastructure.
+- **AI contribution:** Added a strict completion contract, prepared-workspace launcher, automated-evidence eligibility gate, exact creator-response handling, final `PASS` review, per-run closeout, persistent `COMPLETE` state, roadmap completion timestamp, already-completed detection, focused fake-launcher tests, operational documentation, and milestone evidence.
+- **Files changed:** Completion contract/template; quest loader and CLI/runtime completion flow; prepared Godot launcher; focused tests and package test command; README, status, roadmap, CLI guide, plan/handoff/review/closeout, evidence, and this log.
+- **Verification:** `npm run check` passed TypeScript and 35/35 tests. Real Godot `4.7.stable.official.5b4e0cb0f` verification emitted `FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass`. A real 120-frame launch smoke exited 0. No manual visual confirmation was claimed. `git diff --check` passed and immutable fixture gameplay files were unchanged.
+- **Commit:** Created after this entry; reported in the final task response
+- **Session ID:** Current Codex task; no new live nested Codex turn was required
+- **Next step:** Connect the proven command-line workflow and persisted quest state to the visual roadmap dashboard.

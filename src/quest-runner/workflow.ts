@@ -1,7 +1,11 @@
 import type { ThreadEvent } from "@openai/codex-sdk";
 import path from "node:path";
 
-import type { ImplementationHandoff, ReviewResult } from "../contracts/index.js";
+import type {
+  ImplementationHandoff,
+  QuestCompletion,
+  ReviewResult,
+} from "../contracts/index.js";
 import {
   captureWorkspaceDiff,
   requireCleanWorkspaceGit,
@@ -13,6 +17,7 @@ import {
   type PreparedQuestBundle,
 } from "../quests/prepared-enemy-targeting.js";
 import { writeJsonAtomic, writeJsonLinesAtomic } from "./artifacts.js";
+import { loadQuestCompletion } from "./completion.js";
 import { buildBoundedQuestContext, type BoundedQuestContext } from "./context.js";
 import { mapSdkEventToProgress, ProgressReporter } from "./progress.js";
 import { createImplementationHandoff, createReviewResult } from "./review.js";
@@ -31,7 +36,14 @@ export interface PreparedQuestRun {
 export type QuestRunResult =
   | { status: "cancelled"; roadmapState: "available" }
   | {
-      status: "ready_for_play" | "failed";
+      status: "ready_for_play";
+      handoff: ImplementationHandoff;
+      review: ReviewResult;
+      runDirectory: string;
+      roadmapState: "available";
+    }
+  | {
+      status: "failed";
       handoff: ImplementationHandoff;
       review: ReviewResult;
       runDirectory: string;
@@ -42,6 +54,15 @@ export interface PrepareQuestRunOptions {
   forgeHome?: string;
   questId: string;
   workspacePath?: string;
+}
+
+export class QuestAlreadyCompletedError extends Error {
+  constructor(readonly completion: QuestCompletion) {
+    super(
+      `Enemy Targeting was completed at ${completion.completedAt}. Reset explicitly to restore the baseline before rebuilding it.`,
+    );
+    this.name = "QuestAlreadyCompletedError";
+  }
 }
 
 export async function prepareQuestRun(options: PrepareQuestRunOptions): Promise<PreparedQuestRun> {
@@ -56,7 +77,22 @@ export async function prepareQuestRun(options: PrepareQuestRunOptions): Promise<
           options.forgeHome === undefined ? {} : { forgeHome: options.forgeHome },
         )
       ).workspacePath;
-  const bundle = await loadPreparedEnemyTargeting(workspacePath);
+  const bundle = await loadPreparedEnemyTargeting(workspacePath, { allowCompleted: true });
+  const roadmapQuest = bundle.roadmap.quests.find(
+    (quest) => quest.questId === bundle.quest.questId,
+  );
+  const completion = await loadQuestCompletion(workspacePath);
+  if (roadmapQuest?.state === "completed" && completion) {
+    if (completion.questId !== bundle.quest.questId) {
+      throw new Error("Stored completion does not match the prepared Enemy Targeting quest.");
+    }
+    throw new QuestAlreadyCompletedError(completion);
+  }
+  if (roadmapQuest?.state === "completed" || completion) {
+    throw new Error(
+      "Enemy Targeting completion state is inconsistent. Reset explicitly before another run.",
+    );
+  }
   assertApprovedVerificationCommands(bundle.quest);
   await requireCleanWorkspaceGit(workspacePath);
   const context = await buildBoundedQuestContext(bundle, workspacePath);
@@ -162,11 +198,8 @@ export async function executePreparedQuest(
   await writeJsonAtomic(path.join(runDirectory, "implementation-handoff.json"), handoff);
   await writeJsonAtomic(path.join(runDirectory, "review.json"), review);
 
-  return {
-    status: review.verdict === "CONDITIONAL PASS" ? "ready_for_play" : "failed",
-    handoff,
-    review,
-    runDirectory,
-    roadmapState: "available",
-  };
+  const evidence = { handoff, review, runDirectory, roadmapState: "available" as const };
+  return review.verdict === "CONDITIONAL PASS"
+    ? { status: "ready_for_play", ...evidence }
+    : { status: "failed", ...evidence };
 }

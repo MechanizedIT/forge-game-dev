@@ -57,9 +57,9 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ### Milestone 4 — Complete the playable loop
 
-- [ ] Launch the changed game with the pinned Godot binary.
-- [ ] Demonstrate enemy idle, detection, and chase behavior.
-- [ ] Persist quest and roadmap state across restart.
+- [x] Launch the changed game with the pinned Godot binary.
+- [x] Demonstrate enemy idle, detection, and chase behavior.
+- [x] Persist quest and roadmap state across restart.
 - [ ] Add a roadmap pulse, companion state change, completion sound, and concise **Quest Complete** card.
 - [ ] Unlock or recommend the next quest.
 
@@ -88,7 +88,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ## Prepared quests
 
-1. **Enemy Targeting** — required golden path; the CLI can implement and automatically verify it in the per-user workspace, with creator play confirmation still pending.
+1. **Enemy Targeting** — required golden path; the CLI can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
 2. **Player Dash** — roadmap choice; implementation is optional until the golden path is complete.
 3. **Damage Feedback** — roadmap choice and candidate for the new-quest planning demonstration.
 
@@ -120,4 +120,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The Enemy Targeting command-line execution milestone is `COMPLETE`; see its [plan](docs/plans/2026-07-13-enemy-targeting-cli.md), [review](docs/reviews/2026-07-13-enemy-targeting-cli-review.md), and [closeout](docs/closeouts/2026-07-13-enemy-targeting-cli-closeout.md). Next, add command-line game launch plus explicit creator confirmation, and persist completion only after the existing automated `CONDITIONAL PASS` and “I saw it work” gate. Dashboard work remains after that bounded completion loop.
+The command-line Enemy Targeting loop is `COMPLETE`; see its completion-gate [plan](docs/plans/2026-07-13-quest-completion-gate.md), [review](docs/reviews/2026-07-13-quest-completion-gate-review.md), and [closeout](docs/closeouts/2026-07-13-quest-completion-gate-closeout.md). The next bounded milestone is connecting this proven workflow and persistent roadmap state to the visual roadmap dashboard.

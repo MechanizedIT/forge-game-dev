@@ -11,6 +11,12 @@ export interface GodotRunResult {
   output: string;
 }
 
+export interface GodotLaunchResult {
+  executable: string;
+  version: string;
+  workspacePath: string;
+}
+
 const verificationSuccessTokens = [
   "FORGE_FIXTURE_VERIFY_OK",
   "FORGE_ENEMY_TARGETING_VERIFY_OK",
@@ -53,7 +59,18 @@ export async function verifyFixture(): Promise<GodotRunResult> {
 
 export async function playFixture(): Promise<void> {
   const runtime = await resolveRuntime();
-  const result = spawnSync(runtime.executable, ["--path", runtime.workspacePath], {
+  await launchPreparedGame(runtime.workspacePath, {
+    executable: runtime.executable,
+    version: runtime.version,
+  });
+}
+
+export async function launchPreparedGame(
+  workspacePath: string,
+  resolvedGodot?: { executable: string; version: string },
+): Promise<GodotLaunchResult> {
+  const godot = resolvedGodot ?? (await ensurePinnedGodot());
+  const result = spawnSync(godot.executable, ["--path", workspacePath], {
     stdio: "inherit",
     windowsHide: false,
   });
@@ -64,4 +81,9 @@ export async function playFixture(): Promise<void> {
   if ((result.status ?? 1) !== 0) {
     throw new Error(`Godot exited with status ${result.status ?? 1}`);
   }
+  return {
+    executable: godot.executable,
+    version: godot.version,
+    workspacePath,
+  };
 }

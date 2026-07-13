@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts",
+    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts",
     "check": "npm run typecheck && npm test",
     "demo:prepare": "tsx src/demo/cli.ts prepare",
     "demo:reset": "tsx src/demo/cli.ts reset",

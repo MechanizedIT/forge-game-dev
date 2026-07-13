@@ -2,20 +2,24 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** Enemy Targeting command-line vertical slice
+**Current milestone:** Complete command-line Enemy Targeting quest loop
 
-**Overall state:** Live Codex implementation and automated review work; creator completion is next
+**Overall state:** The terminal golden path works end to end; visual dashboard integration is next
 
 ## What works now
 
-- Prepare or explicitly reset a persistent Godot 4.7 demo workspace with a clean Git baseline.
-- Download and checksum-verify the pinned portable Godot build when approved, or use `GODOT_BIN`.
-- Load the strict prepared Enemy Targeting quest and approved plan.
-- Require explicit approval, then run the official `@openai/codex-sdk` against only the demo workspace and three declared files.
-- Show five plain-language progress stages, capture sanitized events and the real diff, run project and Godot checks, and write validated handoff/review evidence.
-- Return `CONDITIONAL PASS` without changing roadmap state when automation passes but play confirmation is still missing.
+A creator can prepare the bundled Godot project, approve Enemy Targeting, let the official Codex SDK implement it, follow plain-language progress, receive automated verification, launch the changed game, and explicitly confirm whether the mechanic worked.
 
-## Current user experience
+Forge completes the quest only after all of these succeed:
+
+- The bounded Codex run finishes with only approved files changed.
+- Project and Godot verification pass.
+- The verified Godot game launches and closes successfully.
+- The creator enters exactly `I SAW IT WORK`.
+
+Completion persists the workflow as `COMPLETE`, changes the roadmap node to `completed`, records the confirmation time, and writes final review and closeout evidence. Failure, cancellation, missing interactive input, or launch failure leaves the quest incomplete. Rerunning a completed quest explains its state instead of rebuilding it.
+
+## Try it
 
 ```powershell
 npm install
@@ -23,20 +27,18 @@ npm run demo:prepare -- confirm-download
 npm run quest:run -- enemy-targeting
 ```
 
-Type `APPROVE` after reviewing the bounded change. On `CONDITIONAL PASS`, run `npm run demo:play`, approach the red enemy to see it change from `IDLE` to `CHASING`, and retreat to make it idle again.
+Type `APPROVE`, then `LAUNCH` after automated checks pass. In the game, approach and retreat from the enemy to check `IDLE` → `CHASING` → `IDLE`. After closing the game, enter one of the exact responses shown by Forge.
 
-The live path was exercised successfully with the official SDK: exactly three planned files changed, project checks passed, Godot emitted all four deterministic signals, and AC-1 through AC-5 passed. AC-6 remains pending because Forge does not yet record the creator's “I saw it work” confirmation.
+The immutable fixture remains the idle reset baseline. `npm run demo:reset -- confirm-reset` explicitly starts over and removes generated completion state.
 
 ## Still incomplete
 
-- Launch-and-confirm workflow, persistent quest completion, and completion feedback
-- Dashboard and companion UI
+- Visual roadmap dashboard and companion interface
+- Dashboard completion feedback, animation, and sound
 - Clean-machine judge rehearsal and replay fallback
-
-The immutable fixture intentionally remains the idle baseline. Reset still discards the generated mechanic only after exact `confirm-reset` approval. A dirty workspace is never overwritten by a quest run.
 
 ## Next milestone
 
-Add the smallest terminal launch and explicit play-confirmation step. It may complete the quest only when the existing review is `CONDITIONAL PASS` and the creator confirms the visible behavior; otherwise the roadmap remains available.
+Connect the proven command-line workflow to the visual roadmap dashboard without changing its safety, verification, or human-confirmation rules.
 
-Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md). Technical evidence: [`docs/evidence/2026-07-13-enemy-targeting-cli-live.json`](docs/evidence/2026-07-13-enemy-targeting-cli-live.json).
+Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md).

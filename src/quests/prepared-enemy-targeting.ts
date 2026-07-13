@@ -17,17 +17,24 @@ export interface PreparedQuestBundle {
   roadmap: Roadmap;
 }
 
+export interface PreparedQuestValidationOptions {
+  allowCompleted?: boolean;
+}
+
 export const enemyTargetingArtifactPaths = {
   plan: ".forge/plans/enemy-targeting.json",
   quest: ".forge/quests/enemy-targeting.json",
   roadmap: ".forge/roadmap.json",
 } as const;
 
-export function validatePreparedQuestBundle(input: {
-  plan: unknown;
-  quest: unknown;
-  roadmap: unknown;
-}): PreparedQuestBundle {
+export function validatePreparedQuestBundle(
+  input: {
+    plan: unknown;
+    quest: unknown;
+    roadmap: unknown;
+  },
+  options: PreparedQuestValidationOptions = {},
+): PreparedQuestBundle {
   const quest = questSchema.parse(input.quest);
   const plan = implementationPlanSchema.parse(input.plan);
   const roadmap = roadmapSchema.parse(input.roadmap);
@@ -43,7 +50,10 @@ export function validatePreparedQuestBundle(input: {
   if (!roadmapQuest) {
     throw new Error(`Roadmap does not reference the real quest ${quest.questId}`);
   }
-  if (roadmapQuest.state !== "available") {
+  const allowedState =
+    roadmapQuest.state === "available" ||
+    (options.allowCompleted === true && roadmapQuest.state === "completed");
+  if (!allowedState) {
     throw new Error(`Prepared quest must begin available; found ${roadmapQuest.state}`);
   }
 
@@ -85,13 +95,14 @@ async function loadJson(filePath: string): Promise<unknown> {
 
 export async function loadPreparedEnemyTargeting(
   projectRoot: string = baselineFixturePath,
+  options: PreparedQuestValidationOptions = {},
 ): Promise<PreparedQuestBundle> {
   const [plan, quest, roadmap] = await Promise.all([
     loadJson(path.join(projectRoot, enemyTargetingArtifactPaths.plan)),
     loadJson(path.join(projectRoot, enemyTargetingArtifactPaths.quest)),
     loadJson(path.join(projectRoot, enemyTargetingArtifactPaths.roadmap)),
   ]);
-  const bundle = validatePreparedQuestBundle({ plan, quest, roadmap });
+  const bundle = validatePreparedQuestBundle({ plan, quest, roadmap }, options);
 
   await Promise.all(
     bundle.quest.contextFiles.map(async (contextFile) => {

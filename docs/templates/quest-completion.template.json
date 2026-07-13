@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "runId": "enemy-targeting-example",
+  "questId": "enemy-targeting",
+  "workflowState": "COMPLETE",
+  "roadmapState": "completed",
+  "automatedReview": {
+    "verdict": "CONDITIONAL PASS",
+    "artifact": ".forge/runs/enemy-targeting-example/review.json"
+  },
+  "finalReview": ".forge/runs/enemy-targeting-example/final-review.json",
+  "gameLaunch": {
+    "result": "passed",
+    "godotVersion": "4.7.stable.official"
+  },
+  "creatorConfirmation": {
+    "response": "I SAW IT WORK",
+    "confirmedAt": "2026-07-13T22:00:00Z"
+  },
+  "completedAt": "2026-07-13T22:00:00Z",
+  "summary": "Automated verification passed and the creator confirmed the visible Enemy Targeting behavior."
+}

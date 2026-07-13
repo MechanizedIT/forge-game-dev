@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "automated-completion-gate-test",
+  "questId": "enemy-targeting",
+  "baselineCommit": "ea9887c474b4307342de6067ab39bcf7350f4c23",
+  "automatedTests": {
+    "count": 35,
+    "result": "passed",
+    "launcher": "fake",
+    "creatorResponses": "scripted explicit fixtures"
+  },
+  "realGodotEvidence": {
+    "version": "4.7.stable.official.5b4e0cb0f",
+    "headlessVerification": "passed",
+    "launchSmoke": "passed",
+    "visualConfirmation": "not_claimed"
+  },
+  "completionGate": {
+    "requiredAutomatedVerdict": "CONDITIONAL PASS or PASS",
+    "requiredCreatorResponse": "I SAW IT WORK",
+    "negativeResponsesRemainIncomplete": true,
+    "roadmapPersistsCompletedState": true,
+    "workflowPersistsCompleteState": true
+  }
+}

@@ -90,9 +90,9 @@ After preparation, start the first command-line Forge vertical slice:
 npm run quest:run -- enemy-targeting
 ```
 
-Forge validates the prepared quest and plan, explains the bounded three-file change, and waits for you to type `APPROVE`. It then uses the official `@openai/codex-sdk`, shows five plain-language stages, verifies the real Git diff and Godot result, and writes evidence under the demo workspace's `.forge/runs/` directory. A successful automated run returns `CONDITIONAL PASS`; the roadmap stays unchanged until a later milestone records that you launched the game and saw the mechanic work.
+Forge validates the prepared quest and plan, explains the bounded three-file change, and waits for you to type `APPROVE`. It then uses the official `@openai/codex-sdk`, shows five plain-language stages, verifies the real Git diff and Godot result, and writes evidence under the demo workspace's `.forge/runs/` directory. After a successful automated review, Forge offers to launch the game and completes the quest only when you explicitly enter `I SAW IT WORK` after the game closes.
 
-For an explicitly approved non-interactive live run, use `npm run quest:run -- enemy-targeting confirm-run`. Ordinary `npm test` runs use a fake SDK and do not contact Codex. See [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md) for reset, safety, and result details.
+For an explicitly approved non-interactive SDK run, use `npm run quest:run -- enemy-targeting confirm-run`; without an interactive terminal, it stops before creator confirmation and leaves the quest incomplete. Ordinary `npm test` runs use a fake SDK and do not contact Codex. See [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md) for reset, safety, and result details.
 
 ## Recommended test path
 
