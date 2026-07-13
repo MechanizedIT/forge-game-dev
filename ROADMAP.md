@@ -32,7 +32,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [ ] Implement focused plan, build, and closeout skills.
 - [ ] Invoke Codex against the sample project's working directory.
 - [ ] Capture structured events, diff, commands, checks, and handoffs.
-- [ ] Run pinned Godot headless verification.
+- [x] Run pinned Godot headless verification.
 
 **Exit:** One command can plan, implement, verify, and record the quest without the dashboard.
 
@@ -77,7 +77,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 ### Milestone 6 — Package for judging
 
 - [ ] Verify the single-command launch path on a clean Windows environment.
-- [ ] Pin or checksum the portable Godot download.
+- [x] Pin and checksum the portable Godot download.
 - [ ] Provide an offline or replay fallback for the core demonstration.
 - [ ] Replace README mockups and placeholder links.
 - [ ] Record a public demo video under three minutes.
@@ -120,4 +120,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The fixture foundation is `COMPLETE`; see its [plan](docs/plans/2026-07-13-godot-fixture-foundation.md) and [closeout](docs/closeouts/2026-07-13-godot-fixture-foundation-closeout.md). The next smallest task is pinned Godot archive acquisition and SHA-256 verification before extraction, without changing fixture gameplay.
+The pinned Godot bootstrap is `COMPLETE`; see its [plan](docs/plans/2026-07-13-pinned-godot-bootstrap.md) and [closeout](docs/closeouts/2026-07-13-pinned-godot-bootstrap-closeout.md). The next smallest task is the prepared **Enemy Targeting** quest data and deterministic acceptance criteria, without implementing the mechanic or Codex runtime yet.

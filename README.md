@@ -72,6 +72,16 @@ npm run demo
 
 To run only the current Godot fixture foundation, see [`docs/GODOT_FIXTURE.md`](docs/GODOT_FIXTURE.md).
 
+Current repository setup for the playable baseline:
+
+```powershell
+npm install
+npm run demo:prepare -- confirm-download
+npm run demo:play
+```
+
+The first prepare asks for explicit permission through `confirm-download`, verifies the pinned Godot 4.7 archive before extraction, and caches it for later runs. No manual Godot installation or path lookup is required.
+
 ## Recommended test path
 
 1. Launch Forge.

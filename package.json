@@ -9,19 +9,24 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/contracts.test.ts tests/workspace.test.ts tests/godot-executable.test.ts",
+    "test": "tsx --test tests/contracts.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts",
     "check": "npm run typecheck && npm test",
     "demo:prepare": "tsx src/demo/cli.ts prepare",
     "demo:reset": "tsx src/demo/cli.ts reset",
     "demo:play": "tsx src/demo/cli.ts play",
+    "godot:bootstrap": "tsx src/godot/bootstrap-cli.ts",
     "godot:verify": "tsx src/godot/verify-fixture.ts"
   },
   "dependencies": {
+    "yauzl": "^3.4.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@types/yauzl": "^3.4.0",
+    "@types/yazl": "^3.3.1",
     "tsx": "^4.23.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "yazl": "^3.3.1"
   }
 }

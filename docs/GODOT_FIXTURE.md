@@ -2,17 +2,33 @@
 
 Forge includes an immutable Godot 4.7 GDScript baseline under `fixtures/godot/baseline`. It contains a controllable player and a clearly visible enemy that intentionally remains idle. It has no external art, .NET dependency, detection, targeting, or chase logic.
 
-## Configure Godot
+## Prepare Godot and the demo
 
-Use the Standard Godot 4.7 executable. Forge checks `GODOT_BIN`, then the repository and `.tools/godot`, then `PATH`.
+On the first machine, explicitly approve the approximately 84 MB official portable download:
+
+```powershell
+npm run demo:prepare -- confirm-download
+```
+
+Forge downloads only Godot `4.7-stable` Standard Windows x86_64, verifies the pinned SHA-256 before extraction, confirms the executable reports Godot 4.7, and installs it under `%LOCALAPPDATA%\Forge\tools\godot\4.7-stable`. Later prepare, verify, and play commands reuse that cache without downloading.
+
+To acquire or validate Godot without preparing the workspace, use the explicit opt-in command:
+
+```powershell
+npm run godot:bootstrap -- confirm-download
+```
+
+Normal automated tests remain offline.
+
+### Existing Godot override
+
+Forge continues to honor `GODOT_BIN`, then local/PATH lookup. The executable must report Godot 4.7.
 
 PowerShell example:
 
 ```powershell
 $env:GODOT_BIN = 'C:\path\to\Godot_v4.7-stable_win64_console.exe'
 ```
-
-Forge does not download or extract Godot in this task.
 
 ## Prepare and play
 

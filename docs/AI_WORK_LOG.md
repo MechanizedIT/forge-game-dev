@@ -87,3 +87,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; reported in the final task response
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Implement pinned archive download and SHA-256 verification before extraction as a separately approved task.
+
+---
+
+## 2026-07-13 — Add the pinned Godot bootstrap
+
+- **Actor/model surface:** Codex implementation in the Codex desktop app
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Accepted fixture commit `8ae0cddf9c40da12d6a76fcf270eecda08260378` as baseline; approved only automatic acquisition of Godot `4.7-stable` Standard Windows x86_64 using the official portable ZIP and pinned SHA-256; required explicit confirmation before the approximately 84 MB download; kept normal tests offline; prohibited fixture, dashboard, Codex runtime, Enemy Targeting, other platform/version, and generalized engine-manager work.
+- **AI contribution:** Implemented immutable build metadata, temporary streamed download, pre-extraction SHA-256 enforcement, safe ZIP extraction, failure cleanup, atomic versioned cache installation, Godot version validation, cache reuse, prepare/runtime integration, explicit opt-in CLI, offline tests, and operational workflow artifacts.
+- **Files changed:** `.gitignore`, package metadata, `src/godot/*`, `src/demo/cli.ts`, `tests/godot-bootstrap.test.ts`, `README.md`, `ROADMAP.md`, `docs/GODOT_FIXTURE.md`, and pinned-bootstrap plan/handoff/review/closeout records
+- **Verification:** `npm run check` passed typechecking and 16/16 offline tests. The explicit real bootstrap verified the official pinned checksum, installed Godot `4.7.stable.official.5b4e0cb0f`, and a second command reused the cache. Prepare preserved the workspace, confirmed reset restored it, headless verification emitted `FORGE_FIXTURE_VERIFY_OK`, the game exited `0` after a 120-frame play smoke, fixture baseline diff was empty, and `git diff --check` passed.
+- **Commit:** Created after this entry; reported in the final task response
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Add only the prepared Enemy Targeting quest data and deterministic acceptance criteria for the command-line golden path.

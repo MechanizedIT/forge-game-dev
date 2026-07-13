@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
 
 import { prepareDemoWorkspace } from "../demo/workspace.js";
-import { findGodotExecutable } from "./find-executable.js";
+import { ensurePinnedGodot } from "./bootstrap.js";
+import { runCaptured } from "./process.js";
 
 export interface GodotRunResult {
   executable: string;
@@ -10,34 +11,19 @@ export interface GodotRunResult {
   output: string;
 }
 
-function runCaptured(executable: string, args: string[]): { output: string; status: number } {
-  const result = spawnSync(executable, args, { encoding: "utf8", windowsHide: true });
-  if (result.error) {
-    throw result.error;
-  }
-
-  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
-  return { output, status: result.status ?? 1 };
-}
-
 async function resolveRuntime(): Promise<{
   executable: string;
   version: string;
   workspacePath: string;
 }> {
-  const executable = await findGodotExecutable();
-  const versionResult = runCaptured(executable, ["--version"]);
-  if (versionResult.status !== 0) {
-    throw new Error(`Godot --version failed (${versionResult.status}): ${versionResult.output}`);
-  }
-
-  const version = versionResult.output.split(/\r?\n/, 1)[0]?.trim() ?? "";
-  if (!version.startsWith("4.7")) {
-    throw new Error(`Forge requires Godot 4.7 for this fixture; found ${version || "unknown"}`);
-  }
+  const godot = await ensurePinnedGodot();
 
   const workspace = await prepareDemoWorkspace();
-  return { executable, version, workspacePath: workspace.workspacePath };
+  return {
+    executable: godot.executable,
+    version: godot.version,
+    workspacePath: workspace.workspacePath,
+  };
 }
 
 export async function verifyFixture(): Promise<GodotRunResult> {
