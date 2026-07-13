@@ -1,56 +1,42 @@
 # Forge Project Status
 
 **Last updated:** 2026-07-13
-**Current milestone:** Prepared Enemy Targeting quest
-**Overall state:** Prepared quest ready for command-line execution work
+
+**Current milestone:** Enemy Targeting command-line vertical slice
+
+**Overall state:** Live Codex implementation and automated review work; creator completion is next
 
 ## What works now
 
-- Strict project, roadmap, quest, plan, handoff, review, and workflow contracts
-- Minimal playable Godot 4.7 fixture with player movement and a visible idle enemy
-- Persistent demo workspace preparation with explicit reset behavior
-- Automatic pinned Godot 4.7 download with pre-extraction SHA-256 verification
-- Versioned verified Godot cache with `GODOT_BIN` override support
-- Game launch and headless Godot verification
-- A strict Enemy Targeting quest, prepared implementation plan, and available roadmap node
+- Prepare or explicitly reset a persistent Godot 4.7 demo workspace with a clean Git baseline.
+- Download and checksum-verify the pinned portable Godot build when approved, or use `GODOT_BIN`.
+- Load the strict prepared Enemy Targeting quest and approved plan.
+- Require explicit approval, then run the official `@openai/codex-sdk` against only the demo workspace and three declared files.
+- Show five plain-language progress stages, capture sanitized events and the real diff, run project and Godot checks, and write validated handoff/review evidence.
+- Return `CONDITIONAL PASS` without changing roadmap state when automation passes but play confirmation is still missing.
 
 ## Current user experience
-
-The sample game can be prepared, launched, reset, and verified from the command line. Enemy Targeting can now be inspected as a validated quest and plan, but Forge cannot send it to Codex yet and the enemy still remains idle. The dashboard is not connected.
-
-## Just completed
-
-- Prepared the Enemy Targeting goal, non-goals, context, deterministic criteria, and verification steps
-- Added a decision-complete implementation plan at `APPROVE` and a real `available` roadmap node
-- Verified strict loading, cross-references, context files, and invalid-state rejection with 19 tests
-
-## In progress
-
-No implementation milestone is currently in progress. The next task requires a bounded command-line runtime plan and approval.
-
-## Blocked or uncertain
-
-No hard blocker is recorded. Enemy Targeting is prepared but intentionally not implemented. Codex execution, progress capture, review artifacts, and a clean-machine packaging rehearsal remain incomplete.
-
-## What should happen next
-
-Build the command-line Codex execution loop for the prepared **Enemy Targeting** quest using the official SDK, before dashboard work.
-
-## Try it
 
 ```powershell
 npm install
 npm run demo:prepare -- confirm-download
-npm run demo:play
+npm run quest:run -- enemy-targeting
 ```
 
-Later runs use `npm run demo:prepare` without download confirmation. Run `npm run godot:verify` for headless verification. Reset with `npm run demo:reset -- confirm-reset`. `GODOT_BIN` remains available as an override.
+Type `APPROVE` after reviewing the bounded change. On `CONDITIONAL PASS`, run `npm run demo:play`, approach the red enemy to see it change from `IDLE` to `CHASING`, and retreat to make it idle again.
 
-The prepared artifacts live under `fixtures/godot/baseline/.forge`. They describe future behavior; the current game correctly shows the idle baseline.
+The live path was exercised successfully with the official SDK: exactly three planned files changed, project checks passed, Godot emitted all four deterministic signals, and AC-1 through AC-5 passed. AC-6 remains pending because Forge does not yet record the creator's “I saw it work” confirmation.
 
-## Key evidence
+## Still incomplete
 
-- Roadmap: [`ROADMAP.md`](ROADMAP.md)
-- Fixture guide: [`docs/GODOT_FIXTURE.md`](docs/GODOT_FIXTURE.md)
-- AI work log: [`docs/AI_WORK_LOG.md`](docs/AI_WORK_LOG.md)
-- Technical evidence: [`docs/plans/`](docs/plans/), [`docs/reviews/`](docs/reviews/), and [`docs/closeouts/`](docs/closeouts/)
+- Launch-and-confirm workflow, persistent quest completion, and completion feedback
+- Dashboard and companion UI
+- Clean-machine judge rehearsal and replay fallback
+
+The immutable fixture intentionally remains the idle baseline. Reset still discards the generated mechanic only after exact `confirm-reset` approval. A dirty workspace is never overwritten by a quest run.
+
+## Next milestone
+
+Add the smallest terminal launch and explicit play-confirmation step. It may complete the quest only when the existing review is `CONDITIONAL PASS` and the creator confirms the visible behavior; otherwise the roadmap remains available.
+
+Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md). Technical evidence: [`docs/evidence/2026-07-13-enemy-targeting-cli-live.json`](docs/evidence/2026-07-13-enemy-targeting-cli-live.json).

@@ -129,3 +129,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; reported in the final task response
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Implement the command-line Codex execution loop for this prepared quest with the official SDK before dashboard work.
+
+---
+
+## 2026-07-13 — Run Enemy Targeting through the real Codex SDK
+
+- **Actor/model surface:** Codex implementation in the Codex desktop app and a live Forge runtime SDK turn
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Accepted prepared-quest commit `ef64f8f3d9e3e1cf93b0b01ac8048b8dadcccbf4`; approved one Enemy Targeting-only terminal path using the official `@openai/codex-sdk`; required exact creator approval, workspace isolation, understandable progress, actual diff and verification review, fake SDK tests, and no roadmap completion before visible play confirmation; explicitly excluded dashboard, App Server, retries, multiple quests/providers, scanning, and general agent infrastructure.
+- **AI contribution:** Added the official SDK adapter, bounded context builder, safe Git workspace baseline, creator-facing progress reducer, approval CLI, sanitized runtime evidence, deterministic verification/review pipeline, stricter handoff/review contracts, focused offline tests, live operational guide, and milestone evidence. Diagnosed a Windows npm subprocess failure from the first live run, preserved that run as `FAIL`, corrected the Forge host runner, and proved a separate clean live run.
+- **Files changed:** Package metadata; `src/quest-runner/*`; Git workspace and Godot verification compatibility; strict handoff/review contracts and templates; focused tests; fixture ignore rules; README, status, roadmap, operational guide, plan/handoff/review/closeout, evidence, and this log.
+- **Verification:** `npm run check` passed TypeScript and 28/28 offline tests. A fresh official SDK run in an isolated persistent workspace changed only `main.tscn`, `scripts/enemy.gd`, and `scripts/verify_fixture.gd`; `VERIFY-1` and `VERIFY-2` exited 0; Godot 4.7 emitted `FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass`; strict runtime review returned `CONDITIONAL PASS`, AC-6 `pending_play`, scope passed, and roadmap `available`. Prepare/reset and play smoke checks passed; `git diff --check` passed.
+- **Commit:** Created after this entry; reported in the final task response
+- **Session ID:** Live Codex thread `019f5d5f-0f3c-74f0-94c2-7e3146fcd3a5`; primary `/feedback` ID pending
+- **Next step:** Add command-line game launch and explicit “I saw it work” confirmation, then persist completion only behind both automated and human gates.

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "sanitized-live-codex-run",
+  "questId": "enemy-targeting",
+  "sdkPackage": "@openai/codex-sdk@0.144.3",
+  "codexThreadId": "019f5d5f-0f3c-74f0-94c2-7e3146fcd3a5",
+  "changedFiles": [
+    "main.tscn",
+    "scripts/enemy.gd",
+    "scripts/verify_fixture.gd"
+  ],
+  "verification": [
+    {
+      "id": "VERIFY-1",
+      "exitCode": 0,
+      "result": "passed"
+    },
+    {
+      "id": "VERIFY-2",
+      "exitCode": 0,
+      "result": "passed",
+      "token": "FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass"
+    }
+  ],
+  "automatedVerdict": "CONDITIONAL PASS",
+  "acceptance": {
+    "passed": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-5"],
+    "pendingPlay": ["AC-6"]
+  },
+  "scopeResult": "passed",
+  "roadmapState": "available",
+  "humanPlayConfirmation": "not_run"
+}

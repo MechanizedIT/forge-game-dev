@@ -12,7 +12,7 @@ import { canTransitionWorkflow, workflowStageSchema } from "./workflow.js";
 const criterionResultSchema = z
   .object({
     criterionId: referenceIdSchema,
-    result: z.enum(["passed", "failed"]),
+    result: z.enum(["passed", "failed", "pending_play"]),
     evidence: z.array(referenceIdSchema),
   })
   .strict();
@@ -23,7 +23,7 @@ export const reviewResultSchema = z
     runId: slugSchema,
     questId: slugSchema,
     stage: z.literal("REVIEW"),
-    verdict: z.enum(["passed", "failed", "needs_play_check"]),
+    verdict: z.enum(["PASS", "CONDITIONAL PASS", "FAIL"]),
     criteria: z.array(criterionResultSchema).min(1),
     scope: z
       .object({
@@ -50,7 +50,7 @@ export const reviewResultSchema = z
       });
     }
 
-    if (result.verdict === "needs_play_check" && result.nextStage !== "REVIEW") {
+    if (result.verdict === "CONDITIONAL PASS" && result.nextStage !== "REVIEW") {
       context.addIssue({
         code: "custom",
         path: ["nextStage"],
@@ -58,7 +58,7 @@ export const reviewResultSchema = z
       });
     }
 
-    if (result.verdict === "needs_play_check" && result.playCheck.result !== "not_run") {
+    if (result.verdict === "CONDITIONAL PASS" && result.playCheck.result !== "not_run") {
       context.addIssue({
         code: "custom",
         path: ["playCheck", "result"],
@@ -66,7 +66,31 @@ export const reviewResultSchema = z
       });
     }
 
-    if (result.verdict === "passed") {
+    if (result.verdict === "CONDITIONAL PASS") {
+      if (result.criteria.some((criterion) => criterion.result === "failed")) {
+        context.addIssue({
+          code: "custom",
+          path: ["criteria"],
+          message: "A conditional pass cannot contain failed criteria",
+        });
+      }
+      if (!result.criteria.some((criterion) => criterion.result === "pending_play")) {
+        context.addIssue({
+          code: "custom",
+          path: ["criteria"],
+          message: "A conditional pass requires a pending play criterion",
+        });
+      }
+    }
+
+    if (result.verdict === "PASS") {
+      if (result.criteria.some((criterion) => criterion.result !== "passed")) {
+        context.addIssue({
+          code: "custom",
+          path: ["criteria"],
+          message: "A passed review requires every criterion to pass",
+        });
+      }
       if (result.playCheck.result !== "passed") {
         context.addIssue({
           code: "custom",

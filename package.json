@@ -9,15 +9,17 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts",
+    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts",
     "check": "npm run typecheck && npm test",
     "demo:prepare": "tsx src/demo/cli.ts prepare",
     "demo:reset": "tsx src/demo/cli.ts reset",
     "demo:play": "tsx src/demo/cli.ts play",
+    "quest:run": "tsx src/quest-runner/cli.ts",
     "godot:bootstrap": "tsx src/godot/bootstrap-cli.ts",
     "godot:verify": "tsx src/godot/verify-fixture.ts"
   },
   "dependencies": {
+    "@openai/codex-sdk": "0.144.3",
     "yauzl": "^3.4.0",
     "zod": "^4.4.3"
   },

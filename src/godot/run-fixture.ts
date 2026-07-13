@@ -11,6 +11,11 @@ export interface GodotRunResult {
   output: string;
 }
 
+const verificationSuccessTokens = [
+  "FORGE_FIXTURE_VERIFY_OK",
+  "FORGE_ENEMY_TARGETING_VERIFY_OK",
+] as const;
+
 async function resolveRuntime(): Promise<{
   executable: string;
   version: string;
@@ -36,7 +41,10 @@ export async function verifyFixture(): Promise<GodotRunResult> {
     "res://scripts/verify_fixture.gd",
   ]);
 
-  if (result.status !== 0 || !result.output.includes("FORGE_FIXTURE_VERIFY_OK")) {
+  const hasSuccessToken = verificationSuccessTokens.some((token) =>
+    result.output.includes(token),
+  );
+  if (result.status !== 0 || !hasSuccessToken) {
     throw new Error(`Godot fixture verification failed (${result.status}):\n${result.output}`);
   }
 

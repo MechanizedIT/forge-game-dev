@@ -30,8 +30,8 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Add configured Godot 4.7 fixture verification and resettable workspace behavior.
 - [x] Add a prepared **Enemy Targeting** quest and acceptance criteria.
 - [ ] Implement focused plan, build, and closeout skills.
-- [ ] Invoke Codex against the sample project's working directory.
-- [ ] Capture structured events, diff, commands, checks, and handoffs.
+- [x] Invoke Codex against the sample project's working directory.
+- [x] Capture structured events, diff, commands, checks, and handoffs.
 - [x] Run pinned Godot headless verification.
 
 **Exit:** One command can plan, implement, verify, and record the quest without the dashboard.
@@ -48,7 +48,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ### Milestone 3 — Make progress understandable
 
-- [ ] Translate Codex events into creator-friendly stage updates.
+- [x] Translate Codex events into creator-friendly stage updates.
 - [ ] Keep raw commands and logs behind progressive disclosure.
 - [ ] Add clear approval, retry, failure, and uncertainty states.
 - [ ] Show verification evidence and changed files in the outcome.
@@ -88,7 +88,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ## Prepared quests
 
-1. **Enemy Targeting** — required golden path; definition and prepared plan complete, mechanic not implemented.
+1. **Enemy Targeting** — required golden path; the CLI can implement and automatically verify it in the per-user workspace, with creator play confirmation still pending.
 2. **Player Dash** — roadmap choice; implementation is optional until the golden path is complete.
 3. **Damage Feedback** — roadmap choice and candidate for the new-quest planning demonstration.
 
@@ -120,4 +120,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The prepared Enemy Targeting quest is `COMPLETE`; see its [plan](docs/plans/2026-07-13-enemy-targeting-preparation.md) and [closeout](docs/closeouts/2026-07-13-enemy-targeting-preparation-closeout.md). The next smallest task is the command-line Codex execution loop for this one quest, using the official SDK before dashboard work.
+The Enemy Targeting command-line execution milestone is `COMPLETE`; see its [plan](docs/plans/2026-07-13-enemy-targeting-cli.md), [review](docs/reviews/2026-07-13-enemy-targeting-cli-review.md), and [closeout](docs/closeouts/2026-07-13-enemy-targeting-cli-closeout.md). Next, add command-line game launch plus explicit creator confirmation, and persist completion only after the existing automated `CONDITIONAL PASS` and “I saw it work” gate. Dashboard work remains after that bounded completion loop.

@@ -82,6 +82,18 @@ npm run demo:play
 
 The first prepare asks for explicit permission through `confirm-download`, verifies the pinned Godot 4.7 archive before extraction, and caches it for later runs. No manual Godot installation or path lookup is required.
 
+### Run the live Enemy Targeting quest
+
+After preparation, start the first command-line Forge vertical slice:
+
+```powershell
+npm run quest:run -- enemy-targeting
+```
+
+Forge validates the prepared quest and plan, explains the bounded three-file change, and waits for you to type `APPROVE`. It then uses the official `@openai/codex-sdk`, shows five plain-language stages, verifies the real Git diff and Godot result, and writes evidence under the demo workspace's `.forge/runs/` directory. A successful automated run returns `CONDITIONAL PASS`; the roadmap stays unchanged until a later milestone records that you launched the game and saw the mechanic work.
+
+For an explicitly approved non-interactive live run, use `npm run quest:run -- enemy-targeting confirm-run`. Ordinary `npm test` runs use a fake SDK and do not contact Codex. See [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md) for reset, safety, and result details.
+
 ## Recommended test path
 
 1. Launch Forge.

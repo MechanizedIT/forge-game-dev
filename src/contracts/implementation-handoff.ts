@@ -32,6 +32,8 @@ export const implementationHandoffSchema = z
     questId: slugSchema,
     stage: z.literal("REVIEW"),
     approvedPlan: relativePathSchema,
+    codexThreadId: nonEmptyStringSchema,
+    summary: nonEmptyStringSchema,
     status: z.enum(["succeeded", "failed", "partial"]),
     changes: z.array(fileChangeSchema),
     verificationRuns: z.array(verificationRunSchema),

@@ -3,11 +3,14 @@
   "runId": "replace-with-run-id",
   "questId": "enemy-targeting",
   "stage": "REVIEW",
-  "verdict": "needs_play_check",
+  "verdict": "CONDITIONAL PASS",
   "criteria": [
-    { "criterionId": "AC-1", "result": "passed", "evidence": ["VERIFY-1"] },
-    { "criterionId": "AC-2", "result": "passed", "evidence": ["VERIFY-1"] },
-    { "criterionId": "AC-3", "result": "passed", "evidence": ["VERIFY-1"] }
+    { "criterionId": "AC-1", "result": "passed", "evidence": ["VERIFY-2"] },
+    { "criterionId": "AC-2", "result": "passed", "evidence": ["VERIFY-2"] },
+    { "criterionId": "AC-3", "result": "passed", "evidence": ["VERIFY-2"] },
+    { "criterionId": "AC-4", "result": "passed", "evidence": ["VERIFY-2"] },
+    { "criterionId": "AC-5", "result": "passed", "evidence": ["VERIFY-1", "VERIFY-2"] },
+    { "criterionId": "AC-6", "result": "pending_play", "evidence": ["VERIFY-3"] }
   ],
   "scope": { "result": "passed", "unexpectedFiles": [] },
   "playCheck": { "result": "not_run", "evidence": "Launch the game and confirm the visible behavior." },

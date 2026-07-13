@@ -4,12 +4,14 @@
   "questId": "enemy-targeting",
   "stage": "REVIEW",
   "approvedPlan": ".forge/runs/replace-with-run-id/plan.json",
+  "codexThreadId": "replace-with-codex-thread-id",
+  "summary": "Codex implemented the approved Enemy Targeting plan in the bounded demo workspace.",
   "status": "succeeded",
   "changes": [
-    { "path": "game/enemy.gd", "summary": "Added detection and chase behavior." }
+    { "path": "scripts/enemy.gd", "summary": "Added detection and chase behavior." }
   ],
   "verificationRuns": [
-    { "verificationId": "VERIFY-1", "command": ["godot", "--headless", "--path", "game", "--script", "res://tests/verify_enemy_targeting.gd"], "exitCode": 0, "evidence": "The automated scene check observed idle and chase states and exited successfully." }
+    { "verificationId": "VERIFY-2", "command": ["npm", "run", "godot:verify"], "exitCode": 0, "evidence": "The automated scene check observed idle, detection, chase, and player movement." }
   ],
   "deviations": [],
   "remainingRisks": ["The visible play check still requires the creator to launch the game."]

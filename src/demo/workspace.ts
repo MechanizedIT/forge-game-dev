@@ -1,6 +1,7 @@
 import { access, cp, mkdir, rename, rm, stat } from "node:fs/promises";
 import path from "node:path";
 
+import { initializeWorkspaceGitBaseline } from "./git-workspace.js";
 import { baselineFixturePath, resolveDemoWorkspace, resolveForgeHome } from "./paths.js";
 
 export interface WorkspaceOptions {
@@ -67,6 +68,7 @@ export async function prepareDemoWorkspace(
 
   try {
     await cp(fixturePath, temporaryPath, { recursive: true, errorOnExist: true, force: false });
+    await initializeWorkspaceGitBaseline(temporaryPath);
     await rename(temporaryPath, workspacePath);
     return { status: "created", workspacePath };
   } catch (error) {
@@ -97,6 +99,7 @@ export async function resetDemoWorkspace(
   const replacementPath = temporarySibling(workspacePath, "resetting");
   try {
     await cp(fixturePath, replacementPath, { recursive: true, errorOnExist: true, force: false });
+    await initializeWorkspaceGitBaseline(replacementPath);
     await rm(workspacePath, { recursive: true, force: true });
     await rename(replacementPath, workspacePath);
     return { status: "reset", workspacePath };
