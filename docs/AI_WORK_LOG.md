@@ -157,3 +157,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; reported in the final task response
 - **Session ID:** Current Codex task; no new live nested Codex turn was required
 - **Next step:** Connect the proven command-line workflow and persisted quest state to the visual roadmap dashboard.
+
+---
+
+## 2026-07-13 — Define the Build Week dashboard capability and screen map
+
+- **Actor/model surface:** Codex product-design and repository review in the Codex desktop app
+- **Workflow stage:** Plan / Review / Document
+- **Human decisions:** Requested a planning-only dashboard source of truth for the OpenAI Build Week / Devpost prototype; required the design to foreground bounded intent, project context, plan review, meaningful approval, real Codex delegation, understandable progress, evidence, play, and recorded completion; prohibited dashboard code changes.
+- **AI contribution:** Reviewed the governing product, roadmap, architecture, status, quest, plan, contract, runner, and evidence sources; separated implemented, planned, deferred, and owner-review capabilities; defined the user-visible state model, information architecture, main-screen anatomy, screen and overlay map, three judge-critical states, deterministic demonstration path, scope boundary, and next design sequence. Recorded that the current repository contains no React UI, landmark contract, storyboard, or separate dashboard/workspace vision artifact rather than treating those materials as implemented.
+- **Files changed:** `docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`, `docs/AI_WORK_LOG.md`
+- **Verification:** Cross-checked capability claims against repository artifacts and current Git history; verified all 12 requested document sections, Mermaid screen maps, the capability/status distinctions, and the absence of application-code changes; `git diff --check` and local Markdown-link checks passed.
+- **Commit:** Not created in this task
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Produce low-fidelity wireframes for World and Quest Brief in the three key states, plus blocked and failed-verification variants, before visual design or React implementation.
