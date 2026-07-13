@@ -42,7 +42,7 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Reviewed the governing documents for contradictions and excess scope; reconciled current-state wording and roadmap status; recommended a single-process local architecture; drafted seven reusable artifact templates; sequenced required work and stretch goals; defined the first bounded implementation task and approval decisions.
 - **Files changed:** `README.md`, `ROADMAP.md`, `docs/BUILD_PLAN.md`, `docs/templates/*`, `docs/AI_WORK_LOG.md`
 - **Verification:** PowerShell `ConvertFrom-Json` parsed all six JSON templates; required-file checks passed; `git diff --check` passed; a `git status --short` scope check confirmed the change set is documentation-only.
-- **Commit:** `pending`
+- **Commit:** `ec2e659cc8c3344094bc04fda7368ccf3a9ad3d5`
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Obtain creator approval for the five decisions in `docs/BUILD_PLAN.md`, then implement only the typed contract layer and its tests.
 
@@ -56,6 +56,20 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Added the minimal Node/TypeScript package; implemented strict Zod schemas with inferred types for six JSON artifacts; added deterministic workflow transition validation; tested the prepared Enemy Targeting examples, exact state sets, rejected status values, invalid transitions, and single-owner state rules; updated architecture, roadmap, and closeout documentation.
 - **Files changed:** `.gitignore`, `package.json`, `package-lock.json`, `tsconfig.json`, `src/contracts/*`, `tests/contracts.test.ts`, `README.md`, `ROADMAP.md`, `docs/BUILD_PLAN.md`, `docs/templates/*`, `docs/handoffs/2026-07-13-contract-layer.md`, `docs/reviews/2026-07-13-contract-layer-review.md`, `docs/closeouts/2026-07-13-contract-layer-closeout.md`, `docs/AI_WORK_LOG.md`
 - **Verification:** `npm run check` passed: TypeScript compilation succeeded and 4 tests passed with 0 failures. Dependency installation audit reported 0 vulnerabilities. `git diff --check` passed.
-- **Commit:** `pending`
+- **Commit:** `ec2e659cc8c3344094bc04fda7368ccf3a9ad3d5`
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Select and approve the exact Godot version, portable download URL, and checksum before implementing the repeatable baseline fixture.
+
+---
+
+## 2026-07-13 — Plan the pinned Godot baseline fixture
+
+- **Actor/model surface:** Codex planning in the Codex desktop app
+- **Workflow stage:** Plan
+- **Human decisions:** Approved Godot 4.7 stable, Standard Windows x86_64, GDScript rather than .NET, the official portable ZIP, checksum verification before extraction, and a planning approval gate before implementation.
+- **AI contribution:** Confirmed the official release and artifact; retrieved the asset SHA-256 digest and metadata from the official `godotengine/godot-builds` release; proposed the bounded acquisition, persistent workspace, reset, minimal fixture, and headless verification task with exact acceptance criteria. No archive was downloaded and no product implementation began.
+- **Files changed:** `docs/plans/2026-07-13-godot-baseline-fixture.md`, `ROADMAP.md`, `docs/BUILD_PLAN.md`, contract closeout references, `docs/AI_WORK_LOG.md`
+- **Verification:** Official Godot archive page identifies 4.7 stable and Standard Windows x86_64. GitHub release metadata for asset ID `451176037` reports `Godot_v4.7-stable_win64.exe.zip`, 83,764,371 bytes, and `sha256:02a5312236f4e0209c78bcb2f52135b1963e6b8888c873c9cee81459e60bcd71`. Repository implementation remains unchanged after commit `ec2e659`.
+- **Commit:** `pending`
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Obtain creator approval for `docs/plans/2026-07-13-godot-baseline-fixture.md` before downloading or implementing anything.

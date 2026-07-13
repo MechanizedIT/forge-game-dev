@@ -4,7 +4,7 @@
 - **Review verdict:** `PASS`
 - **Review result:** [`../reviews/2026-07-13-contract-layer-review.md`](../reviews/2026-07-13-contract-layer-review.md)
 - **Implementation handoff:** [`../handoffs/2026-07-13-contract-layer.md`](../handoffs/2026-07-13-contract-layer.md)
-- **Commit:** Pending creation of the clean contract-layer commit
+- **Commit:** `ec2e659cc8c3344094bc04fda7368ccf3a9ad3d5`
 
 ## TL;DR
 
@@ -21,7 +21,7 @@ The approved contract-only task is complete. Forge has strict validated artifact
 ## Remaining risks
 
 - Schema migrations should wait until real runtime artifacts prove they are needed.
-- The Godot build and Codex SDK remain unimplemented.
+- The approved Godot build and Codex SDK remain unimplemented.
 
 ## Next bounded action
 

@@ -128,4 +128,4 @@ Approved by the creator on 2026-07-13:
 4. **Completion gate:** require automated verification plus the user choosing **I saw it work** after game launch before marking the quest complete.
 5. **Fallback truthfulness:** make sanitized replay part of judge reliability, visibly label it as replay, and never treat it as live evidence.
 
-The exact Godot version, download URL, and checksum remain unapproved and must be selected in task 2 before adding download or execution logic.
+Godot 4.7 stable Standard Windows x86_64 with GDScript is approved. The official archive, release-asset checksum source, and proposed task are recorded in [`plans/2026-07-13-godot-baseline-fixture.md`](plans/2026-07-13-godot-baseline-fixture.md). Implementation remains gated on approval of that bounded task.

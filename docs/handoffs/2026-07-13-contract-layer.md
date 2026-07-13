@@ -31,7 +31,7 @@ Forge now has strict, inferred TypeScript contracts for the six JSON artifact ty
 ## Remaining risks
 
 - Schema version 1 may need a small migration strategy after the first real runtime artifacts exist; no migration framework is justified yet.
-- Godot version, portable download, and checksum remain intentionally undecided.
+- Godot was not part of this completed task; its pinned build was selected afterward for the next proposed task.
 - Codex SDK capabilities have not been exercised; that belongs to the later headless-runner task.
 
 ## Next bounded action

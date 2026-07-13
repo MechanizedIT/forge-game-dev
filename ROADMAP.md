@@ -119,4 +119,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Select and approve the exact Godot version, portable download URL, and checksum. After approval, scaffold only the repeatable baseline fixture and its headless smoke check; do not add Enemy Targeting yet.
+Workflow state: `PLAN`; implementation approval pending. The proposed task is to build the pinned Godot acquisition boundary and repeatable baseline fixture. See [`docs/plans/2026-07-13-godot-baseline-fixture.md`](docs/plans/2026-07-13-godot-baseline-fixture.md). Do not add Enemy Targeting yet.
