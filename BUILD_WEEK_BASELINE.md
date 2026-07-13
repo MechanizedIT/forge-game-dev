@@ -5,9 +5,9 @@
 - Repository: `https://github.com/MechanizedIT/forge-game-dev`
 - Visibility: Public
 - Submission period baseline date: 2026-07-13
-- Initial commit SHA: `RECORD_AFTER_REPOSITORY_CREATION`
+- Initial commit SHA: [`a8000d000693fbff6389176592e7f9ad855aa12d`](https://github.com/MechanizedIT/forge-game-dev/commit/a8000d000693fbff6389176592e7f9ad855aa12d)
 
-This file should be updated immediately after the initial scaffold commit. Git history remains the authoritative record of work completed during the submission period.
+The root commit contains only the five-file Build Week scaffold. Git history remains the authoritative record of work completed during the submission period.
 
 ## Prior Forge work
 

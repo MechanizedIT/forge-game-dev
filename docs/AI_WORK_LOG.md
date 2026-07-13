@@ -27,7 +27,7 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Human decisions:** Use the Forge name; create a new public `MechanizedIT/forge-game-dev` repository; target game creators; lead with a gamified roadmap and companion; make Enemy Targeting the golden-path quest; keep the workflow bounded; disclose the original Forge repository as background.
 - **AI contribution:** Synthesized prior planning into a judge-facing README, repository instructions, shortest-path roadmap, provenance baseline, and reusable work-log format.
 - **Files changed:** `README.md`, `AGENTS.md`, `ROADMAP.md`, `BUILD_WEEK_BASELINE.md`, `docs/AI_WORK_LOG.md`
-- **Verification:** Documentation reviewed for internal consistency; repository and initial commit verification pending.
-- **Commit:** `pending`
+- **Verification:** Documentation reviewed for internal consistency; public repository created; five expected files verified in the root commit.
+- **Commit:** [`a8000d000693fbff6389176592e7f9ad855aa12d`](https://github.com/MechanizedIT/forge-game-dev/commit/a8000d000693fbff6389176592e7f9ad855aa12d)
 - **Session ID:** Not applicable for the prior ChatGPT planning conversation; record the primary Codex `/feedback` ID once implementation begins.
-- **Next step:** Create the repository, record the initial commit SHA in the baseline and this entry, then ask Codex to review the contract and scaffold the minimal typed templates.
+- **Next step:** Ask Codex to review the contract and scaffold the minimal typed templates.
