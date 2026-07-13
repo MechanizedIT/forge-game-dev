@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "runId": "replace-with-run-id",
+  "questId": "enemy-targeting",
+  "revision": 1,
+  "stage": "APPROVE",
+  "summary": "Add the smallest detection and chase behavior to the existing enemy.",
+  "assumptions": ["The baseline player and enemy movement already work."],
+  "steps": [
+    {
+      "id": "STEP-1",
+      "description": "Add detection state and bounded chase movement to the enemy script.",
+      "files": ["game/enemy.gd"],
+      "criteria": ["AC-1", "AC-2"]
+    },
+    {
+      "id": "STEP-2",
+      "description": "Run the prepared headless verification.",
+      "files": [],
+      "criteria": ["AC-3"]
+    }
+  ],
+  "verification": ["VERIFY-1", "VERIFY-2"],
+  "excluded": ["Combat", "General enemy AI framework", "Unrelated refactors"],
+  "openDecisions": []
+}

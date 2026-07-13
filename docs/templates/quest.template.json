@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "questId": "enemy-targeting",
+  "title": "Enemy Targeting",
+  "summary": "Give the enemy a clear detection range and chase behavior.",
+  "playerOutcome": "When the player moves close enough, the enemy visibly turns and chases them; outside that range it remains idle.",
+  "scope": {
+    "included": ["Enemy detection", "Idle-to-chase transition", "Visible chase behavior"],
+    "excluded": ["Combat damage", "Pathfinding around complex obstacles", "Additional enemy types"]
+  },
+  "contextFiles": ["game/project.godot", "game/enemy.gd", "game/main.tscn"],
+  "acceptanceCriteria": [
+    { "id": "AC-1", "text": "The enemy remains idle while the player is outside the detection range." },
+    { "id": "AC-2", "text": "The enemy chases the player while the player is inside the detection range." },
+    { "id": "AC-3", "text": "The Godot project passes the pinned headless verification command." }
+  ],
+  "verification": [
+    { "id": "VERIFY-1", "kind": "command", "argv": ["godot", "--headless", "--path", "game", "--script", "res://tests/verify_enemy_targeting.gd"] },
+    { "id": "VERIFY-2", "kind": "play", "instruction": "Move the player into and out of the enemy's detection range and observe idle and chase behavior." }
+  ],
+  "preparedPlan": ".forge/plans/enemy-targeting.json"
+}

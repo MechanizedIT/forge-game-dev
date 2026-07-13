@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "projectId": "sample-game",
+  "displayName": "Sample Game",
+  "engine": {
+    "kind": "godot",
+    "version": "PIN-BEFORE-IMPLEMENTATION",
+    "projectFile": "game/project.godot"
+  },
+  "artifacts": {
+    "roadmap": ".forge/roadmap.json",
+    "state": ".forge/state.json",
+    "quests": ".forge/quests",
+    "plans": ".forge/plans",
+    "runs": ".forge/runs"
+  },
+  "commands": {
+    "verify": ["godot", "--headless", "--path", "game", "--script", "res://tests/verify_enemy_targeting.gd"],
+    "play": ["godot", "--path", "game"]
+  }
+}

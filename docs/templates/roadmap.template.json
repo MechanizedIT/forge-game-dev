@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "projectId": "sample-game",
+  "updatedAt": "2026-07-13T00:00:00Z",
+  "quests": [
+    {
+      "questId": "enemy-targeting",
+      "title": "Enemy Targeting",
+      "summary": "Make the enemy notice and chase the nearby player.",
+      "state": "available",
+      "dependsOn": [],
+      "position": { "column": 1, "row": 1 }
+    }
+  ]
+}

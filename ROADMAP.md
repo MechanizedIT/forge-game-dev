@@ -15,14 +15,17 @@ A judge can install Forge with minimal steps, open the bundled example project, 
 ### Milestone 0 — Freeze the contract
 
 - [x] Create lean judge-facing repository documents.
-- [ ] Record the initial commit SHA in `BUILD_WEEK_BASELINE.md`.
-- [ ] Define project, roadmap, quest, plan, handoff, review, and work-log templates.
-- [ ] Separate required work from stretch goals.
+- [x] Record the initial commit SHA in `BUILD_WEEK_BASELINE.md`.
+- [x] Define project, roadmap, quest, plan, handoff, review, and work-log templates.
+- [x] Separate required work from stretch goals.
 
 **Exit:** Codex can identify the first bounded implementation task without loading the prior Forge repository.
 
+Architecture, sequencing, exact first-task acceptance criteria, and approval decisions are recorded in [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md).
+
 ### Milestone 1 — Prove one quest from the command line
 
+- [x] Scaffold strict typed contracts and validate the prepared examples.
 - [ ] Create the smallest playable Godot sample project.
 - [ ] Add a prepared **Enemy Targeting** quest and acceptance criteria.
 - [ ] Implement focused plan, build, and closeout skills.
@@ -99,7 +102,7 @@ A judge can install Forge with minimal steps, open the bundled example project, 
 
 Stretch work must not begin until the required judge path is reliable.
 
-## First bounded implementation task
+## First bounded implementation task — complete
 
 Scaffold the minimal repository structure and typed contracts for the project manifest, roadmap, quest, implementation plan, implementation handoff, review result, and AI work-log entry. Do not implement the dashboard or Godot integration in this task.
 
@@ -111,3 +114,9 @@ Acceptance criteria:
 - Required and stretch fields are clearly separated.
 - Example data loads in an automated test.
 - `docs/AI_WORK_LOG.md` records the work and verification.
+
+Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/reviews/2026-07-13-contract-layer-review.md) and [closeout artifact](docs/closeouts/2026-07-13-contract-layer-closeout.md).
+
+## Next bounded task
+
+Select and approve the exact Godot version, portable download URL, and checksum. After approval, scaffold only the repeatable baseline fixture and its headless smoke check; do not add Enemy Targeting yet.

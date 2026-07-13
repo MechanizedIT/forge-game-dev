@@ -37,9 +37,9 @@ Play the result
 Complete the quest
 ```
 
-The included Godot project starts with a visual roadmap and several prepared gameplay quests. Select **Enemy Targeting** and the Forge companion explains what was planned, what Codex will change, and how the result will be verified. The creator can approve the plan, refine it, ask a question, or choose another direction.
+The planned bundled Godot experience starts with a visual roadmap and several prepared gameplay quests. Select **Enemy Targeting** and the Forge companion will explain what was planned, what Codex will change, and how the result will be verified. The creator can approve the plan, refine it, ask a question, or choose another direction.
 
-After approval, Forge gives Codex a bounded work packet, translates technical activity into understandable progress, verifies the result, launches the game, and updates the roadmap with satisfying quest-completion feedback.
+After approval, Forge will give Codex a bounded work packet, translate technical activity into understandable progress, verify the result, launch the game, and update the roadmap with satisfying quest-completion feedback.
 
 ## Judge quick start
 
@@ -158,6 +158,7 @@ Forge existed before Build Week as a broader product concept and experimental re
 - Prior project: [MechanizedIT/Project-Forge](https://github.com/MechanizedIT/Project-Forge)
 - Baseline and prior-work disclosure: [`BUILD_WEEK_BASELINE.md`](BUILD_WEEK_BASELINE.md)
 - Implementation roadmap: [`ROADMAP.md`](ROADMAP.md)
+- Architecture and sequenced build plan: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md)
 - AI work log: [`docs/AI_WORK_LOG.md`](docs/AI_WORK_LOG.md)
 
 The judge testing path is fully contained in this repository; the prior project is background only.
