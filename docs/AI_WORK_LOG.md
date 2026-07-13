@@ -70,6 +70,6 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Confirmed the official release and artifact; retrieved the asset SHA-256 digest and metadata from the official `godotengine/godot-builds` release; proposed the bounded acquisition, persistent workspace, reset, minimal fixture, and headless verification task with exact acceptance criteria. No archive was downloaded and no product implementation began.
 - **Files changed:** `docs/plans/2026-07-13-godot-baseline-fixture.md`, `ROADMAP.md`, `docs/BUILD_PLAN.md`, contract closeout references, `docs/AI_WORK_LOG.md`
 - **Verification:** Official Godot archive page identifies 4.7 stable and Standard Windows x86_64. GitHub release metadata for asset ID `451176037` reports `Godot_v4.7-stable_win64.exe.zip`, 83,764,371 bytes, and `sha256:02a5312236f4e0209c78bcb2f52135b1963e6b8888c873c9cee81459e60bcd71`. Repository implementation remains unchanged after commit `ec2e659`.
-- **Commit:** `pending`
+- **Commit:** `1951ef5eec9c01cfab7119e1027b96282e9fe573`
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Obtain creator approval for `docs/plans/2026-07-13-godot-baseline-fixture.md` before downloading or implementing anything.
