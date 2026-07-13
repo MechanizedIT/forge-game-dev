@@ -37,7 +37,7 @@ Play the result
 Complete the quest
 ```
 
-The planned bundled Godot experience starts with a visual roadmap and several prepared gameplay quests. Select **Enemy Targeting** and the Forge companion will explain what was planned, what Codex will change, and how the result will be verified. The creator can approve the plan, refine it, ask a question, or choose another direction.
+The current bundled Godot experience starts with a visual roadmap backed by one real prepared quest. Select **Enemy Targeting** and the Forge companion explains what was planned, what Codex may change, and how the result will be verified. The creator can review the validated plan and explicitly approve or leave without starting work. Plan refinement and contextual questions remain later milestones.
 
 After approval, Forge will give Codex a bounded work packet, translate technical activity into understandable progress, verify the result, launch the game, and update the roadmap with satisfying quest-completion feedback.
 
@@ -53,7 +53,7 @@ After approval, Forge will give Codex a bounded work packet, translate technical
 
 Godot does not need to be installed in advance. Forge will offer to download a pinned portable build after receiving permission.
 
-### Install and launch
+### Target published launch
 
 ```bash
 npx forge-game-dev demo
@@ -61,18 +61,21 @@ npx forge-game-dev demo
 
 > This is the target judge command. The published package name and command will be verified before submission.
 
-### Repository fallback
+### Current repository launch
 
-```bash
+```powershell
 git clone https://github.com/MechanizedIT/forge-game-dev.git
 cd forge-game-dev
 npm install
-npm run demo
+npm run demo:prepare -- confirm-download
+npm run forge
 ```
+
+The prepare command performs the first-time pinned Godot setup with explicit download consent. After that, the single launch command is `npm run forge`; it builds the dashboard, starts the local Node/TypeScript host, and opens Forge Workshop in the browser.
 
 To run only the current Godot fixture foundation, see [`docs/GODOT_FIXTURE.md`](docs/GODOT_FIXTURE.md).
 
-Current repository setup for the playable baseline:
+To run only the playable baseline:
 
 ```powershell
 npm install
@@ -82,9 +85,17 @@ npm run demo:play
 
 The first prepare asks for explicit permission through `confirm-download`, verifies the pinned Godot 4.7 archive before extraction, and caches it for later runs. No manual Godot installation or path lookup is required.
 
+### Run the connected Forge Workshop dashboard
+
+```powershell
+npm run forge
+```
+
+The dashboard reads the real persistent workspace, prepared quest and plan, roadmap, review evidence, and completion artifacts. **Build with Codex** starts the existing official SDK runner exactly once. Friendly progress arrives live; raw sanitized events stay behind technical disclosure. **Play the result** launches the verified Godot workspace and completion persists only after the creator explicitly chooses **I saw it work**.
+
 ### Run the live Enemy Targeting quest
 
-After preparation, start the first command-line Forge vertical slice:
+The original command-line golden path remains available:
 
 ```powershell
 npm run quest:run -- enemy-targeting
@@ -96,7 +107,7 @@ For an explicitly approved non-interactive SDK run, use `npm run quest:run -- en
 
 ## Recommended test path
 
-1. Launch Forge.
+1. Run `npm run forge`.
 2. Select the **Enemy Targeting** quest.
 3. Review the companion's explanation and implementation plan.
 4. Choose **Build with Codex** and approve the mission.
@@ -104,6 +115,8 @@ For an explicitly approved non-interactive SDK run, use `npm run quest:run -- en
 6. Launch the Godot game when prompted.
 7. Move near the enemy and confirm it detects and chases the player.
 8. Return to Forge to see verification evidence and the completed roadmap node.
+
+If verification, launch, rejection, or cancellation fails, Forge preserves the evidence and leaves the roadmap incomplete. The dashboard does not contain a mocked judge-state controller; ordinary automated tests use injected fake SDK and launcher dependencies offline.
 
 The complete judge path is designed to take only a few minutes.
 

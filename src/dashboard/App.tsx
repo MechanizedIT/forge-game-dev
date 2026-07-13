@@ -1,196 +1,336 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { acceptanceProof, allowedFiles, dashboardStateLabels, excludedWork, implementationSteps, progressStages, type DashboardState } from "./data.js";
-import { ActionDock, ForgeCompanion, Icon, ProjectHeader, PrototypeSwitcher, TechnicalDetails, WorldMap } from "./components.js";
+import type { ImplementationPlan, Quest } from "../contracts/index.js";
+import {
+  approveQuest,
+  confirmCreatorResult,
+  launchGame,
+  loadDashboard,
+  subscribeToDashboard,
+} from "./api.js";
+import {
+  ActionDock,
+  ForgeCompanion,
+  Icon,
+  ProjectHeader,
+  TechnicalDetails,
+  WorldMap,
+} from "./components.js";
+import {
+  dashboardProgressStages,
+  type CreatorConfirmation,
+  type DashboardSnapshot,
+} from "./shared.js";
 
-function CurrentQuestCard({ onReview }: { onReview: () => void }) {
+type View = "World" | "Proof" | "Chronicle" | "Brief";
+
+function approvedFiles(plan: ImplementationPlan): string[] {
+  return [...new Set(plan.steps.flatMap((step) => step.files))];
+}
+
+function playInstruction(quest: Quest): string {
+  return (
+    quest.verification.find((verification) => verification.kind === "play")?.instruction ??
+    "Play the prepared scene and confirm the visible Enemy Targeting behavior."
+  );
+}
+
+function CurrentQuestCard({ snapshot, onReview }: {
+  snapshot: DashboardSnapshot;
+  onReview: () => void;
+}) {
+  const roadmapQuest = snapshot.roadmap.quests.find(
+    (quest) => quest.questId === snapshot.quest.questId,
+  );
+  const completed = roadmapQuest?.state === "completed";
   return (
     <section className="current-quest surface raised" aria-labelledby="current-quest-title">
-      <div className="quest-icon"><Icon name="spark" /></div>
+      <div className="quest-icon"><Icon name={completed ? "check" : "spark"} /></div>
       <div className="current-quest-copy">
-        <div className="label-row"><span className="eyebrow">Current quest</span><span className="state-pill ember">Available</span></div>
-        <h2 id="current-quest-title">Enemy Targeting</h2>
-        <p className="outcome-copy">Make the idle red enemy notice and chase the nearby player, then stop when the player retreats.</p>
-        <p className="why-copy"><strong>Why now:</strong> this is the smallest change that turns the static sample scene into a responsive encounter.</p>
+        <div className="label-row"><span className="eyebrow">Current quest</span><span className={`state-pill ${completed ? "success" : "ember"}`}>{completed ? "Completed" : roadmapQuest?.state ?? "Available"}</span></div>
+        <h2 id="current-quest-title">{snapshot.quest.title}</h2>
+        <p className="outcome-copy">{snapshot.quest.playerOutcome}</p>
+        <p className="why-copy"><strong>Why now:</strong> {snapshot.quest.whyItMatters}</p>
       </div>
-      <button className="text-link" onClick={onReview} type="button">Open brief <Icon name="arrow" /></button>
+      <button className="text-link" onClick={onReview} type="button">{completed ? "View proof" : "Open brief"} <Icon name="arrow" /></button>
     </section>
   );
 }
 
-function ProofPreview() {
+function ProofPreview({ snapshot }: { snapshot: DashboardSnapshot }) {
+  const commands = snapshot.quest.verification.filter((item) => item.kind === "command");
   return (
     <section className="proof-preview surface" aria-labelledby="proof-preview-title">
-      <div className="section-heading compact"><div><p className="eyebrow">Proof preview</p><h2 id="proof-preview-title">How Forge will know</h2></div><span className="planned-tag">Planned proof</span></div>
+      <div className="section-heading compact"><div><p className="eyebrow">Proof preview</p><h2 id="proof-preview-title">How Forge will know</h2></div><span className="planned-tag">{snapshot.review ? "Recorded proof" : "Planned proof"}</span></div>
       <div className="proof-preview-grid">
-        <div><span className="proof-icon blue"><Icon name="code" /></span><h3>Automated</h3><p>Project checks plus deterministic Godot signals.</p></div>
-        <div><span className="proof-icon gold"><Icon name="play" /></span><h3>Creator</h3><p>You will play and confirm the visible state change.</p></div>
+        <div><span className="proof-icon blue"><Icon name="code" /></span><h3>Automated</h3><p>{commands.length} approved checks plus deterministic Godot signals.</p></div>
+        <div><span className="proof-icon gold"><Icon name="play" /></span><h3>Creator</h3><p>You play and explicitly confirm the visible state change.</p></div>
       </div>
     </section>
   );
 }
 
-function WorldReady({ onReview }: { onReview: () => void }) {
+function WorldReady({ snapshot, onReview }: {
+  snapshot: DashboardSnapshot;
+  onReview: () => void;
+}) {
+  const complete = snapshot.completion !== null;
   return (
     <>
-      <div className="page-intro"><div><p className="eyebrow">World</p><h2>Your next playable change is ready to review.</h2></div><span className="intro-note">Nothing changes before approval</span></div>
+      <div className="page-intro"><div><p className="eyebrow">World</p><h2>{complete ? "The world remembers your completed quest." : "Your next playable change is ready to review."}</h2></div><span className="intro-note">{complete ? "Completion loaded from the workspace" : "Nothing changes before approval"}</span></div>
+      {snapshot.notice && <p className="prototype-notice" role="status">{snapshot.notice}</p>}
       <div className="dashboard-grid">
-        <main className="main-column"><CurrentQuestCard onReview={onReview} /><WorldMap /><ProofPreview /></main>
+        <main className="main-column"><CurrentQuestCard snapshot={snapshot} onReview={onReview} /><WorldMap roadmap={snapshot.roadmap} /><ProofPreview snapshot={snapshot} /></main>
         <div className="side-column">
-          <ForgeCompanion title="The world is ready"><p>The player can already move, but the enemy never reacts. Enemy Targeting is the smallest next quest that makes this world feel alive.</p><p>I’ll show you the boundary and proof before anything changes.</p></ForgeCompanion>
-          <section className="workbench-note surface"><span className="proof-icon blue"><Icon name="file" /></span><div><p className="eyebrow">Project foundation</p><h3>Prepared and verified</h3><p>Sample scene, player movement, and resettable fixture are ready.</p></div></section>
+          <ForgeCompanion title={complete ? "The world remembers" : "The world is ready"} tone={complete ? "success" : "ember"}><p>{complete ? snapshot.completion?.summary : snapshot.quest.whyItMatters}</p><p>{complete ? "The roadmap and final review were reloaded from persisted Forge artifacts." : "I’ll show you the boundary and proof before anything changes."}</p></ForgeCompanion>
+          <section className="workbench-note surface"><span className="proof-icon blue"><Icon name="file" /></span><div><p className="eyebrow">Project workspace</p><h3>Prepared and validated</h3><p>{snapshot.project.workspaceStatus === "created" ? "A fresh persistent workspace was prepared." : "Your existing persistent workspace was preserved."}</p></div></section>
         </div>
       </div>
-      <ActionDock consequence="Review the visible outcome, three-file boundary, and proof plan." primaryLabel="Review Enemy Targeting" onPrimary={onReview} />
+      <ActionDock consequence={complete ? "Inspect the persisted result and creator confirmation." : "Review the visible outcome, approved boundary, and proof plan."} primaryLabel={complete ? "View completed proof" : `Review ${snapshot.quest.title}`} onPrimary={onReview} />
     </>
   );
 }
 
-function NowAfterComparison() {
+function NowAfterComparison({ quest }: { quest: Quest }) {
   return (
     <section className="now-after surface" aria-labelledby="outcome-title">
-      <div className="section-heading compact"><div><p className="eyebrow">Quest outcome</p><h2 id="outcome-title">Turn a static enemy into a clear reaction</h2></div><span className="state-pill blue">Revision 1</span></div>
+      <div className="section-heading compact"><div><p className="eyebrow">Quest outcome</p><h2 id="outcome-title">Turn a static enemy into a clear reaction</h2></div><span className="state-pill blue">Validated quest</span></div>
       <div className="comparison-grid">
-        <div className="comparison-side now"><span>Now</span><h3>The enemy never reacts</h3><p>The red enemy is visible, but it always stands still and never detects the player.</p></div>
+        <div className="comparison-side now"><span>Now</span><h3>Current baseline</h3><p>{quest.baselineBehavior}</p></div>
         <div className="comparison-arrow" aria-hidden="true"><Icon name="arrow" /></div>
-        <div className="comparison-side after"><span>After</span><h3>It notices, chases, and resets</h3><p>Within 220 pixels it switches to CHASING and moves toward the player, then returns to IDLE outside range.</p></div>
+        <div className="comparison-side after"><span>After</span><h3>Expected behavior</h3><p>{quest.expectedBehavior}</p></div>
       </div>
     </section>
   );
 }
 
-function QuestBrief({ onBuild, onBack }: { onBuild: () => void; onBack: () => void }) {
-  const [notice, setNotice] = useState("");
+function QuestBrief({ snapshot, busy, onBuild, onBack }: {
+  snapshot: DashboardSnapshot;
+  busy: boolean;
+  onBuild: () => void;
+  onBack: () => void;
+}) {
+  const files = approvedFiles(snapshot.plan);
   return (
     <>
       <div className="page-intro brief-intro">
-        <div><button className="back-link" onClick={onBack} type="button">← World</button><p className="eyebrow">Quest brief · Awaiting approval</p><h2>Enemy Targeting</h2><p>Make the enemy respond clearly when the player enters and leaves its range.</p></div>
-        <span className="approval-shield"><Icon name="check" /> No open decisions</span>
+        <div><button className="back-link" onClick={onBack} type="button">← World</button><p className="eyebrow">Quest brief · Awaiting approval</p><h2>{snapshot.quest.title}</h2><p>{snapshot.quest.playerOutcome}</p></div>
+        <span className="approval-shield"><Icon name="check" /> {snapshot.plan.openDecisions.length === 0 ? "No open decisions" : `${snapshot.plan.openDecisions.length} open decisions`}</span>
       </div>
       <div className="dashboard-grid brief-grid">
         <main className="main-column">
-          <NowAfterComparison />
+          <NowAfterComparison quest={snapshot.quest} />
           <section className="plan-card surface" aria-labelledby="plan-title">
-            <div className="section-heading"><div><p className="eyebrow">Implementation plan</p><h2 id="plan-title">Four bounded steps</h2></div><span className="planned-tag">Planned work</span></div>
-            <ol className="plan-steps">{implementationSteps.map((step, index) => <li key={step.title}><span className="step-number">0{index + 1}</span><div><h3>{step.title}</h3><p>{step.description}</p><code>{step.file}</code></div></li>)}</ol>
+            <div className="section-heading"><div><p className="eyebrow">Implementation plan · Revision {snapshot.plan.revision}</p><h2 id="plan-title">{snapshot.plan.summary}</h2></div><span className="planned-tag">Approved artifact</span></div>
+            <ol className="plan-steps">{snapshot.plan.steps.map((step, index) => <li key={step.id}><span className="step-number">{String(index + 1).padStart(2, "0")}</span><div><h3>{step.id}</h3><p>{step.description}</p><code>{step.files.length > 0 ? step.files.join(", ") : "No additional files"}</code></div></li>)}</ol>
           </section>
           <section className="scope-grid">
-            <div className="surface scope-card allowed"><div className="section-heading compact"><div><p className="eyebrow">Allowed boundary</p><h2>Exactly three files</h2></div><span className="file-count">3</span></div><ul className="file-list">{allowedFiles.map((file) => <li key={file}><Icon name="file" /><code>{file}</code></li>)}</ul></div>
-            <div className="surface scope-card excluded"><p className="eyebrow">Explicitly excluded</p><h2>Not part of this quest</h2><ul className="quiet-list">{excludedWork.map((item) => <li key={item}>{item}</li>)}</ul></div>
+            <div className="surface scope-card allowed"><div className="section-heading compact"><div><p className="eyebrow">Allowed boundary</p><h2>Exactly {files.length} files</h2></div><span className="file-count">{files.length}</span></div><ul className="file-list">{files.map((file) => <li key={file}><Icon name="file" /><code>{file}</code></li>)}</ul></div>
+            <div className="surface scope-card excluded"><p className="eyebrow">Explicitly excluded</p><h2>Not part of this quest</h2><ul className="quiet-list">{snapshot.plan.excluded.map((item) => <li key={item}>{item}</li>)}</ul></div>
           </section>
           <section className="proof-plan surface">
-            <div className="section-heading compact"><div><p className="eyebrow">Proof plan</p><h2>Two kinds of evidence</h2></div><span className="planned-tag">Not run yet</span></div>
-            <div className="proof-plan-grid"><div><span className="proof-icon blue"><Icon name="code" /></span><div><h3>Automated proof</h3><p>Repository checks and headless Godot checks for idle, detection, chase, and player movement.</p></div></div><div><span className="proof-icon gold"><Icon name="play" /></span><div><h3>Creator proof</h3><p>Play the scene and observe IDLE → CHASING → IDLE before Forge completes the quest.</p></div></div></div>
-            <TechnicalDetails label="View exact checks and assumptions"><p><code>npm run check</code></p><p><code>npm run godot:verify</code></p><p>Assumption: direct movement is sufficient because the sample scene has no chase obstacles.</p></TechnicalDetails>
+            <div className="section-heading compact"><div><p className="eyebrow">Proof plan</p><h2>Automated checks plus creator play</h2></div><span className="planned-tag">Not run yet</span></div>
+            <div className="proof-plan-grid"><div><span className="proof-icon blue"><Icon name="code" /></span><div><h3>Automated proof</h3><p>{snapshot.quest.verification.filter((item) => item.kind === "command").map((item) => item.argv.join(" ")).join(" and ")}</p></div></div><div><span className="proof-icon gold"><Icon name="play" /></span><div><h3>Creator proof</h3><p>{playInstruction(snapshot.quest)}</p></div></div></div>
+            <TechnicalDetails label="View exact assumptions and criteria"><ul className="quiet-list">{snapshot.plan.assumptions.map((item) => <li key={item}>{item}</li>)}</ul>{snapshot.quest.acceptanceCriteria.map((criterion) => <p key={criterion.id}><code>{criterion.id}</code> {criterion.text}</p>)}</TechnicalDetails>
           </section>
-          {notice && <p className="prototype-notice" role="status">{notice}</p>}
         </main>
-        <div className="side-column"><ForgeCompanion title="A small, visible change" tone="blue"><p>I’ve reduced this to one visible behavior and three files. Forge will check the mechanics automatically, then ask you to play it.</p></ForgeCompanion><section className="approval-boundary surface"><div className="boundary-icon"><Icon name="check" /></div><p className="eyebrow">Approval boundary</p><h3>Nothing has changed yet.</h3><p>Building snapshots this plan and allows Codex to edit only the three files shown here.</p></section></div>
+        <div className="side-column"><ForgeCompanion title="A small, visible change" tone="blue"><p>{snapshot.quest.whyItMatters}</p><p>Forge will compare the real diff and verification evidence with this exact plan.</p></ForgeCompanion><section className="approval-boundary surface"><div className="boundary-icon"><Icon name="check" /></div><p className="eyebrow">Approval boundary</p><h3>Nothing has changed yet.</h3><p>Building snapshots revision {snapshot.plan.revision} and lets Codex edit only the {files.length} files shown here.</p></section></div>
       </div>
-      <ActionDock consequence="Codex may change only the 3 files in this approved plan." secondaryLabel="Revise plan" onSecondary={() => setNotice("Plan refinement is intentionally not connected in this frontend prototype.")} primaryLabel="Build with Codex" primaryIcon="spark" onPrimary={onBuild} />
+      <ActionDock consequence={`Codex may change only the ${files.length} files in this approved plan.`} secondaryLabel="Back to world" onSecondary={onBack} primaryLabel={busy ? "Starting…" : "Build with Codex"} primaryIcon="spark" onPrimary={busy ? undefined : onBuild} />
     </>
   );
 }
 
-function ProgressStages({ current }: { current: number }) {
-  const explanations = ["Reading only the approved scene and scripts.", "Turning the approved plan into a focused Codex work packet.", "Codex is applying the bounded Enemy Targeting change.", "Forge is checking the actual diff and running both approved commands.", "Forge is mapping evidence back to every acceptance criterion."];
-  return <ol className="progress-stages">{progressStages.map((stage, index) => { const status = index < current ? "complete" : index === current ? "current" : "pending"; return <li className={status} key={stage}><span className="stage-marker">{status === "complete" ? <Icon name="check" /> : index + 1}</span><div><span className="stage-state">{status === "complete" ? "Done" : status === "current" ? "In progress" : "Waiting"}</span><h3>{stage}</h3>{status === "current" && <p>{explanations[index]}</p>}</div></li>; })}</ol>;
+function ProgressStages({ progress }: { progress: DashboardSnapshot["progress"] }) {
+  const current = Math.max(0, Math.min(progress.length - 1, dashboardProgressStages.length - 1));
+  const explanations = ["Reading only the approved scene and scripts.", "Turning the approved plan into a focused Codex work packet.", "Codex is applying the bounded Enemy Targeting change.", "Forge is checking the real diff and running the approved commands.", "Forge is mapping evidence back to every acceptance criterion."];
+  return <ol className="progress-stages">{dashboardProgressStages.map((stage, index) => { const status = progress.includes(stage) && index < current ? "complete" : index === current ? "current" : "pending"; return <li className={status} key={stage}><span className="stage-marker">{status === "complete" ? <Icon name="check" /> : index + 1}</span><div><span className="stage-state">{status === "complete" ? "Done" : status === "current" ? "In progress" : "Waiting"}</span><h3>{stage}</h3>{status === "current" && <p>{explanations[index]}</p>}</div></li>; })}</ol>;
 }
 
-function ImplementationRunning({ currentStage }: { currentStage: number }) {
+function ImplementationRunning({ snapshot }: { snapshot: DashboardSnapshot }) {
+  const files = approvedFiles(snapshot.plan);
   return (
     <>
-      <div className="page-intro"><div><p className="eyebrow">Enemy Targeting · Implementation</p><h2>Forge is updating the game.</h2><p>The approved plan is locked while this run is active.</p></div><span className="running-indicator"><span /> Working</span></div>
+      <div className="page-intro"><div><p className="eyebrow">{snapshot.quest.title} · Implementation</p><h2>Forge is updating the game.</h2><p>The approved plan is locked while this run is active.</p></div><span className="running-indicator"><span /> Working</span></div>
       <div className="dashboard-grid progress-grid">
-        <main className="main-column">
-          <section className="progress-card surface raised" aria-labelledby="progress-title"><div className="section-heading"><div><p className="eyebrow">Understandable progress</p><h2 id="progress-title">{progressStages[currentStage]}</h2></div><span className="prototype-tag">Demo stage</span></div><ProgressStages current={currentStage} /></section>
-          <TechnicalDetails label="Technical details (optional)"><dl className="details-grid"><div><dt>Approved scope</dt><dd>3 files</dd></div><div><dt>Network</dt><dd>Disabled</dd></div><div><dt>Workspace</dt><dd>Prepared Sample Game</dd></div><div><dt>Event view</dt><dd>Sanitized stage reducer</dd></div></dl><p>No raw SDK event stream is shown in the primary experience.</p></TechnicalDetails>
-        </main>
-        <div className="side-column"><ForgeCompanion title={currentStage < 3 ? "The boundary is holding" : "Verification comes next"} tone="blue"><p>{currentStage < 3 ? "Codex is working only inside the approved three-file boundary. Forge will compare the real diff with that plan before presenting a result." : "The code change is no longer enough on its own. Forge is checking scope, project health, and the Godot behavior now."}</p></ForgeCompanion><section className="scope-lock surface"><div className="lock-heading"><span className="proof-icon blue"><Icon name="file" /></span><div><p className="eyebrow">Scope lock</p><h3>3 approved files</h3></div></div><ul className="file-list compact-files">{allowedFiles.map((file) => <li key={file}><Icon name="check" /><code>{file}</code></li>)}</ul></section></div>
+        <main className="main-column"><section className="progress-card surface raised" aria-labelledby="progress-title"><div className="section-heading"><div><p className="eyebrow">Understandable progress</p><h2 id="progress-title">{snapshot.progress.at(-1) ?? dashboardProgressStages[0]}</h2></div><span className="state-pill blue">Live workflow</span></div><ProgressStages progress={snapshot.progress} /></section><TechnicalDetails label="Technical details (optional)"><dl className="details-grid"><div><dt>Approved scope</dt><dd>{files.length} files</dd></div><div><dt>Network</dt><dd>Disabled</dd></div><div><dt>Workspace</dt><dd>Prepared Sample Game</dd></div><div><dt>Event view</dt><dd>Sanitized stage reducer</dd></div></dl>{snapshot.technicalEvents.map((event, index) => <pre key={index}>{JSON.stringify(event)}</pre>)}</TechnicalDetails></main>
+        <div className="side-column"><ForgeCompanion title="The boundary is holding" tone="blue"><p>Codex is working through the existing bounded runner. Forge will compare the actual diff with the approved plan before presenting a result.</p></ForgeCompanion><section className="scope-lock surface"><div className="lock-heading"><span className="proof-icon blue"><Icon name="file" /></span><div><p className="eyebrow">Scope lock</p><h3>{files.length} approved files</h3></div></div><ul className="file-list compact-files">{files.map((file) => <li key={file}><Icon name="check" /><code>{file}</code></li>)}</ul></section></div>
       </div>
       <ActionDock consequence="No action needed — Forge is completing the current stage." status="Run in progress" />
     </>
   );
 }
 
-function ProofSummary({ onPlay }: { onPlay: () => void }) {
+function ProofSummary({ snapshot, busy, onPlay }: {
+  snapshot: DashboardSnapshot;
+  busy: boolean;
+  onPlay: () => void;
+}) {
+  const review = snapshot.review;
+  if (!review) return <FailureState snapshot={snapshot} />;
+  const files = snapshot.handoff?.changes.map((change) => change.path) ?? [];
+  const complete = snapshot.completion !== null;
   return (
     <>
-      <div className="result-banner surface"><div className="result-icon"><Icon name="check" /></div><div><p className="eyebrow">Automated result</p><h2>Automated checks passed</h2><p>The change stayed inside the approved scope. Forge still needs your eyes on the game.</p></div><span className="manual-status"><span /> Play confirmation needed</span></div>
+      {snapshot.error && <p className="error-notice" role="alert">{snapshot.error}</p>}
+      {snapshot.notice && <p className="prototype-notice" role="status">{snapshot.notice}</p>}
+      <div className="result-banner surface"><div className="result-icon"><Icon name="check" /></div><div><p className="eyebrow">Automated result</p><h2>{complete ? "All proof passed" : "Automated checks passed"}</h2><p>{complete ? "Forge persisted automated and creator evidence." : "The change stayed inside the approved scope. Forge still needs your eyes on the game."}</p></div><span className="manual-status"><span /> {complete ? "Creator confirmed" : "Play confirmation needed"}</span></div>
       <div className="dashboard-grid evidence-grid">
         <main className="main-column">
-          <section className="surface criteria-card" aria-labelledby="criteria-title">
-            <div className="section-heading"><div><p className="eyebrow">Acceptance proof</p><h2 id="criteria-title">Five checked · one needs play</h2></div><span className="state-pill blue">Automated proof</span></div>
-            <ul className="criteria-list">{acceptanceProof.map(([id, proof]) => <li key={id}><span className="criterion-check"><Icon name="check" /></span><code>{id}</code><p>{proof}</p><strong>Passed</strong></li>)}<li className="pending"><span className="criterion-check"><Icon name="play" /></span><code>AC-6</code><p>Visible IDLE → CHASING → IDLE observation</p><strong>Pending play</strong></li></ul>
-          </section>
-          <section className="surface changed-files"><div className="section-heading compact"><div><p className="eyebrow">Scope result</p><h2>Exactly three planned files changed</h2></div><span className="success-label"><Icon name="check" /> No unexpected files</span></div><ul className="file-list horizontal">{allowedFiles.map((file) => <li key={file}><Icon name="file" /><code>{file}</code></li>)}</ul></section>
-          <TechnicalDetails label="View technical evidence"><div className="command-result"><span>Passed</span><code>npm run check</code></div><div className="command-result"><span>Passed</span><code>npm run godot:verify</code></div><p><code>FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass</code></p><p>Internal verdict: <code>CONDITIONAL PASS</code>. AC-6 remains <code>pending_play</code>.</p></TechnicalDetails>
+          <section className="surface criteria-card" aria-labelledby="criteria-title"><div className="section-heading"><div><p className="eyebrow">Acceptance proof</p><h2 id="criteria-title">Evidence against every criterion</h2></div><span className="state-pill blue">{review.verdict}</span></div><ul className="criteria-list">{review.criteria.map((criterion) => { const text = snapshot.quest.acceptanceCriteria.find((item) => item.id === criterion.criterionId)?.text ?? criterion.criterionId; return <li className={criterion.result === "pending_play" ? "pending" : ""} key={criterion.criterionId}><span className="criterion-check"><Icon name={criterion.result === "pending_play" ? "play" : "check"} /></span><code>{criterion.criterionId}</code><p>{text}</p><strong>{criterion.result.replace("_", " ")}</strong></li>; })}</ul></section>
+          <section className="surface changed-files"><div className="section-heading compact"><div><p className="eyebrow">Scope result</p><h2>{files.length} recorded file{files.length === 1 ? "" : "s"} changed</h2></div><span className="success-label"><Icon name="check" /> {review.scope.unexpectedFiles.length === 0 ? "No unexpected files" : `${review.scope.unexpectedFiles.length} unexpected`}</span></div><ul className="file-list horizontal">{files.map((file) => <li key={file}><Icon name="file" /><code>{file}</code></li>)}</ul></section>
+          <TechnicalDetails label="View technical evidence">{snapshot.handoff?.verificationRuns.map((verification) => <div className="command-result" key={verification.verificationId}><span>{verification.exitCode === 0 ? "Passed" : "Failed"}</span><code>{verification.command.join(" ")}</code><p>{verification.evidence}</p></div>)}{snapshot.technicalEvents.map((event, index) => <pre key={index}>{JSON.stringify(event)}</pre>)}</TechnicalDetails>
         </main>
-        <div className="side-column">
-          <ForgeCompanion title="Your eyes are the final proof" tone="success"><p>Every automated check passed. Approach the red enemy, then retreat, and confirm both state changes before Forge records completion.</p></ForgeCompanion>
-          <section className="play-instructions surface"><p className="eyebrow">What to look for</p><h2>Play the result</h2><ol><li><span>1</span>Approach the red enemy.</li><li><span>2</span>Observe <code>IDLE → CHASING</code>.</li><li><span>3</span>Retreat beyond its range.</li><li><span>4</span>Observe <code>CHASING → IDLE</code>.</li></ol></section>
-        </div>
+        <div className="side-column"><ForgeCompanion title={complete ? "The quest is proven" : "Your eyes are the final proof"} tone="success"><p>{complete ? snapshot.completion?.summary : "Every automated check passed. Approach the red enemy, then retreat, and confirm both state changes before Forge records completion."}</p></ForgeCompanion><section className="play-instructions surface"><p className="eyebrow">What to look for</p><h2>Play the result</h2><p>{playInstruction(snapshot.quest)}</p></section></div>
       </div>
-      <ActionDock consequence="Launch the Sample Game and confirm the visible behavior yourself." primaryLabel="Play the result" primaryIcon="play" onPrimary={onPlay} />
+      <ActionDock consequence={complete ? "The final review and roadmap completion are persisted." : "Launch the Sample Game and confirm the visible behavior yourself."} primaryLabel={complete ? undefined : busy || snapshot.phase === "launching_game" ? "Game running…" : "Play the result"} primaryIcon="play" onPrimary={complete || busy ? undefined : onPlay} status={complete ? "Quest complete" : undefined} />
     </>
   );
 }
 
-function QuestComplete({ onWorld }: { onWorld: () => void }) {
+function QuestComplete({ snapshot, onWorld }: {
+  snapshot: DashboardSnapshot;
+  onWorld: () => void;
+}) {
+  if (!snapshot.completion) return <FailureState snapshot={snapshot} />;
+  const date = new Date(snapshot.completion.completedAt);
   return (
     <>
-      <div className="prototype-warning" role="note"><Icon name="spark" /><strong>UI prototype state</strong><span>This view demonstrates post-persistence feedback. This dashboard has not written completion data.</span></div>
-      <div className="completion-hero surface"><div className="completion-emblem"><span><Icon name="check" /></span></div><div><p className="eyebrow">Quest complete</p><h2>Enemy Targeting is alive.</h2><p>The red enemy now detects the nearby player, chases directly, and returns to idle when the player retreats.</p></div><span className="completion-stamp">Verified by Forge + creator</span></div>
-      <div className="dashboard-grid complete-grid">
-        <main className="main-column"><WorldMap completed /><section className="chronicle-preview surface"><div className="section-heading"><div><p className="eyebrow">Chronicle preview</p><h2>A concise record of the change</h2></div><span className="state-pill success">Persistence preview</span></div><div className="chronicle-row"><span className="chronicle-date">13<br/><small>JUL</small></span><div><h3>Enemy Targeting completed</h3><p>Three approved files changed. Automated checks passed. Creator confirmed IDLE → CHASING → IDLE.</p><div className="proof-badges"><span><Icon name="check" /> Automated proof</span><span><Icon name="check" /> Creator proof</span><span><Icon name="check" /> Scope clean</span></div></div></div></section></main>
-        <div className="side-column"><ForgeCompanion title="The world remembers" tone="success"><p>You confirmed the mechanic in play, and the real CLI workflow can persist that proof before marking the roadmap complete.</p></ForgeCompanion><section className="next-direction surface"><p className="eyebrow">Next direction</p><h2>More of the world is planned</h2><p>Future quests are still design directions. They are not runnable in this prototype yet.</p><span className="planned-tag">Planned · not available</span></section></div>
-      </div>
-      <ActionDock consequence="Return to the world and inspect the completed quest node." primaryLabel="Return to world" onPrimary={onWorld} />
+      <div className="completion-hero surface"><div className="completion-emblem"><span><Icon name="check" /></span></div><div><p className="eyebrow">Quest complete</p><h2>{snapshot.quest.title} is alive.</h2><p>{snapshot.completion.summary}</p></div><span className="completion-stamp">Verified by Forge + creator</span></div>
+      <div className="dashboard-grid complete-grid"><main className="main-column"><WorldMap roadmap={snapshot.roadmap} /><section className="chronicle-preview surface"><div className="section-heading"><div><p className="eyebrow">Chronicle</p><h2>A concise persisted record</h2></div><span className="state-pill success">Saved</span></div><div className="chronicle-row"><span className="chronicle-date">{String(date.getDate()).padStart(2, "0")}<br/><small>{date.toLocaleString("en", { month: "short" }).toUpperCase()}</small></span><div><h3>{snapshot.quest.title} completed</h3><p>{snapshot.completion.summary}</p><div className="proof-badges"><span><Icon name="check" /> Automated proof</span><span><Icon name="check" /> Creator proof</span><span><Icon name="check" /> Scope clean</span></div></div></div></section></main><div className="side-column"><ForgeCompanion title="The world remembers" tone="success"><p>Forge reloaded this completion from the persistent workspace. Celebration appears only after the final review, completion, and roadmap writes succeed.</p></ForgeCompanion><section className="next-direction surface"><p className="eyebrow">Completed at</p><h2>{date.toLocaleString()}</h2><p>Run <code>{snapshot.completion.runId}</code></p></section></div></div>
+      <ActionDock consequence="Return to the world and inspect the persisted completed node." primaryLabel="Return to world" onPrimary={onWorld} />
     </>
   );
 }
 
-function PlayConfirmation({ onConfirm, onClose }: { onConfirm: () => void; onClose: () => void }) {
-  return <div className="modal-backdrop" role="presentation"><section className="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title"><span className="prototype-tag">Prototype handoff</span><div className="modal-icon"><Icon name="play" /></div><p className="eyebrow">After the game closes</p><h2 id="confirm-title">Did you see it work?</h2><p>Confirm only after you saw the enemy change from IDLE to CHASING and back to IDLE.</p><div className="modal-actions"><button className="button secondary" onClick={onClose} type="button">It did not work</button><button className="button primary" onClick={onConfirm} type="button">I saw it work <Icon name="check" /></button></div><small>This prototype does not launch Godot or persist your answer.</small></section></div>;
+function FailureState({ snapshot }: { snapshot: DashboardSnapshot }) {
+  return (
+    <div className="failure-panel surface" role="alert"><p className="eyebrow">Forge stopped safely</p><h2>{snapshot.phase === "verification_failed" ? "The change did not pass verification." : "Forge needs attention before continuing."}</h2><p>{snapshot.error ?? "The current workflow could not continue."}</p>{snapshot.review?.concerns.map((concern) => <p key={concern}>{concern}</p>)}<TechnicalDetails label="Preserved evidence">{snapshot.handoff?.verificationRuns.map((run) => <p key={run.verificationId}><code>{run.command.join(" ")}</code>: exit {run.exitCode}<br/>{run.evidence}</p>)}</TechnicalDetails><p>The quest remains incomplete. Review the evidence or use the existing explicit reset path before trying again.</p></div>
+  );
+}
+
+function PlayConfirmation({ busy, onConfirm }: {
+  busy: boolean;
+  onConfirm: (response: CreatorConfirmation) => void;
+}) {
+  return <div className="modal-backdrop" role="presentation"><section className="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title"><span className="state-pill blue">Game closed</span><div className="modal-icon"><Icon name="play" /></div><p className="eyebrow">Creator confirmation</p><h2 id="confirm-title">Did you see it work?</h2><p>Confirm only after you personally saw the enemy change from IDLE to CHASING and back to IDLE.</p><div className="modal-actions"><button className="button secondary" disabled={busy} onClick={() => onConfirm("CANCEL")} type="button">Cancel</button><button className="button secondary" disabled={busy} onClick={() => onConfirm("IT DID NOT WORK")} type="button">It did not work</button><button className="button primary" disabled={busy} onClick={() => onConfirm("I SAW IT WORK")} type="button">I saw it work <Icon name="check" /></button></div><small>Forge records only the exact choice you make here.</small></section></div>;
 }
 
 export default function App() {
-  // Demo adapter only: these transitions do not call the quest runner or write Forge state.
-  const [state, setState] = useState<DashboardState>("world_ready");
-  const [currentStage, setCurrentStage] = useState(2);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
+  const [view, setView] = useState<View>("World");
+  const [busy, setBusy] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const [navNotice, setNavNotice] = useState("");
 
-  useEffect(() => {
-    document.title = `${dashboardStateLabels[state]} · Forge Workshop`;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [state]);
+  const refresh = useCallback(async () => {
+    try {
+      const next = await loadDashboard();
+      setSnapshot(next);
+      setLocalError(null);
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : String(error));
+    }
+  }, []);
 
-  const activeNav = state === "ready_to_play" ? "Proof" : state === "quest_complete" ? "Chronicle" : "World";
-  const navigate = (destination: "World" | "Proof" | "Chronicle") => {
-    if (destination === "World") setState("world_ready");
-    else if (destination === "Proof") setState("ready_to_play");
-    else if (state === "quest_complete") setState("quest_complete");
-    else setNavNotice("Chronicle becomes meaningful after a quest has been completed.");
+  useEffect(() => {
+    void refresh();
+    return subscribeToDashboard(
+      (event) => {
+        if (event.type === "progress") {
+          setSnapshot((current) => current ? { ...current, phase: "implementation_running", progress: event.progress } : current);
+        } else {
+          void refresh();
+        }
+      },
+      () => {},
+    );
+  }, [refresh]);
+
+  useEffect(() => {
+    if (!snapshot) return;
+    document.title = `${snapshot.quest.title} · Forge Workshop`;
+    if (snapshot.phase === "ready_to_play" || snapshot.phase === "launching_game" || snapshot.phase === "awaiting_confirmation") setView("Proof");
+    if (snapshot.phase === "quest_complete") setView("Chronicle");
+    if (snapshot.phase === "implementation_running") setView("World");
+  }, [snapshot?.phase]);
+
+  const run = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await approveQuest();
+      await refresh();
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const play = async () => {
+    if (busy || !snapshot) return;
+    setBusy(true);
+    setSnapshot({ ...snapshot, phase: "launching_game", notice: "Godot is running. Return after the game closes." });
+    try {
+      setSnapshot(await launchGame());
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : String(error));
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirm = async (response: CreatorConfirmation) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const next = await confirmCreatorResult(response);
+      setSnapshot(next);
+      if (next.phase === "quest_complete") setView("Chronicle");
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : String(error));
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!snapshot) return <div className="loading-screen"><div className="ember-core" aria-hidden="true"><span className="core-center" /></div><h1>Opening Forge Workshop</h1><p>{localError ?? "Loading the validated Sample Game workspace…"}</p></div>;
+
+  const navigate = (destination: "World" | "Proof" | "Chronicle") => {
+    if (destination === "Proof" && !snapshot.review) {
+      setNavNotice("Proof appears after Forge has reviewed a real quest run.");
+      return;
+    }
+    if (destination === "Chronicle" && !snapshot.completion) {
+      setNavNotice("Chronicle becomes meaningful after a quest has been completed.");
+      return;
+    }
+    setView(destination);
+  };
+  const activeNav = view === "Brief" ? "World" : view;
+  const showBrief = view === "Brief" && snapshot.phase === "world_ready";
+  const showProof = view === "Proof" && snapshot.review !== null;
+  const showComplete = view === "Chronicle" && snapshot.completion !== null;
 
   return (
     <div className="app-shell">
-      <ProjectHeader active={activeNav} onNavigate={navigate} />
+      <ProjectHeader active={activeNav} engine={snapshot.project.engine} projectName={snapshot.project.name} onNavigate={navigate} />
       <div className="blueprint-rule" aria-hidden="true" />
-      <div className="demo-ribbon"><span>Interactive UI prototype</span><p>Real Enemy Targeting contracts · mocked dashboard transitions</p></div>
-      {navNotice && <button className="nav-notice" onClick={() => setNavNotice("")} type="button">{navNotice}<span>Dismiss</span></button>}
+      <div className="demo-ribbon"><span>Live Forge workspace</span><p>Validated quest artifacts · real runner · persisted completion</p></div>
+      {(navNotice || localError) && <button className={`nav-notice ${localError ? "error" : ""}`} onClick={() => { setNavNotice(""); setLocalError(null); }} type="button">{localError ?? navNotice}<span>Dismiss</span></button>}
       <div className="page-shell">
-        {state === "world_ready" && <WorldReady onReview={() => setState("plan_review")} />}
-        {state === "plan_review" && <QuestBrief onBack={() => setState("world_ready")} onBuild={() => setState("implementation_running")} />}
-        {state === "implementation_running" && <ImplementationRunning currentStage={currentStage} />}
-        {state === "ready_to_play" && <ProofSummary onPlay={() => setShowConfirmation(true)} />}
-        {state === "quest_complete" && <QuestComplete onWorld={() => setState("world_ready")} />}
-        {state === "blocked" && <WorldReady onReview={() => setState("plan_review")} />}
-        {state === "verification_failed" && <ProofSummary onPlay={() => setShowConfirmation(true)} />}
+        {snapshot.phase === "implementation_running" ? <ImplementationRunning snapshot={snapshot} />
+          : snapshot.phase === "verification_failed" || snapshot.phase === "blocked" ? <FailureState snapshot={snapshot} />
+          : showBrief ? <QuestBrief snapshot={snapshot} busy={busy} onBack={() => setView("World")} onBuild={() => void run()} />
+          : showProof ? <ProofSummary snapshot={snapshot} busy={busy} onPlay={() => void play()} />
+          : showComplete ? <QuestComplete snapshot={snapshot} onWorld={() => setView("World")} />
+          : snapshot.phase === "ready_to_play" || snapshot.phase === "launching_game" || snapshot.phase === "awaiting_confirmation" ? <ProofSummary snapshot={snapshot} busy={busy} onPlay={() => void play()} />
+          : <WorldReady snapshot={snapshot} onReview={() => snapshot.completion ? setView("Proof") : setView("Brief")} />}
       </div>
-      <PrototypeSwitcher state={state} currentStage={currentStage} onState={setState} onStage={setCurrentStage} />
-      {showConfirmation && <PlayConfirmation onClose={() => setShowConfirmation(false)} onConfirm={() => { setShowConfirmation(false); setState("quest_complete"); }} />}
+      {snapshot.phase === "awaiting_confirmation" && <PlayConfirmation busy={busy} onConfirm={(response) => void confirm(response)} />}
     </div>
   );
 }

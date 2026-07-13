@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { DashboardState } from "./data.js";
+import type { Roadmap } from "../contracts/index.js";
 
 export function Icon({ name }: { name: "arrow" | "check" | "code" | "file" | "play" | "spark" }) {
   const paths = {
@@ -14,8 +14,10 @@ export function Icon({ name }: { name: "arrow" | "check" | "code" | "file" | "pl
   return <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export function ProjectHeader({ active, onNavigate }: {
+export function ProjectHeader({ active, engine, projectName, onNavigate }: {
   active: "World" | "Proof" | "Chronicle";
+  engine: string;
+  projectName: string;
   onNavigate: (destination: "World" | "Proof" | "Chronicle") => void;
 }) {
   return (
@@ -24,7 +26,7 @@ export function ProjectHeader({ active, onNavigate }: {
         <div className="forge-mark" aria-hidden="true"><span /></div>
         <div>
           <p className="eyebrow">Forge Workshop</p>
-          <div className="project-title-row"><h1>Sample Game</h1><span className="ready-chip"><span /> Ready</span></div>
+          <div className="project-title-row"><h1>{projectName}</h1><span className="ready-chip"><span /> Ready</span></div>
         </div>
       </div>
       <nav aria-label="Primary navigation" className="primary-nav">
@@ -32,7 +34,7 @@ export function ProjectHeader({ active, onNavigate }: {
           <button className={active === item ? "nav-button active" : "nav-button"} key={item} onClick={() => onNavigate(item)} type="button">{item}</button>
         ))}
       </nav>
-      <div className="header-meta"><span>Godot 4</span><button className="icon-button" aria-label="Open prototype information" type="button">i</button></div>
+      <div className="header-meta"><span>{engine}</span><button className="icon-button" aria-label="Open Forge information" type="button">i</button></div>
     </header>
   );
 }
@@ -56,29 +58,34 @@ export function ForgeCompanion({ title, children, tone = "ember" }: {
 
 export function QuestNode({ label, state, detail }: {
   label: string;
-  state: "complete" | "available" | "planned" | "active";
+  state: "completed" | "available" | "locked" | "active";
   detail: string;
 }) {
+  const visualState = state === "completed" ? "complete" : state === "locked" ? "planned" : state;
   return (
-    <div className={`quest-node ${state}`}>
-      <div className="node-glyph" aria-hidden="true">{state === "complete" ? <Icon name="check" /> : state === "planned" ? <span>···</span> : <span />}</div>
-      <div><span className="node-state">{state === "complete" ? "Completed" : state}</span><h3>{label}</h3><p>{detail}</p></div>
+    <div className={`quest-node ${visualState}`}>
+      <div className="node-glyph" aria-hidden="true">{state === "completed" ? <Icon name="check" /> : state === "locked" ? <span>···</span> : <span />}</div>
+      <div><span className="node-state">{state === "completed" ? "Completed" : state}</span><h3>{label}</h3><p>{detail}</p></div>
     </div>
   );
 }
 
-export function WorldMap({ completed = false }: { completed?: boolean }) {
+export function WorldMap({ roadmap }: { roadmap: Roadmap }) {
+  const completed = roadmap.quests.filter((quest) => quest.state === "completed").length;
   return (
     <section className="world-map surface" aria-labelledby="world-map-title">
       <div className="section-heading">
         <div><p className="eyebrow">Sample Game roadmap</p><h2 id="world-map-title">A small world, built one quest at a time</h2></div>
-        <span className="map-note">Workshop district · 1 of 3</span>
+        <span className="map-note">Workshop district · {completed} of {roadmap.quests.length} complete</span>
       </div>
       <div className="map-canvas">
-        <div className="path-line path-one" aria-hidden="true" /><div className="path-line path-two" aria-hidden="true" />
-        <div className="map-node foundation"><QuestNode label="Project Foundation" state="complete" detail="Player movement and fixture ready" /></div>
-        <div className="map-node targeting"><QuestNode label="Enemy Targeting" state={completed ? "complete" : "available"} detail={completed ? "Player detection and chase verified" : "Make the idle enemy notice the player"} /></div>
-        <div className="map-node future"><QuestNode label="Future area" state="planned" detail="Direction planned · not yet runnable" /></div>
+        <div className="path-line path-one" aria-hidden="true" />
+        <div className="map-node foundation"><QuestNode label="Project Foundation" state="completed" detail="Player movement and fixture ready" /></div>
+        {roadmap.quests.map((quest) => (
+          <div className="map-node targeting" key={quest.questId}>
+            <QuestNode label={quest.title} state={quest.state} detail={quest.summary} />
+          </div>
+        ))}
         <div className="blueprint-ring ring-one" aria-hidden="true" /><div className="blueprint-ring ring-two" aria-hidden="true" />
       </div>
     </section>
@@ -102,29 +109,9 @@ export function ActionDock({ consequence, primaryLabel, primaryIcon = "arrow", o
     <div className="action-dock" aria-label="Next action">
       <div className="action-consequence"><span className="dock-kicker">Next step</span><strong>{consequence}</strong></div>
       <div className="action-buttons">
-        {secondaryLabel && <button className="button secondary" onClick={onSecondary} type="button">{secondaryLabel}</button>}
-        {primaryLabel && <button className="button primary" onClick={onPrimary} type="button">{primaryLabel}<Icon name={primaryIcon} /></button>}
+        {secondaryLabel && <button className="button secondary" disabled={!onSecondary} onClick={onSecondary} type="button">{secondaryLabel}</button>}
+        {primaryLabel && <button className="button primary" disabled={!onPrimary} onClick={onPrimary} type="button">{primaryLabel}<Icon name={primaryIcon} /></button>}
         {status && <span className="no-action-chip"><span /> {status}</span>}
-      </div>
-    </div>
-  );
-}
-
-export function PrototypeSwitcher({ state, currentStage, onState, onStage }: {
-  state: DashboardState;
-  currentStage: number;
-  onState: (state: DashboardState) => void;
-  onStage: (stage: number) => void;
-}) {
-  const mainStates: Array<[DashboardState, string]> = [
-    ["world_ready", "World"], ["plan_review", "Brief"], ["implementation_running", "Running"], ["ready_to_play", "Proof"], ["quest_complete", "Complete"],
-  ];
-  return (
-    <div className="prototype-switcher" aria-label="Prototype state controls">
-      <span><Icon name="spark" /> Prototype states</span>
-      <div className="switcher-buttons">
-        {mainStates.map(([value, label]) => <button type="button" className={state === value ? "active" : ""} onClick={() => onState(value)} key={value}>{label}</button>)}
-        {state === "implementation_running" && <button type="button" onClick={() => onStage(Math.min(currentStage + 1, 4))}>Advance stage</button>}
       </div>
     </div>
   );

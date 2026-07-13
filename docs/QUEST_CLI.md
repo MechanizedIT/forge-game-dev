@@ -13,11 +13,11 @@ npm run quest:run -- enemy-targeting
 Type `APPROVE` after reviewing the quest summary. Forge shows:
 
 ```text
-Understanding the quest
-Inspecting the game
-Building enemy targeting
-Testing the mechanic
-Reviewing the result
+Inspecting approved files
+Preparing the change
+Updating the game
+Running verification
+Preparing the result
 ```
 
 On automated success, Forge offers to launch the verified demo workspace. Type `LAUNCH`, then check:

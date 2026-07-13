@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** First usable Forge Workshop dashboard prototype complete; real workflow integration is next
+**Current milestone:** Forge Workshop dashboard connected to the real Enemy Targeting workflow
 
-**Overall state:** The terminal golden path works end to end, and a five-state React dashboard now demonstrates it honestly with mocked UI transitions
+**Overall state:** The dashboard is now a thin live interface over the proven command-line workflow; a successful human-confirmed dashboard rehearsal is still required
 
 ## What works now
 
@@ -19,37 +19,33 @@ Forge completes the quest only after all of these succeed:
 
 Completion persists the workflow as `COMPLETE`, changes the roadmap node to `completed`, records the confirmation time, and writes final review and closeout evidence. Failure, cancellation, missing interactive input, or launch failure leaves the quest incomplete. Rerunning a completed quest explains its state instead of rebuilding it.
 
-## Try it
+The Forge Workshop dashboard now reads the real prepared quest, plan, roadmap, review, verification, and completion artifacts. Its approval action starts the existing official Codex SDK runner, the five existing friendly stages stream into the UI, Godot launch returns to an explicit confirmation dialog, and completion appears only after the existing atomic persistence succeeds.
+
+## Try the dashboard
 
 ```powershell
 npm install
 npm run demo:prepare -- confirm-download
-npm run quest:run -- enemy-targeting
+npm run forge
 ```
 
-Type `APPROVE`, then `LAUNCH` after automated checks pass. In the game, approach and retreat from the enemy to check `IDLE` → `CHASING` → `IDLE`. After closing the game, enter one of the exact responses shown by Forge.
+The prepare command is needed only for first-time pinned Godot setup. `npm run forge` builds the dashboard, starts the local host, and opens Forge Workshop. Review Enemy Targeting, choose **Build with Codex**, wait for real proof, choose **Play the result**, then confirm only what you observed.
 
 The immutable fixture remains the idle reset baseline. `npm run demo:reset -- confirm-reset` explicitly starts over and removes generated completion state.
 
-## Dashboard prototype
+## Command-line fallback
 
-The Forge Workshop dashboard implements World Ready, Quest Brief, Implementation Running, Ready to Play, and Quest Complete as a responsive React/Vite click-through. It mirrors the committed Enemy Targeting quest, plan, scope, progress, and sanitized evidence language, but it does not read those artifacts or invoke the CLI at runtime. A visible prototype label and code comment make clear that dashboard transitions, Godot launch, creator confirmation, Chronicle preview, and completion persistence are mocked and write no Forge state.
-
-Run it with:
-
-```powershell
-npm run dashboard:dev
-```
+`npm run quest:run -- enemy-targeting` remains the authoritative terminal path and uses the same runner, review, launch, confirmation, and persistence services as the dashboard.
 
 ## Still incomplete
 
-- Thin local Node/TypeScript host connected to the proven quest workflow
-- Real dashboard approval, progress event, evidence, Godot launch, and creator-confirmation adapters
-- Deterministic dashboard ownership for an in-progress run and return from the Godot process
+- One successful real dashboard run through creator visual confirmation. The development live run reached the real failure screen after Godot rejected the generated detection behavior; Forge correctly left the quest incomplete and no human confirmation was claimed.
+- Restart recovery for an in-progress host process; live run ownership is intentionally in memory, while durable outcomes remain in existing artifacts.
+- Plan refinement, contextual questions, and a multi-entry Chronicle index
 - Clean-machine judge rehearsal and replay fallback
 
 ## Next milestone
 
-Add the smallest local host adapter that reads the prepared bundle and persistent roadmap state, then starts the existing runner only after the dashboard approval action. Do not change runner safety or completion semantics.
+Run the exact dashboard judge path on a clean Windows environment until one live implementation passes automated verification and a human confirms the visible mechanic. Fix only verified reliability defects; do not weaken the gates.
 
 Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md). Dashboard specification: [`docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`](docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md).

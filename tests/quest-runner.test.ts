@@ -163,7 +163,7 @@ test("SDK events map to deduplicated creator-friendly progress", () => {
   reporter.emit("building");
   reporter.emit("testing");
   reporter.emit("building");
-  assert.deepEqual(messages, ["Building enemy targeting", "Testing the mechanic"]);
+  assert.deepEqual(messages, ["Updating the game", "Running verification"]);
 });
 
 test("the real command runner can invoke npm without a Windows shell", () => {

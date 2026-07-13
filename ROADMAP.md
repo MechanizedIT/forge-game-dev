@@ -41,17 +41,18 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Create a frontend prototype of the visual roadmap with available, planned, active, and completed states.
 - [x] Add the Forge Companion across the five prototype states.
 - [x] Show selected quest purpose, plan, acceptance criteria, scope, proof, and actions in the prototype.
-- [ ] Support **Build with Codex**, **Refine plan**, and a contextual prompt field.
-- [ ] Connect the interface to the real quest workflow.
+- [x] Support **Build with Codex** through the existing approval and runner boundary.
+- [ ] Support **Refine plan** and a contextual prompt field.
+- [x] Connect the interface to the real quest workflow.
 
 **Exit:** The prepared quest can be approved and started from the user interface.
 
 ### Milestone 3 — Make progress understandable
 
 - [x] Translate Codex events into creator-friendly stage updates.
-- [ ] Keep raw commands and logs behind progressive disclosure.
+- [x] Keep raw commands and logs behind progressive disclosure.
 - [ ] Add clear approval, retry, failure, and uncertainty states.
-- [ ] Show verification evidence and changed files in the outcome.
+- [x] Show verification evidence and changed files in the outcome.
 
 **Exit:** A non-expert can tell what Forge is doing, why, and whether it worked.
 
@@ -120,4 +121,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The command-line Enemy Targeting loop is `COMPLETE`; see its completion-gate [plan](docs/plans/2026-07-13-quest-completion-gate.md), [review](docs/reviews/2026-07-13-quest-completion-gate-review.md), and [closeout](docs/closeouts/2026-07-13-quest-completion-gate-closeout.md). The next bounded milestone is connecting this proven workflow and persistent roadmap state to the visual roadmap dashboard.
+The command-line loop and dashboard integration are `COMPLETE`. The dashboard integration is recorded in its [plan](docs/plans/2026-07-13-dashboard-workflow-integration.md), [review](docs/reviews/2026-07-13-dashboard-workflow-integration-review.md), and [closeout](docs/closeouts/2026-07-13-dashboard-workflow-integration-closeout.md). The next bounded milestone is a clean-machine dashboard judge rehearsal ending in real human visual confirmation.

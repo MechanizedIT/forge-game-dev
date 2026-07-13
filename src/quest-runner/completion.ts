@@ -36,6 +36,11 @@ export type QuestCompletionResult =
       roadmap: Roadmap;
     };
 
+export type QuestFinalizationResult = Exclude<
+  QuestCompletionResult,
+  { status: "launch_failed" }
+>;
+
 function artifactPath(runId: string, name: string): string {
   return `.forge/runs/${runId}/${name}`;
 }
@@ -61,6 +66,25 @@ function isEligibleAutomatedResult(result: QuestRunResult): boolean {
   );
 }
 
+function completionEligibilityReason(
+  prepared: PreparedQuestRun,
+  result: QuestRunResult,
+): string | null {
+  if (result.status !== "ready_for_play" || !isEligibleAutomatedResult(result)) {
+    return "Automated verification did not produce a review that is ready for creator play confirmation.";
+  }
+
+  const expectedRunDirectory = path.join(
+    prepared.workspacePath,
+    ".forge",
+    "runs",
+    result.review.runId,
+  );
+  return path.resolve(result.runDirectory) === path.resolve(expectedRunDirectory)
+    ? null
+    : "Run evidence is outside the prepared workspace.";
+}
+
 export async function loadQuestCompletion(
   workspacePath: string,
 ): Promise<QuestCompletion | null> {
@@ -83,22 +107,8 @@ export async function completeQuestAfterPlay(
     now?: () => Date;
   },
 ): Promise<QuestCompletionResult> {
-  if (result.status !== "ready_for_play" || !isEligibleAutomatedResult(result)) {
-    return {
-      status: "not_eligible",
-      reason: "Automated verification did not produce a review that is ready for creator play confirmation.",
-    };
-  }
-
-  const expectedRunDirectory = path.join(
-    prepared.workspacePath,
-    ".forge",
-    "runs",
-    result.review.runId,
-  );
-  if (path.resolve(result.runDirectory) !== path.resolve(expectedRunDirectory)) {
-    return { status: "not_eligible", reason: "Run evidence is outside the prepared workspace." };
-  }
+  const ineligible = completionEligibilityReason(prepared, result);
+  if (ineligible) return { status: "not_eligible", reason: ineligible };
 
   let launch: GameLaunchEvidence;
   try {
@@ -107,8 +117,33 @@ export async function completeQuestAfterPlay(
     return { status: "launch_failed", error: errorMessage(error) };
   }
 
+  return finalizeQuestAfterPlay(prepared, result, {
+    launchEvidence: launch,
+    creatorResponse: await options.requestCreatorResponse(),
+    ...(options.now === undefined ? {} : { now: options.now }),
+  });
+}
+
+export async function finalizeQuestAfterPlay(
+  prepared: PreparedQuestRun,
+  result: QuestRunResult,
+  options: {
+    launchEvidence: GameLaunchEvidence;
+    creatorResponse: unknown;
+    now?: () => Date;
+  },
+): Promise<QuestFinalizationResult> {
+  if (result.status !== "ready_for_play") {
+    return {
+      status: "not_eligible",
+      reason: "Automated verification did not produce a review that is ready for creator play confirmation.",
+    };
+  }
+  const ineligible = completionEligibilityReason(prepared, result);
+  if (ineligible) return { status: "not_eligible", reason: ineligible };
+
   const response: CreatorPlayResponse = creatorPlayResponseSchema.parse(
-    await options.requestCreatorResponse(),
+    options.creatorResponse,
   );
   if (response === "IT DID NOT WORK") return { status: "reported_failure" };
   if (response === "CANCEL") return { status: "cancelled" };
@@ -152,7 +187,7 @@ export async function completeQuestAfterPlay(
     finalReview: artifactPath(result.review.runId, "final-review.json"),
     gameLaunch: {
       result: "passed",
-      godotVersion: launch.version,
+      godotVersion: options.launchEvidence.version,
     },
     creatorConfirmation: {
       response,

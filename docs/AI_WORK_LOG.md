@@ -182,7 +182,7 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Compared the executable quest-completion path, contracts, tests, roadmap, status, screen map, and recent Git history; corrected stale dashboard claims about game launch, creator confirmation, closeout, and persistent completion; kept unimplemented UI and live-run ownership gaps explicit.
 - **Files changed:** `PROJECT_STATUS.md`, `docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`, `docs/AI_WORK_LOG.md`
 - **Verification:** `npm run check` passed TypeScript and 35/35 tests; documentation claims were cross-checked against the completion service, CLI, contracts, reviews, closeout, and commit history.
-- **Commit:** Not created in this review
+- **Commit:** `a942f1991983140f9515a40cab77611df3e508f2` (included with the dashboard prototype milestone)
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Create low-fidelity World and Quest Brief wireframes, then implement the thinnest dashboard connection over the proven runner.
 
@@ -196,6 +196,20 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Added a typed React/Vite dashboard with World Ready, Quest Brief, Implementation Running, Ready to Play, and Quest Complete; implemented the visual quest world, companion, scope boundary, five stages, proof summary, creator handoff, technical disclosures, responsive behavior, visible demo labeling, and developer state controls; preserved the existing CLI/runtime contracts.
 - **Files changed:** Dashboard source and configuration, npm manifest/lockfile, README Node requirement, roadmap/status, bounded plan, review, closeout, and this log.
 - **Verification:** Dashboard and backend TypeScript passed; Vite production build passed; existing test suite passed 35/35; browser click-through and 700-pixel responsive checks passed with no console errors or horizontal overflow; npm audit reported zero vulnerabilities.
-- **Commit:** Dashboard milestone closeout commit created after this entry; SHA reported in the task response
+- **Commit:** `a942f1991983140f9515a40cab77611df3e508f2` (`Add Forge Workshop dashboard prototype`)
 - **Session ID:** `/feedback` ID `019f5da1-c7f5-7652-81af-59482e706067`
 - **Next step:** Add the smallest local host adapter that reads prepared state and invokes the existing quest runner from the dashboard without changing approval, review, launch, or completion semantics.
+
+---
+
+## 2026-07-13 — Connect Forge Workshop to the real quest workflow
+
+- **Actor/model surface:** Codex implementation, official SDK live run, local Godot, and in-app browser verification
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Accepted dashboard commit `a942f1991983140f9515a40cab77611df3e508f2` and CLI baseline `858739cd3265c2bf69adea5cf22119f1202280b2`; required the dashboard to remain a thin layer over the existing runner, review, launch, confirmation, and persistence behavior; prohibited new quests, duplicated state, App Server, repair loops, redesign, scanning, providers, authentication, and cloud work.
+- **AI contribution:** Added the local Node/TypeScript host, real validated dashboard snapshot loader, single live-run/process coordinator, server-sent progress, real approval/proof/play/confirmation adapters, reusable post-launch completion finalizer, production launch command, focused offline integration tests, CLI regression coverage, and operational closeout documentation. Removed the mocked judge-state controller and static pass evidence from the production UI.
+- **Files changed:** Dashboard host and shared API types; dashboard API, components, application, and small integration styles; completion/progress services; focused tests; npm scripts; README, status, roadmap, CLI guide, screen map, plan/handoff/review/closeout, and this log.
+- **Verification:** TypeScript passed; 45/45 tests passed; Vite production build passed; browser checks passed with real artifacts, live progress/failure evidence, no console errors, no primary raw SDK output, and no overflow at 1280 or 700 pixels; Godot 4.7 fixture verification and a 120-frame launch smoke passed; CLI cancellation regression passed. An isolated official SDK dashboard run changed only the three approved files and passed repository checks, but failed the deterministic 180-pixel Godot detection check, so Forge correctly preserved `FAIL` evidence and did not launch or complete. No human visual confirmation was claimed.
+- **Commit:** Included in the milestone commit; exact SHA reported in the final response
+- **Session ID:** Current Codex task; live nested Codex thread ID preserved only in the isolated temporary run evidence and not committed
+- **Next step:** Perform a clean-machine dashboard judge rehearsal that reaches real automated success and explicit human visual confirmation.

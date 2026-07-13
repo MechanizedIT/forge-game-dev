@@ -1,11 +1,11 @@
 import type { ThreadEvent } from "@openai/codex-sdk";
 
 export const PROGRESS_MESSAGES = {
-  understanding: "Understanding the quest",
-  inspecting: "Inspecting the game",
-  building: "Building enemy targeting",
-  testing: "Testing the mechanic",
-  reviewing: "Reviewing the result",
+  understanding: "Inspecting approved files",
+  inspecting: "Preparing the change",
+  building: "Updating the game",
+  testing: "Running verification",
+  reviewing: "Preparing the result",
 } as const;
 
 export type ProgressStage = keyof typeof PROGRESS_MESSAGES;

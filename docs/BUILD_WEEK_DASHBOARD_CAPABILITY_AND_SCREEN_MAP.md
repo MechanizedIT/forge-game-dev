@@ -19,7 +19,7 @@ Four labels are used consistently:
 - **Deferred:** A longer-term Forge concept or stretch goal that should not appear as functional prototype scope.
 - **Owner review:** A gap or contradiction cannot be resolved from current repository evidence.
 
-This document originally preceded dashboard implementation. The repository now contains a five-state React/Vite frontend prototype under `src/dashboard/`, while the dashboard host and live runner integration remain unimplemented. There is still no storyboard, landmark contract, or separate dashboard/workspace vision document; README images remain placeholders. The prototype uses the working CLI, JSON contracts, sanitized evidence, and this screen map as its source of truth. Prior Forge materials should influence it only after they are deliberately added or cited.
+This document originally preceded dashboard implementation. The repository now contains the React/Vite dashboard under `src/dashboard/` and a thin local Node/TypeScript host under `src/dashboard-host/`. The judge path reads validated workspace artifacts and delegates to the existing runner, review, Godot launch, and completion services. There is still no storyboard, landmark contract, or separate dashboard/workspace vision document; README images remain placeholders. Prior Forge materials should influence the prototype only after they are deliberately added or cited.
 
 ## 1. Prototype objective
 
@@ -85,34 +85,34 @@ Priority meanings: **Must** is required for the golden path; **Should** improves
 | Open bundled Sample Game | Gives the judge a safe, known starting point | Must | Implemented without UI | Workspace prepare/preserve/reset exists in [workspace code](../src/demo/workspace.ts) and the fixture is documented in [GODOT_FIXTURE.md](GODOT_FIXTURE.md) | Yes | Yes |
 | Pinned Godot acquisition | Removes a manual engine-install dependency while preserving consent | Must | Implemented without UI | [README quick start](../README.md) and [project status](../PROJECT_STATUS.md) describe approved download and checksum behavior | Secondary setup only | Yes |
 | Project readiness summary | Explains whether the project, workspace, Codex, and Godot path are ready | Must | Partially implemented as CLI validation | Runner rejects invalid artifacts or dirty workspaces; no combined readiness view exists ([CLI guide](QUEST_CLI.md)) | Yes, concise | Yes |
-| Visual quest world | Replaces a task list with visible project direction | Must | Implemented as UI prototype | [Dashboard components](../src/dashboard/components.tsx) render completed, available, and planned nodes; the current JSON still contains only Enemy Targeting | Yes, primary | Yes |
+| Visual quest world | Replaces a task list with visible project direction | Must | Implemented with real roadmap data | [Dashboard components](../src/dashboard/components.tsx) render the validated roadmap; the current JSON honestly contains only Enemy Targeting | Yes, primary | Yes |
 | Multiple roadmap choices | Makes the world feel directional rather than scripted | Should | Contradicted / incomplete | [ROADMAP](../ROADMAP.md) names Enemy Targeting, Player Dash, and Damage Feedback, but the fixture [roadmap JSON](../fixtures/godot/baseline/.forge/roadmap.json) contains only Enemy Targeting | Yes | Yes, as lightweight prepared nodes |
 | Landmark or chapter hierarchy | Groups quests into larger world goals | Optional | Deferred / no contract | README uses “landmarks” conceptually, but [roadmap schema](../src/contracts/roadmap.ts) models only quest nodes | Visual framing only; do not imply data support | Not as a functional system |
-| Prepared quest selection | Starts a reliable bounded journey | Must | Implemented in data and CLI; mocked UI transition | [Enemy Targeting quest](../fixtures/godot/baseline/.forge/quests/enemy-targeting.json), fixed bundle loader, and dashboard demo controller exist | Yes | Yes |
+| Prepared quest selection | Starts a reliable bounded journey | Must | Implemented in data, CLI, and dashboard | The dashboard host loads the real [Enemy Targeting quest](../fixtures/godot/baseline/.forge/quests/enemy-targeting.json) through the fixed validated bundle loader | Yes | Yes |
 | Describe a new quest in plain language | Proves Forge can structure fresh intent | Should | Planned after golden path | [ROADMAP Milestone 5](../ROADMAP.md) explicitly sequences this after completion and packaging work | Secondary entry point | Yes only if core path is repeatable |
-| Forge understanding / quest brief | Lets the user correct intent before planning or implementation | Must | Structured data and UI prototype implemented | Quest fields are mirrored by the [dashboard brief](../src/dashboard/App.tsx); the UI does not read the artifact at runtime | Yes | Yes |
+| Forge understanding / quest brief | Lets the user correct intent before planning or implementation | Must | Implemented from real structured data | The [dashboard brief](../src/dashboard/App.tsx) renders the validated quest returned by the local host | Yes | Yes |
 | Focused project context inspection | Shows what Forge knows without pretending to scan everything | Must | Implemented for the prepared quest | The bounded context uses declared files; broad scanning is excluded in [CLI plan](plans/2026-07-13-enemy-targeting-cli.md) | Yes, summarized | Yes |
-| Reviewable implementation plan | Makes the proposed work understandable before action | Must | Prepared JSON and UI prototype implemented | [Prepared plan](../fixtures/godot/baseline/.forge/plans/enemy-targeting.json) is mirrored by the dashboard; runtime loading is not connected | Yes | Yes |
-| Plan assumptions and exclusions | Prevents hidden scope and surfaces uncertainty | Must | Contract and UI prototype implemented | [Implementation plan schema](../src/contracts/implementation-plan.ts) and dashboard brief show assumptions, exclusions, and open decisions | Yes | Yes |
+| Reviewable implementation plan | Makes the proposed work understandable before action | Must | Implemented from the prepared JSON | The dashboard loads the validated [prepared plan](../fixtures/godot/baseline/.forge/plans/enemy-targeting.json) at runtime | Yes | Yes |
+| Plan assumptions and exclusions | Prevents hidden scope and surfaces uncertainty | Must | Implemented from the strict contract | [Implementation plan schema](../src/contracts/implementation-plan.ts) fields render directly in the dashboard brief | Yes | Yes |
 | Refine plan | Keeps the user in control when the plan is wrong | Should | Planned, not implemented | [BUILD_PLAN](BUILD_PLAN.md) says refinement creates a new plan revision; [ROADMAP Milestone 2](../ROADMAP.md) calls for Refine plan | Yes | Yes, bounded revision flow |
 | Ask a contextual question | Supports understanding without turning the product into chat | Should | Planned, not implemented | [README](../README.md) and [ROADMAP Milestone 2](../ROADMAP.md) name contextual questions | Companion/Brief only | Yes, if tightly scoped |
-| Meaningful approval gate | Prevents implementation until the plan is accepted | Must | Implemented in CLI; UI control is mocked | Exact `APPROVE` is required by the real CLI; the dashboard button changes demo state only ([prototype review](reviews/2026-07-13-forge-workshop-dashboard-prototype-review.md)) | Yes, dominant decision | Yes |
-| Bounded Codex delegation | Performs real repository work inside approved limits | Must | Implemented without UI | Official SDK, workspace isolation, declared files, and no network are evidenced in [CLI handoff](handoffs/2026-07-13-enemy-targeting-cli.md) | Trigger and status only | Yes |
-| Plain-language progress | Shows what is happening without agent noise | Must | Implemented in CLI; UI stages are mocked | Five ordered messages exist in the [progress reducer](../src/quest-runner/progress.ts); the dashboard demo does not consume its events | Yes | Yes |
-| Raw technical detail disclosure | Lets technical users audit commands and logs | Should | UI disclosure implemented with demo evidence | Sanitized events and artifacts exist, but the dashboard technical details do not load them yet | Drawer from progress/evidence | Yes |
+| Meaningful approval gate | Prevents implementation until the plan is accepted | Must | Implemented in CLI and dashboard | **Build with Codex** posts exact approval to the local host, which calls the existing runner; duplicate starts are rejected | Yes, dominant decision | Yes |
+| Bounded Codex delegation | Performs real repository work inside approved limits | Must | Implemented through the dashboard host | The host injects the official SDK into the unchanged prepared-workspace runner with the same isolation and network rules | Trigger and status only | Yes |
+| Plain-language progress | Shows what is happening without agent noise | Must | Implemented live | The existing [progress reducer](../src/quest-runner/progress.ts) emits five ordered messages through server-sent dashboard events | Yes | Yes |
+| Raw technical detail disclosure | Lets technical users audit commands and logs | Should | Implemented with current sanitized evidence | Real verification evidence and sanitized events load behind closed technical details | Drawer from progress/evidence | Yes |
 | Cancel active implementation | Preserves agency during work | Should | Cancellation exists only before SDK start | Pre-run cancellation is tested; mid-run cancellation is planned in [BUILD_PLAN](BUILD_PLAN.md) | Contextual secondary action | Yes if runtime supports it safely |
 | Automated verification | Replaces “agent says done” with checks | Must | Implemented | Live run passed `VERIFY-1` and `VERIFY-2` in [sanitized evidence](evidence/2026-07-13-enemy-targeting-cli-live.json) | Yes | Yes |
-| Acceptance-criterion evidence | Connects each promise to proof | Must | Review artifacts and UI prototype implemented | The dashboard mirrors committed sanitized results; it does not produce or load current-run evidence | Yes | Yes |
+| Acceptance-criterion evidence | Connects each promise to proof | Must | Implemented from current review artifacts | The dashboard renders the real strict review and criterion mapping produced by the current run | Yes | Yes |
 | Changed-file and scope review | Shows whether Codex stayed within the plan | Must | Implemented | Actual Git diff and unexpected-file detection drive verdicts in [review logic](../src/quest-runner/review.ts) | Yes | Yes |
-| Game launch | Makes the result tangible | Must | Implemented in CLI; UI planned | The quest CLI launches the prepared workspace through the verified Godot executable after automated review ([CLI guide](QUEST_CLI.md)) | Yes | Yes |
-| Creator play confirmation | Prevents automated checks from falsely claiming visible success | Must | Implemented in CLI; UI planned | Exact `I SAW IT WORK` is required after the game closes; the strict completion gate is evidenced in the [completion review](reviews/2026-07-13-quest-completion-gate-review.md) | Yes, primary result action | Yes |
-| “It did not work” path | Preserves trust when manual verification fails | Must | Implemented in CLI; UI planned | Exact `IT DID NOT WORK` leaves the quest incomplete and recommends review or repair ([CLI guide](QUEST_CLI.md)) | Yes | Yes |
-| Persistent quest completion | Makes progress survive restart | Must | Implemented in CLI; UI planned | Completion writes a final review, completion evidence, validated per-quest state, and roadmap `completed`; reruns report the completed state ([completion closeout](closeouts/2026-07-13-quest-completion-gate-closeout.md)) | Yes | Yes |
-| Quest Complete feedback | Provides a satisfying small win | Should | UI prototype implemented; persistence not connected | The dashboard labels completion as a prototype state and writes no Forge state | Yes | Yes, restrained |
+| Game launch | Makes the result tangible | Must | Implemented in CLI and dashboard | **Play the result** invokes the same verified prepared-workspace Godot launcher and waits for process exit | Yes | Yes |
+| Creator play confirmation | Prevents automated checks from falsely claiming visible success | Must | Implemented in CLI and dashboard | The dashboard enables exact creator outcomes only after a successful launch returns | Yes, primary result action | Yes |
+| “It did not work” path | Preserves trust when manual verification fails | Must | Implemented in CLI and dashboard | **It did not work** leaves completion absent and presents review/reset guidance | Yes | Yes |
+| Persistent quest completion | Makes progress survive restart | Must | Implemented in CLI and dashboard | The dashboard calls the same finalizer that writes final review, completion evidence, validated state, and roadmap before emitting success | Yes | Yes |
+| Quest Complete feedback | Provides a satisfying small win | Should | Implemented after verified persistence | The completed node, companion response, concise card, and Chronicle preview render only from reloaded completion state | Yes | Yes, restrained |
 | Contextual next quest | Makes the world feel continuous | Should | Planned, blocked by missing nodes | [ROADMAP Milestone 4](../ROADMAP.md) calls for unlock or recommendation | Yes | Yes if extra nodes exist |
-| Chronicle / project record | Keeps a concise history of decisions, runs, and outcomes | Must, concise | Run and completion records exist; UI and runtime index do not | Runs store plans, events, diffs, handoffs, reviews, and completion evidence; “persistent understanding” is explicitly file-based in [BUILD_PLAN](BUILD_PLAN.md) | Yes, secondary screen | Yes |
-| Companion guidance | Explains meaning, decisions, and next action | Must | Implemented in UI prototype | The Forge Companion appears across all five demo states; its messages are static state data | Yes, persistent rail/card | Yes |
-| Failure, retry, and blocked states | Keeps the experience honest and recoverable | Must | Fail verdict exists; UI and recovery planned | [ROADMAP Milestone 3](../ROADMAP.md) and [BUILD_PLAN](BUILD_PLAN.md); failed live run was preserved rather than relabeled | Yes | Yes |
+| Chronicle / project record | Keeps a concise history of decisions, runs, and outcomes | Must, concise | Latest completion implemented; multi-run index planned | The Chronicle surface reads the current persisted completion; older-run indexing remains absent | Yes, secondary screen | Yes |
+| Companion guidance | Explains meaning, decisions, and next action | Must | Implemented as state-driven UI copy | The Forge Companion responds to real workspace, run, proof, and completion state | Yes, persistent rail/card | Yes |
+| Failure, retry, and blocked states | Keeps the experience honest and recoverable | Must | Failure and blocked views implemented; retry remains manual | Verification and launch failures retain evidence and never advance completion; reset remains explicit | Yes | Yes |
 | Reset demo | Restores a repeatable judge baseline without silent data loss | Must for rehearsal | Implemented without UI | Explicit confirmed reset and dirty-workspace refusal are documented in [CLI guide](QUEST_CLI.md) | Settings/secondary | Yes |
 | Labeled replay fallback | Protects the demo from network/runtime failure without misrepresentation | Should | Planned, not implemented | [BUILD_PLAN](BUILD_PLAN.md) requires a visibly labeled sanitized replay | Secondary recovery path | Yes |
 | Generic chat home | Familiar prompt entry | Defer | Not implemented and contrary to product promise | [README](../README.md) differentiates Forge from blank chat | No | No |
@@ -122,7 +122,7 @@ Priority meanings: **Must** is required for the golden path; **Should** improves
 
 ### Capability conclusion
 
-The current dashboard intentionally simulates the view transitions while labeling them as prototype behavior. Integration must replace those demo transitions with the existing capability path: prepared project and quest artifacts → approved plan → real runner stages → diff and review evidence → game launch → explicit play result → persistent roadmap closeout. Anything outside that chain is secondary.
+The dashboard now exposes the existing capability path directly: prepared project and quest artifacts → approved plan → real runner stages → diff and review evidence → game launch → explicit play result → persistent roadmap closeout. The judge path contains no mocked state controller. Ordinary automated tests replace only external SDK and launcher dependencies with controlled fakes.
 
 ## 4. Workflow state model
 
@@ -151,7 +151,7 @@ Keep three types of state separate in both implementation and copy:
 - **Run workflow:** `PLAN → APPROVE → IMPLEMENT → REVIEW → DOCUMENT → COMPLETE` governs one attempt.
 - **View state:** selection, open drawer, loading state, and current route are transient UI concerns.
 
-The current contracts support the first two imperfectly: roadmap and run artifacts exist, and successful completion writes validated `.forge/state/<quest-id>.json`, but there is no durable owner for an in-progress run or current UI focus. Before runtime integration, choose one deterministic source for those live pointers; do not infer durable state from which screen was last open.
+Roadmap and run artifacts remain the durable truth, and successful completion writes validated `.forge/state/<quest-id>.json`. The local host now owns the single in-progress run and Godot process in memory to prevent duplicates without creating another state system. Restart recovery for an interrupted run is intentionally not implemented; durable screens are reconstructed from validated artifacts rather than the last open view.
 
 ## 5. Information architecture
 
@@ -662,14 +662,14 @@ Only the following decisions require owner input before or during dashboard impl
 
 ## 12. Recommended next implementation artifact
 
-The low-fidelity screen map and first React/Vite prototype are now complete. The next artifact should be a **thin local host integration plan**, not additional visual-concept work or broad platform architecture.
+The low-fidelity screen map, React/Vite dashboard, and thin local host integration are complete. The next artifact should be a **clean-machine judge rehearsal record**, not additional feature breadth.
 
 Recommended sequence from the current milestone:
 
-1. **Define the host boundary:** Read prepared quest, plan, roadmap, and completion artifacts without duplicating their validation rules.
-2. **Connect approval and progress:** Start the existing runner only after the dashboard approval action and map its existing reduced stages to UI state.
-3. **Connect evidence and play:** Render real review artifacts, own the Godot process return, and preserve the existing exact creator-confirmation and persistence gates.
-4. **Add blocked and failed states:** Wire recovery views only after the golden-path adapter works end to end.
+1. **Rehearse the exact launch:** Prepare Godot once, run `npm run forge`, and measure the full judge path on clean Windows.
+2. **Obtain one successful live result:** Let the real dashboard run reach automated proof, play it, and record genuine creator confirmation.
+3. **Harden verified failures only:** Fix setup, focus return, or reliability defects observed during rehearsal without weakening review gates.
+4. **Add replay only if needed:** Keep any sanitized fallback permanently and visibly labeled as replay.
 
 The integration review should preserve five product checks:
 
@@ -683,13 +683,13 @@ The integration review should preserve five product checks:
 
 These are not design inventions; they are source-of-truth gaps that affect implementation:
 
-1. A React/Vite UI prototype now exists, but it is intentionally a demo-state controller with no local host or live runner adapter.
+1. The React/Vite UI and thin local host are connected to the real runner. A real development run exercised approval, progress, evidence preservation, and the failed-verification screen; it did not produce or claim human play confirmation.
 2. No current landmark contract, storyboard, or separate dashboard/workspace vision document exists. The implemented [roadmap schema](../src/contracts/roadmap.ts) has quest nodes only.
 3. Product documents describe “several prepared gameplay quests” or “a few additional roadmap choices,” but the current roadmap contains one Enemy Targeting node.
 4. The architecture proposes `.forge/project.json` and a global `.forge/state.json`; the fixture contains neither. Successful runs now create validated per-quest completion state under `.forge/state/`, while the project-manifest template still retains a placeholder engine version and paths that do not match the current fixture layout.
-5. The UI is expected to show an active quest, but the live run deliberately leaves the roadmap node `available` through automated conditional pass. A durable in-progress-run/current-focus owner is still missing.
+5. The local host owns the active run in memory while the roadmap correctly remains `available` through automated conditional pass. Recovery after restarting the host mid-run is still missing.
 6. Plan refinement and contextual questions are promised in dashboard scope but have no runtime flow or artifact-writing implementation.
-7. Game launch, exact creator confirmation, final `PASS`, roadmap completion, and completion evidence are implemented in the CLI. Dashboard host integration, focus/return presentation, and the Chronicle index remain unimplemented.
+7. Game launch, exact creator confirmation, final `PASS`, roadmap completion, and completion evidence are connected in both CLI and dashboard. A multi-entry Chronicle index and clean-machine focus/return rehearsal remain unimplemented.
 8. A sanitized replay fallback is an approved architecture decision but has no implementation or representative replay UX contract.
 
 Until these are resolved, the dashboard should remain a thin, honest interface over the prepared golden path rather than visually implying a broader platform.
