@@ -28,7 +28,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Scaffold strict typed contracts and validate the prepared examples.
 - [x] Create the smallest playable Godot sample project.
 - [x] Add configured Godot 4.7 fixture verification and resettable workspace behavior.
-- [ ] Add a prepared **Enemy Targeting** quest and acceptance criteria.
+- [x] Add a prepared **Enemy Targeting** quest and acceptance criteria.
 - [ ] Implement focused plan, build, and closeout skills.
 - [ ] Invoke Codex against the sample project's working directory.
 - [ ] Capture structured events, diff, commands, checks, and handoffs.
@@ -88,7 +88,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ## Prepared quests
 
-1. **Enemy Targeting** — required golden path.
+1. **Enemy Targeting** — required golden path; definition and prepared plan complete, mechanic not implemented.
 2. **Player Dash** — roadmap choice; implementation is optional until the golden path is complete.
 3. **Damage Feedback** — roadmap choice and candidate for the new-quest planning demonstration.
 
@@ -120,4 +120,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The pinned Godot bootstrap is `COMPLETE`; see its [plan](docs/plans/2026-07-13-pinned-godot-bootstrap.md) and [closeout](docs/closeouts/2026-07-13-pinned-godot-bootstrap-closeout.md). The next smallest task is the prepared **Enemy Targeting** quest data and deterministic acceptance criteria, without implementing the mechanic or Codex runtime yet.
+The prepared Enemy Targeting quest is `COMPLETE`; see its [plan](docs/plans/2026-07-13-enemy-targeting-preparation.md) and [closeout](docs/closeouts/2026-07-13-enemy-targeting-preparation-closeout.md). The next smallest task is the command-line Codex execution loop for this one quest, using the official SDK before dashboard work.

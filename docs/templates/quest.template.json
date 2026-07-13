@@ -4,19 +4,26 @@
   "title": "Enemy Targeting",
   "summary": "Give the enemy a clear detection range and chase behavior.",
   "playerOutcome": "When the player moves close enough, the enemy visibly turns and chases them; outside that range it remains idle.",
+  "whyItMatters": "The mechanic makes the sample world visibly react to the player.",
+  "baselineBehavior": "The player moves, while the visible enemy remains idle at every distance.",
+  "expectedBehavior": "The enemy stays idle outside 220 pixels, detects and chases the player inside 220 pixels, and stops again when the player retreats.",
   "scope": {
     "included": ["Enemy detection", "Idle-to-chase transition", "Visible chase behavior"],
     "excluded": ["Combat damage", "Pathfinding around complex obstacles", "Additional enemy types"]
   },
-  "contextFiles": ["game/project.godot", "game/enemy.gd", "game/main.tscn"],
+  "contextFiles": ["project.godot", "main.tscn", "scripts/player.gd", "scripts/enemy.gd", "scripts/verify_fixture.gd"],
   "acceptanceCriteria": [
     { "id": "AC-1", "text": "The enemy remains idle while the player is outside the detection range." },
-    { "id": "AC-2", "text": "The enemy chases the player while the player is inside the detection range." },
-    { "id": "AC-3", "text": "The Godot project passes the pinned headless verification command." }
+    { "id": "AC-2", "text": "The enemy reports detection while the player is inside the detection range." },
+    { "id": "AC-3", "text": "The enemy moves toward the detected player." },
+    { "id": "AC-4", "text": "Existing player movement still works." },
+    { "id": "AC-5", "text": "The Godot project passes the pinned headless verification command." },
+    { "id": "AC-6", "text": "A user can launch the game and visibly confirm idle, detection, and chase behavior." }
   ],
   "verification": [
-    { "id": "VERIFY-1", "kind": "command", "argv": ["godot", "--headless", "--path", "game", "--script", "res://tests/verify_enemy_targeting.gd"] },
-    { "id": "VERIFY-2", "kind": "play", "instruction": "Move the player into and out of the enemy's detection range and observe idle and chase behavior." }
+    { "id": "VERIFY-1", "kind": "command", "argv": ["npm", "run", "check"] },
+    { "id": "VERIFY-2", "kind": "command", "argv": ["npm", "run", "godot:verify"] },
+    { "id": "VERIFY-3", "kind": "play", "instruction": "Run npm run demo:play, move into and out of range, and observe the enemy switch between IDLE and CHASING." }
   ],
   "preparedPlan": ".forge/plans/enemy-targeting.json"
 }

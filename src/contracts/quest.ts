@@ -39,6 +39,9 @@ export const questSchema = z
     title: nonEmptyStringSchema,
     summary: nonEmptyStringSchema,
     playerOutcome: nonEmptyStringSchema,
+    whyItMatters: nonEmptyStringSchema,
+    baselineBehavior: nonEmptyStringSchema,
+    expectedBehavior: nonEmptyStringSchema,
     scope: z
       .object({
         included: z.array(nonEmptyStringSchema).min(1),
@@ -52,6 +55,25 @@ export const questSchema = z
       .min(1),
     preparedPlan: relativePathSchema,
   })
-  .strict();
+  .strict()
+  .superRefine((quest, context) => {
+    const criterionIds = quest.acceptanceCriteria.map((criterion) => criterion.id);
+    if (new Set(criterionIds).size !== criterionIds.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["acceptanceCriteria"],
+        message: "Acceptance criterion IDs must be unique",
+      });
+    }
+
+    const verificationIds = quest.verification.map((verification) => verification.id);
+    if (new Set(verificationIds).size !== verificationIds.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["verification"],
+        message: "Verification IDs must be unique",
+      });
+    }
+  });
 
 export type Quest = z.infer<typeof questSchema>;

@@ -98,6 +98,34 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **AI contribution:** Implemented immutable build metadata, temporary streamed download, pre-extraction SHA-256 enforcement, safe ZIP extraction, failure cleanup, atomic versioned cache installation, Godot version validation, cache reuse, prepare/runtime integration, explicit opt-in CLI, offline tests, and operational workflow artifacts.
 - **Files changed:** `.gitignore`, package metadata, `src/godot/*`, `src/demo/cli.ts`, `tests/godot-bootstrap.test.ts`, `README.md`, `ROADMAP.md`, `docs/GODOT_FIXTURE.md`, and pinned-bootstrap plan/handoff/review/closeout records
 - **Verification:** `npm run check` passed typechecking and 16/16 offline tests. The explicit real bootstrap verified the official pinned checksum, installed Godot `4.7.stable.official.5b4e0cb0f`, and a second command reused the cache. Prepare preserved the workspace, confirmed reset restored it, headless verification emitted `FORGE_FIXTURE_VERIFY_OK`, the game exited `0` after a 120-frame play smoke, fixture baseline diff was empty, and `git diff --check` passed.
-- **Commit:** Created after this entry; reported in the final task response
+- **Commit:** `f2d232a13bbe2bd556a01c56a6fe9ef8c4f6e87a`
 - **Session ID:** Current Codex task; primary `/feedback` ID pending
 - **Next step:** Add only the prepared Enemy Targeting quest data and deterministic acceptance criteria for the command-line golden path.
+
+---
+
+## 2026-07-13 — Add the concise project status surface
+
+- **Actor/model surface:** Codex documentation work in the Codex desktop app
+- **Workflow stage:** Document / Complete
+- **Human decisions:** Add one root-level, human-readable status page; keep it to roughly one screen; update it only at milestone closeout; distinguish current status from the roadmap, changelog, provenance log, and technical evidence.
+- **AI contribution:** Summarized the latest closed pinned-Godot milestone and next bounded quest task, added current run instructions and evidence links, and made project-status maintenance an explicit requirement for future Codex milestone prompts.
+- **Files changed:** `PROJECT_STATUS.md`, `AGENTS.md`, `docs/AI_WORK_LOG.md`
+- **Verification:** Cross-checked claims against `ROADMAP.md`, pinned-bootstrap closeout and review evidence, `docs/GODOT_FIXTURE.md`, package scripts, git history, and working-tree state. `git diff --check` and evidence-path checks passed. One full `npm run check` rerun passed typechecking and 15/16 tests, with the ZIP traversal test observing one filename entry instead of two; its focused rerun passed 1/1 and the subsequent full run passed 16/16.
+- **Commit:** Included with the next milestone closeout; exact SHA reported in that task's final response
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Build the command-line Codex execution loop after the prepared Enemy Targeting quest is committed.
+
+---
+
+## 2026-07-13 — Prepare the Enemy Targeting quest
+
+- **Actor/model surface:** Codex implementation in the Codex desktop app
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Accepted pinned bootstrap commit `f2d232a13bbe2bd556a01c56a6fe9ef8c4f6e87a`; approved only the Enemy Targeting quest definition, deterministic criteria, prepared plan, available roadmap node, validation, and tests; explicitly deferred the mechanic, Codex runtime, dashboard, Godot infrastructure, scanning, and extra quests; required the command-line Codex loop next.
+- **AI contribution:** Extended the quest contract with explicit importance/baseline/expected fields and unique IDs; created the project-local quest, prepared plan, and roadmap; added a fixed strict loader with cross-reference and context-file validation; added focused negative tests; reviewed and documented the milestone; reconciled the separate project-status session without discarding it.
+- **Files changed:** `AGENTS.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, `docs/AI_WORK_LOG.md`, quest/plan/roadmap artifacts under `fixtures/godot/baseline/.forge`, quest contract and loader, templates, focused tests, package test script, and plan/handoff/review/closeout records
+- **Verification:** `npm run check` passed TypeScript and 19/19 tests. `git diff --check` passed. Diff review confirmed no changes to `project.godot`, `main.tscn`, GDScript, Godot bootstrap/runtime files, dashboard, Codex integration, or additional quests.
+- **Commit:** Created after this entry; reported in the final task response
+- **Session ID:** Current Codex task; primary `/feedback` ID pending
+- **Next step:** Implement the command-line Codex execution loop for this prepared quest with the official SDK before dashboard work.

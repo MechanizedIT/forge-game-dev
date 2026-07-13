@@ -120,8 +120,13 @@ Before calling a task complete:
 - Exercise the affected user path when practical.
 - Review the diff for unrelated changes.
 - Update the relevant roadmap or handoff state.
+- At milestone closeout, update `PROJECT_STATUS.md`; do not update it after every edit.
 - Add or update the AI work-log entry.
 - State what changed, what passed, what remains uncertain, and what should happen next.
+
+Use this requirement in future Codex milestone prompts:
+
+> Update `PROJECT_STATUS.md` at milestone closeout so it accurately reflects what works, what remains incomplete, how the current experience can be tested, and the next recommended milestone. Keep it concise and understandable without reading the technical handoffs.
 
 ## Priority when asked to proceed
 

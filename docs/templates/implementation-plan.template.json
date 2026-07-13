@@ -5,22 +5,22 @@
   "revision": 1,
   "stage": "APPROVE",
   "summary": "Add the smallest detection and chase behavior to the existing enemy.",
-  "assumptions": ["The baseline player and enemy movement already work."],
+  "assumptions": ["The baseline player movement works and the enemy is intentionally idle."],
   "steps": [
     {
       "id": "STEP-1",
       "description": "Add detection state and bounded chase movement to the enemy script.",
-      "files": ["game/enemy.gd"],
-      "criteria": ["AC-1", "AC-2"]
+      "files": ["scripts/enemy.gd", "main.tscn"],
+      "criteria": ["AC-1", "AC-2", "AC-3", "AC-6"]
     },
     {
       "id": "STEP-2",
-      "description": "Run the prepared headless verification.",
-      "files": [],
-      "criteria": ["AC-3"]
+      "description": "Extend and run deterministic headless checks while preserving player movement.",
+      "files": ["scripts/verify_fixture.gd"],
+      "criteria": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-5"]
     }
   ],
-  "verification": ["VERIFY-1", "VERIFY-2"],
+  "verification": ["VERIFY-1", "VERIFY-2", "VERIFY-3"],
   "excluded": ["Combat", "General enemy AI framework", "Unrelated refactors"],
   "openDecisions": []
 }

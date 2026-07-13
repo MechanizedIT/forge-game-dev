@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "runId": "enemy-targeting-prepared-v1",
+  "questId": "enemy-targeting",
+  "revision": 1,
+  "stage": "APPROVE",
+  "summary": "Add the smallest explicit detection state, direct chase movement, visible state feedback, and deterministic verification to the existing idle enemy.",
+  "assumptions": [
+    "The baseline fixture remains the implementation starting point.",
+    "The existing Player and Enemy CharacterBody2D nodes remain in main.tscn.",
+    "Direct movement is sufficient because the sample scene has no chase obstacles.",
+    "The prepared 220-pixel radius and 120-pixel-per-second chase speed require no further product decision."
+  ],
+  "steps": [
+    {
+      "id": "STEP-1",
+      "description": "Extend scripts/enemy.gd with a 220-pixel radius, a deterministic is_player_detected() query, and 120-pixel-per-second direct movement that stops outside the radius.",
+      "files": ["scripts/enemy.gd"],
+      "criteria": ["AC-1", "AC-2", "AC-3"]
+    },
+    {
+      "id": "STEP-2",
+      "description": "Connect the existing Player to the Enemy in main.tscn and make the enemy label visibly report IDLE or CHASING without external assets.",
+      "files": ["main.tscn"],
+      "criteria": ["AC-2", "AC-6"]
+    },
+    {
+      "id": "STEP-3",
+      "description": "Extend the existing headless verifier with deterministic outside-radius, inside-radius, chase-distance, and player-input checks and the prepared success token.",
+      "files": ["scripts/verify_fixture.gd"],
+      "criteria": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-5"]
+    },
+    {
+      "id": "STEP-4",
+      "description": "Run the complete automated checks, launch the game, and collect the user's visible confirmation before closeout.",
+      "files": [],
+      "criteria": ["AC-5", "AC-6"]
+    }
+  ],
+  "verification": ["VERIFY-1", "VERIFY-2", "VERIFY-3"],
+  "excluded": [
+    "Combat, damage, and health",
+    "Navigation, obstacle avoidance, or general enemy AI abstractions",
+    "Changes outside main.tscn, scripts/enemy.gd, and scripts/verify_fixture.gd",
+    "Dashboard, Codex runtime, replay, and quest-completion UI"
+  ],
+  "openDecisions": []
+}

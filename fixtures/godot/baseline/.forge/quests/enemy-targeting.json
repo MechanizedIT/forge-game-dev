@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "questId": "enemy-targeting",
+  "title": "Enemy Targeting",
+  "summary": "Make the idle enemy notice and chase the nearby player while preserving the calm state outside its range.",
+  "playerOutcome": "The player can approach the red enemy, see it switch from idle to chasing, and retreat beyond its range to make it stop again.",
+  "whyItMatters": "This is the sample world's first visible reaction to the player, turning a static scene into a responsive gameplay encounter.",
+  "baselineBehavior": "The blue player moves with the arrow keys. The red enemy is visible but always sets its velocity to zero and never detects or follows the player.",
+  "expectedBehavior": "The enemy remains idle beyond a 220-pixel detection radius, reports detection within that radius, moves directly toward the player while detected, and visibly returns to idle when the player leaves the radius.",
+  "scope": {
+    "included": [
+      "A 220-pixel enemy detection radius",
+      "Deterministic idle-to-chase and chase-to-idle transitions",
+      "Direct movement toward the detected player",
+      "A plain visible idle or chasing state",
+      "Headless checks for idle, detection, chase, and preserved player movement"
+    ],
+    "excluded": [
+      "Combat damage or health",
+      "Navigation or obstacle avoidance",
+      "Line-of-sight or field-of-view logic",
+      "Multiple targets or enemy types",
+      "Animation, external art, audio, or broad enemy AI infrastructure"
+    ]
+  },
+  "contextFiles": [
+    "project.godot",
+    "main.tscn",
+    "scripts/player.gd",
+    "scripts/enemy.gd",
+    "scripts/verify_fixture.gd"
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC-1",
+      "text": "With the player more than 220 pixels away, 30 physics frames leave enemy.is_player_detected() false, velocity at zero, and position unchanged within 0.01 pixels."
+    },
+    {
+      "id": "AC-2",
+      "text": "With the player 180 pixels away, enemy.is_player_detected() becomes true within one physics frame."
+    },
+    {
+      "id": "AC-3",
+      "text": "While the player remains detected, 30 physics frames reduce the enemy-to-player distance by at least 10 pixels."
+    },
+    {
+      "id": "AC-4",
+      "text": "Simulating the existing ui_right input for 10 physics frames moves the player right by at least 1 pixel, proving player movement still works."
+    },
+    {
+      "id": "AC-5",
+      "text": "npm run godot:verify exits successfully and emits FORGE_ENEMY_TARGETING_VERIFY_OK with idle, detection, chase, and player checks marked pass."
+    },
+    {
+      "id": "AC-6",
+      "text": "Launching with npm run demo:play lets a user see the enemy remain idle when far away, switch to CHASING and move when approached, then return to IDLE after the player retreats beyond the radius."
+    }
+  ],
+  "verification": [
+    {
+      "id": "VERIFY-1",
+      "kind": "command",
+      "argv": ["npm", "run", "check"]
+    },
+    {
+      "id": "VERIFY-2",
+      "kind": "command",
+      "argv": ["npm", "run", "godot:verify"]
+    },
+    {
+      "id": "VERIFY-3",
+      "kind": "play",
+      "instruction": "Run npm run demo:play. Move the blue player toward the red enemy until its label changes to CHASING and it moves toward the player; retreat until the label returns to IDLE and the enemy stops."
+    }
+  ],
+  "preparedPlan": ".forge/plans/enemy-targeting.json"
+}
