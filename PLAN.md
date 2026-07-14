@@ -245,6 +245,8 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
+**Current checkpoint:** Tasks 1 and 2 are complete. The Living Game Workshop shell is available only through `npm run forge:v0.2`; `npm run forge` and `npm run forge:v0.1` remain on the protected sample experience. Task 2 uses explicit fixture data and does not claim GPT planning, generated-project creation, new-project persistence, or integrated quest execution.
+
 ## Task 1 — exact acceptance criteria
 
 **Objective:** establish a continuously usable v0.1 fallback and measurable regression boundary before any v0.2 product change.
@@ -269,6 +271,12 @@ Higher reasoning is reserved for artifact safety, workspace creation, compatibil
 10. `git diff --check` passes, the diff contains no product redesign, and the AI work log records the protection decision and verification result.
 
 Task 1 ends after this protection layer. It does not begin Launchpad, visual-system, GPT, contract, starter, or new-project work.
+
+## Task 2 — completed shell boundary
+
+Task 2 adds an isolated Living Game Workshop preview with the two-choice Launchpad and a fixture-backed sample Project World. The Project World establishes the roadmap-dominant hierarchy, preview and playable-state anchor, five required roadmap states, companion placement, persistent idea-field placement, and responsive visual language. The Create path stops at an honest unavailable-state explanation, the idea field is local-only, and the prepared Enemy Targeting action does not invoke the runner from this shell yet.
+
+Evidence: `npm run check` passes 52 tests; `npm run check:v0.1` passes its production build and all 37 protected compatibility tests; desktop, tablet, and mobile browser reviews show no horizontal overflow or console warnings/errors. Review screenshots and the exact real-versus-fixture boundary are recorded in the dated Task 2 review and closeout artifacts.
 
 ## Rollback strategy
 

@@ -283,3 +283,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Build the Launchpad and Project World shell with fixture data only while keeping the normal and legacy sample paths on the proven backend.
+
+---
+
+## 2026-07-13 — Build the isolated Living Game Workshop shell
+
+- **Actor/model surface:** Codex repository implementation and in-app browser review
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 2 as fixture-only UI work; required the normal and legacy launches to remain on v0.1; prohibited GPT planning, blueprint contracts, starter creation, new-project persistence, generated quest execution, and sample art.
+- **AI contribution:** Added the two-choice Launchpad, honest Create placeholder, and responsive sample Project World with a roadmap-dominant canvas, preview/current-state anchor, five roadmap states, Forge Companion, and local-only idea field; isolated the new surface behind `npm run forge:v0.2`; added focused source/state tests and visual evidence.
+- **Files changed:** Additive `src/dashboard-v2` entry and fixture; `v0.2.html`; minimal host/build/script configuration; one focused test; two screenshots; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, Task 2 handoff/review/closeout, and this log.
+- **Verification:** `npm run check` passed 52/52 tests; `npm run check:v0.1` passed the three-entry production build and 37/37 protected compatibility tests; browser review passed at 1440×900, 768×900, and 390×844 without horizontal overflow or console warnings/errors; protected sample workspace, fixture, runner, verification, reset, and completion files were unchanged.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Reframe the real prepared Enemy Targeting journey inside the Living Game Workshop shell without beginning the new-game planning path.

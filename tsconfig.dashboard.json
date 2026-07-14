@@ -13,5 +13,11 @@
     "noUncheckedIndexedAccess": true,
     "types": ["vite/client"]
   },
-  "include": ["src/dashboard/**/*.ts", "src/dashboard/**/*.tsx", "vite.config.ts"]
+  "include": [
+    "src/dashboard/**/*.ts",
+    "src/dashboard/**/*.tsx",
+    "src/dashboard-v2/**/*.ts",
+    "src/dashboard-v2/**/*.tsx",
+    "vite.config.ts"
+  ]
 }

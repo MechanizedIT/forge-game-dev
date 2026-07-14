@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** `v0.2 Task 1 — Protect the v0.1 baseline`
+**Current milestone:** `v0.2 Task 2 — Living Game Workshop shell`
 
-**Overall state:** `COMPLETE` — the refined v0.1 sample experience is preserved behind a dedicated legacy entry and the focused compatibility boundary passes
+**Overall state:** `COMPLETE` — the isolated Launchpad and fixture-backed Project World are implemented while the refined v0.1 sample experience remains the default and passes its compatibility boundary
 
 ## What works now
 
@@ -13,6 +13,9 @@
 - Development continues on `feature/v0.2-living-workshop`.
 - `npm run forge` still launches the existing sample experience and remains the default until final v0.2 rehearsal.
 - `npm run forge:v0.1` builds and opens `/legacy.html`, which renders a byte-identical copy of the protected pre-task sample component.
+- `npm run forge:v0.2` builds and opens `/v0.2.html`, an isolated Living Game Workshop preview with exactly two Launchpad choices.
+- **Explore the sample game** opens a responsive fixture-backed Project World with the roadmap as the dominant canvas, a stylized preview and current-state summary, five roadmap states, the Forge Companion, and a local-only idea field.
+- **Create a new game** opens an honest placeholder explaining that idea-to-blueprint planning is not connected yet.
 - `npm run check:v0.1` builds both entries and exercises prepared artifacts, approval, duplicate-run protection, ordered progress, scope and verification gates, launch/confirmation behavior, persistence, reset, and CLI cancellation.
 - The complete Enemy Targeting workflow, pinned Godot runtime, explicit creator confirmation, persistent completion, and safe reset remain available.
 
@@ -21,16 +24,21 @@
 ```powershell
 npm run check:v0.1
 npm run check
-npm run godot:verify
+npm run forge:v0.2
 npm run forge:v0.1
 ```
 
 - Focused compatibility: 37/37 tests passed.
-- Full suite: 49/49 tests passed.
-- Production build emitted both `index.html` and `legacy.html`.
-- Legacy HTTP smoke returned 200 from `/legacy.html`.
-- Godot 4.7 emitted `FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass controls=arrows+wasd`.
+- Full suite: 52/52 tests passed.
+- Production build emitted `index.html`, `legacy.html`, and `v0.2.html`.
+- Browser review passed at 1440×900, 768×900, and 390×844 with no horizontal overflow or console warnings/errors.
 - No fixture, quest runner, Godot runtime, demo workspace, quest loader, contract, verification, reset, or completion file changed.
+
+## Truthful Task 2 boundary
+
+- **Real:** isolated launch routing, Launchpad navigation, responsive workshop shell, local idea-field interaction, and the protected v0.1 backend and workflow.
+- **Fixture:** sample preview, playable-state explanation, roadmap nodes and regions, Companion context, and recommended-quest presentation.
+- **Unavailable in this shell:** real Enemy Targeting review/build/playtest integration, GPT-5.6 planning, blueprint contracts, starter creation, generated-project persistence, and sample visual art.
 
 ## Approved v0.2 scope
 
@@ -40,7 +48,6 @@ Optional only after the required path is stable: generated-quest implementation,
 
 ## Still incomplete
 
-- Launchpad and Living Game Workshop visual shell
 - Sample-flow recomposition inside the new shell
 - GPT-5.6 new-game intake and blueprint generation
 - Top-down arena starter creation and verification
@@ -50,6 +57,6 @@ Optional only after the required path is stable: generated-quest implementation,
 
 ## Next bounded task
 
-Task 2: build the Launchpad and Project World shell with fixture data only. Keep `npm run forge` on the protected experience and do not begin GPT planning, starter creation, or persistence.
+Task 3: connect the real prepared Enemy Targeting flow to the Living Game Workshop shell, preserving all current backend semantics and both fallback commands. Do not begin GPT planning, starter creation, or new-project persistence.
 
-See [`PLAN.md`](PLAN.md), the [Task 1 review](docs/reviews/2026-07-13-v0.2-task-1-baseline-protection-review.md), and the [Task 1 closeout](docs/closeouts/2026-07-13-v0.2-task-1-baseline-protection-closeout.md).
+See [`PLAN.md`](PLAN.md), the [Task 2 review](docs/reviews/2026-07-13-v0.2-task-2-workshop-shell-review.md), and the [Task 2 closeout](docs/closeouts/2026-07-13-v0.2-task-2-workshop-shell-closeout.md).

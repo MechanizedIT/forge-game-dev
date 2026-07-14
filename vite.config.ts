@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         main: path.resolve("index.html"),
         legacy: path.resolve("legacy.html"),
+        v02: path.resolve("v0.2.html"),
       },
     },
   },
