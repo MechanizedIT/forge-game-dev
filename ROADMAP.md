@@ -141,6 +141,16 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Scope:** The required starter is Top-down arena only. Do not build a generalized template framework or the other starters before the required experience works and has been rehearsed.
 
+#### Task 8 — Public Showcase, Guided Walkthrough, and Submission Landing Page
+
+- [x] Add an isolated static showcase driven by typed release, link, tour, walkthrough, evidence, proof, capability, limitation, and vision content.
+- [x] Explain Forge to non-programmers through the problem, method, interface tour, two verified workflow replays, current/future boundary, architecture, proof, and local-use path.
+- [x] Reuse inspected Task 7 application states with public provenance and keep generated/code-native illustration visibly separate from evidence.
+- [x] Add static build, content/privacy validation, optional public-link states, performance budgets, and Vercel/generic-host readiness without deployment.
+- [x] Pass Edge review at desktop, tablet, mobile, deep-link, keyboard, focus, dialog, and reduced-motion states without importing operational Forge code.
+
+**Exit:** Judges have a deploy-ready, no-install explanation and guided replay while the full Forge application, v0.2 release tag, local safety boundaries, and Task 7 evidence remain unchanged.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -175,4 +185,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Stop for approval. Task 7 may harden and rehearse the two completed required paths end to end. Keep generated-quest Codex implementation, additional starters, import, generalized scanning, and sample-art work outside that bounded task.
+Task 8 is complete on `feature/build-week-showcase`. Remaining submission actions are owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a license, deploy the static site, and push or submit only when authorized. Generated-quest Codex implementation remains a separate future task.

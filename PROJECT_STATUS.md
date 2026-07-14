@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-14
 
-**Current milestone:** `v0.2 Task 7 — End-to-End Hardening`
+**Current milestone:** `v0.2 Task 8 — Public Showcase and Guided Walkthrough`
 
-**Overall state:** `COMPLETE / PASS` — both real journeys, creator play confirmation, setup, responsive, accessibility, compatibility, reset, and final clean-clone gates pass.
+**Overall state:** `COMPLETE / PASS` — the Task 7 local release remains verified, and the additional static public showcase is build-ready, validated, responsive, and deployment-ready.
 
 ## What works now
 
@@ -15,6 +15,15 @@
 - Task 7 corrected visible Windows launching for generated Godot and File Explorer actions.
 - Edge `150.0.4078.65` and Playwright `1.61.1` pass 48 automated captures across six suites at desktop, tablet, and mobile sizes, including focus, reduced motion, failures, and recovery. One additional real creator-confirmed completion capture records the final gate.
 - A clean temporary checkout passed `npm ci`, Codex login status, first-time pinned Godot download, and demo preparation.
+- `npm run showcase` opens a separate static submission surface with a thirty-second product explanation, interface tour, two seven-step guided replays, current/future boundary, architecture, Task 7 proof, local setup, and truthful pending public links.
+- The showcase imports no operational Forge service, makes no runtime data call, and cannot run Codex or GPT-5.6, launch Godot or Git, access files, modify games, simulate an agent run, or persist visitor projects.
+
+## Task 8 evidence
+
+- Typed content records the represented `v0.2.0` tag, release commit `08cffa7`, public links, both walkthroughs, evidence provenance, proof facts, capability horizons, and limitations.
+- Nine inspected Task 7 states are reused as optimized evidence; one generated hero and two deterministic SVG assets are labelled illustration rather than proof.
+- `npm run showcase:check` passes typechecking, five content tests, the static build, privacy/truth validation, and budgets: 40,401 bytes JavaScript, 22,774 bytes CSS, and 245,048 bytes of initial document assets.
+- Task 8 Edge review passes desktop, tablet, mobile, keyboard, focus, touch/click, deep-link, truthful pending-video dialog, Escape/focus-return, console/network, overflow, and reduced-motion checks with zero issues.
 
 ## Task 7 evidence
 
@@ -25,9 +34,10 @@
 
 ## Remaining submission work
 
-1. Select a license, record/publish the under-three-minute video, add public submission URLs, and preserve the primary `/feedback` ID.
-2. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
+1. Review the public copy, select a license, record/publish the under-three-minute video, and preserve the primary `/feedback` ID privately.
+2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
+3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
 Generated-quest implementation, additional starters, import, generalized scanning, Graphify, Godot MCP, general chat, and sample art remain deferred.
 
-See the [judge guide](docs/JUDGE_GUIDE.md), [Task 7 review](docs/reviews/2026-07-14-v0.2-task-7-hardening-review.md), [closeout](docs/closeouts/2026-07-14-v0.2-task-7-hardening-closeout.md), [rehearsal evidence](docs/evidence/2026-07-14-v0.2-task-7-rehearsal.json), [real new-game evidence](docs/evidence/2026-07-14-v0.2-task-7-real-new-game.json), and [browser evidence](docs/evidence/2026-07-14-v0.2-task-7-browser-review/README.md).
+See the [showcase README](showcase/README.md), [Task 8 plan](docs/plans/2026-07-14-v0.2-task-8-public-showcase.md), [Task 8 browser evidence](docs/evidence/2026-07-14-v0.2-task-8-showcase-review/README.md), [judge guide](docs/JUDGE_GUIDE.md), and final [Task 7 review](docs/reviews/2026-07-14-v0.2-task-7-hardening-review.md).

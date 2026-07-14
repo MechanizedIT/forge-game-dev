@@ -1,5 +1,11 @@
 # Forge v0.2 Judge Guide
 
+## No-install public overview
+
+The additional Task 8 showcase under `showcase/` gives judges a static, shareable explanation and guided replay of both verified v0.2 paths. It is explicitly labelled **Guided replay of verified Forge workflows** and does not run Codex, call GPT-5.6, launch Godot or Git, access files, modify a project, or persist visitor state.
+
+Run it locally with `npm run showcase`, validate it with `npm run showcase:check`, or review the production build with `npm run showcase:review`. The public deployment URL remains an owner-supplied submission link; the real judged application path below is unchanged.
+
 ## What Forge is
 
 Forge turns AI game-development work into visible, bounded, verified quests. It helps a creator shape a game idea, keeps Codex focused on one approved change at a time, verifies the result, and records what changed.
@@ -65,3 +71,5 @@ Generated-quest Codex implementation is intentionally deferred. The sample path 
 - Task 7 rehearsal: `docs/evidence/2026-07-14-v0.2-task-7-rehearsal.json`
 - Edge screenshots and reports: `docs/evidence/2026-07-14-v0.2-task-7-browser-review/`
 - Build Week provenance: `BUILD_WEEK_BASELINE.md`, `BUILD_WEEK_CHANGELOG.md`, `docs/AI_WORK_LOG.md`, and Git history
+- Static showcase: `showcase/README.md`
+- Showcase responsive evidence: `docs/evidence/2026-07-14-v0.2-task-8-showcase-review/`

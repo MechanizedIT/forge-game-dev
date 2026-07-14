@@ -134,6 +134,19 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 - **Decisions:** [Task 6 closeout](closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md) and [Task 6 review](reviews/2026-07-14-v0.2-task-6-generated-project-world-review.md).
 - **Protect:** GET remains byte-for-byte read-only; Chronicle/roadmap remain unchanged by idea saves; generated quests remain `not_enabled`; starter visuals remain labelled preview rather than captured gameplay.
 
+<!-- forge-subsystem:public-showcase -->
+### public-showcase — Static public showcase and guided replay
+
+- **Purpose:** Explain the verified Forge v0.2 release through a no-install public page and two deterministic guided walkthroughs.
+- **Owns:** Static page composition, typed public content, public link configuration, copied/optimized evidence metadata, generated decorative assets, showcase validation, static build, and showcase Edge review.
+- **Does not own:** Operational Forge workflow state, Codex/GPT execution, Godot/Git processes, project files, runtime persistence, Task 7 evidence truth, or external deployment.
+- **Start:** [showcase README](../showcase/README.md), [typed release content](../showcase/src/content/release.ts), [walkthroughs](../showcase/src/content/walkthroughs.ts), [evidence manifest](../showcase/src/content/evidence.ts), and [page entry](../showcase/src/main.ts).
+- **Contracts and artifacts:** Typed content under `showcase/src/content/`, static assets under `showcase/public/`, production output under ignored `showcase/dist/`, and Task 8 browser reports under [evidence](evidence/2026-07-14-v0.2-task-8-showcase-review).
+- **Consumers:** Build Week judges, prospective local users, social links, deployment owner, and submission documentation.
+- **Tests:** [showcase content tests](../showcase/tests/content.test.ts), [showcase validator](../showcase/scripts/validate.ts), and [showcase Edge review](../showcase/scripts/review.ts).
+- **Decisions:** [Task 8 plan](plans/2026-07-14-v0.2-task-8-public-showcase.md) and [static showcase ADR](../showcase/docs/ADR_STATIC_SHOWCASE.md).
+- **Protect:** Never present fixture replay as live AI, never classify illustration as proof, never publish private IDs or local paths, never import operational services, and never render an absent optional URL as an active link.
+
 <!-- forge-subsystem:visual-review-evidence -->
 ### visual-review-evidence — Visual review and evidence
 

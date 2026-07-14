@@ -26,6 +26,7 @@ const requiredSubsystemIds = [
   "godot-verification",
   "project-registry",
   "generated-project-world",
+  "public-showcase",
   "visual-review-evidence",
   "documentation-status",
 ];
@@ -71,6 +72,7 @@ const requiredChangeEntries = [
   "Generated roadmap, quest brief, or Project World display failure",
   "Persistence or Chronicle behavior change",
   "Responsive or browser-review failure",
+  "Static showcase content, build, or review failure",
 ];
 
 function fail(message) {

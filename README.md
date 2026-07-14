@@ -12,9 +12,19 @@ Forge turns AI-assisted game development into a visual, guided series of quests.
 
 ## Demo
 
-The public three-minute video and Devpost links will be added during final submission packaging. The current live path and remaining release gate are in the [v0.2 judge guide](docs/JUDGE_GUIDE.md).
+The public three-minute video, deployed showcase, and Devpost links will be added during final submission packaging. The verified local path and current owner actions are in the [v0.2 judge guide](docs/JUDGE_GUIDE.md).
 
 ![Forge roadmap dashboard](docs/assets/forge-dashboard.png)
+
+### Public Build Week showcase
+
+The separate static showcase gives a no-install explanation and guided replay of both verified v0.2 workflows. It cannot run Forge operations and is not a replacement for the local application.
+
+```powershell
+npm run showcase
+```
+
+Build and validate the deployable static output with `npm run showcase:check`; run the responsive Microsoft Edge review with `npm run showcase:review`. See [`showcase/README.md`](showcase/README.md) for content, evidence, public-link, and deployment ownership. The final public showcase, demo-video, and Devpost URLs remain pending owner configuration.
 
 ## The Build Week experience
 

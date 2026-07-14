@@ -85,6 +85,15 @@ Use this map when the task arrives as a symptom or requested behavior. The subsy
 - **Neighboring consumers:** Review/closeout evidence, README screenshots, judge replay, and accessibility behavior.
 - **Do not change first:** Hand-edit evidence, weaken assertions, substitute fixture states for required live states, or mutate runtime artifacts to make a screenshot pass.
 
+### Static showcase content, build, or review failure
+
+- **Symptom or request:** A public claim is stale, walkthrough step is wrong, evidence image is missing, optional link is broken, static build fails, responsive review regresses, or the hosted page implies a live Forge operation.
+- **Owning subsystem:** `public-showcase`; use `visual-review-evidence` only when the shared browser tooling itself is defective and `documentation-status` when current milestone truth is wrong outside the page.
+- **Start:** [showcase README](../showcase/README.md), the relevant typed source under [showcase content](../showcase/src/content), [showcase entry](../showcase/src/main.ts), [validator](../showcase/scripts/validate.ts), and [review harness](../showcase/scripts/review.ts).
+- **Contracts and tests:** [content tests](../showcase/tests/content.test.ts), [typed evidence manifest](../showcase/src/content/evidence.ts), `npm run showcase:check`, and `npm run showcase:review`.
+- **Neighboring consumers:** Public deployment, submission links, Open Graph metadata, Task 8 evidence, judge guide, video shot list, and repository status.
+- **Do not change first:** Operational dashboard services, quest runner, blueprint planner, project creation, generated Project World, Task 7 evidence, or release tags to solve a static showcase problem.
+
 ## Maintenance rule
 
 When a new stable subsystem is added, update both this map and the repository guide in the same change, use a unique subsystem ID, link at least one protecting test, and run `npm run context:check`. A dated closeout is decision evidence, not a replacement for these routes.
