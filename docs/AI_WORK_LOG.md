@@ -241,3 +241,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains a manual packaging item
 - **Next step:** Record the public video, add final submission URLs and metadata, preserve the primary `/feedback` ID, choose the license, and decide on the optional offline fallback.
+
+---
+
+## 2026-07-13 — Create the v0.1.0 Day 1 prototype checkpoint
+
+- **Actor/model surface:** Codex documentation and Git release checkpoint in the Codex desktop app
+- **Workflow stage:** Review / Document / Complete
+- **Human decisions:** Preserve the judge-ready golden path at `9f65dd08d2dfbf641fbcf7d6a87b029553374713`; add no features, refactors, or behavior changes; create one documentation-only commit when the missing changelog requires it; annotate the resulting commit as `v0.1.0`; do not push automatically.
+- **AI contribution:** Confirmed the starting tree was clean and the current README accurately described installation, the real dashboard, automated proof versus creator confirmation, completed scope, remaining submission work, and platform limitations; added the official Day 1 changelog milestone and aligned project status and roadmap checkpoint language.
+- **Files changed:** `BUILD_WEEK_CHANGELOG.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, and `docs/AI_WORK_LOG.md`
+- **Verification:** Documentation links, whitespace, sensitive-path scan, staged diff scope, and final Git status checked; no application, fixture, dependency, or test file changed.
+- **Commit:** Documentation-only checkpoint commit created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Push the checkpoint commit and annotated tag when authorized, then complete only the remaining submission packaging tasks.

@@ -89,6 +89,13 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Every submission link works, the repository is understandable, and the golden path is repeatable within a few minutes.
 
+### v0.1.0 — Day 1 Judge-Ready Golden Path
+
+- [x] Preserve the clean-install, real-dashboard, automated-proof, creator-confirmation, persistence, and reset path as the official Day 1 checkpoint.
+- [x] Record remaining submission work and known platform limitations without expanding product scope.
+
+**Checkpoint:** The working judge path is frozen at `v0.1.0`. Further work begins from this known-good baseline and must not weaken its proof or replay guarantees.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -123,4 +130,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The command-line loop, dashboard integration, development-machine run, and isolated clean-Windows judge rehearsal are `COMPLETE`. The clean rehearsal is recorded in its [plan](docs/plans/2026-07-13-judge-readiness-rehearsal.md), [review](docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md), and [closeout](docs/closeouts/2026-07-13-judge-readiness-rehearsal-closeout.md). The next bounded milestone is manual submission packaging: video, final links and metadata, `/feedback` ID, license decision, and an offline-fallback decision.
+The command-line loop, dashboard integration, development-machine run, and isolated clean-Windows judge rehearsal are `COMPLETE` and preserved as `v0.1.0`. The clean rehearsal is recorded in its [plan](docs/plans/2026-07-13-judge-readiness-rehearsal.md), [review](docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md), and [closeout](docs/closeouts/2026-07-13-judge-readiness-rehearsal-closeout.md). The next bounded milestone is manual submission packaging: video, final links and metadata, `/feedback` ID, license decision, and an offline-fallback decision.

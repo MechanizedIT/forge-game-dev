@@ -2,9 +2,11 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** Clean Windows judge rehearsal complete
+**Current milestone:** `v0.1.0 — Day 1 Judge-Ready Golden Path`
 
 **Overall state:** `READY` for live judge testing from a clean checkout; manual submission packaging remains
+
+This checkpoint freezes the verified Day 1 experience before further refinement or feature work. Release notes: [`BUILD_WEEK_CHANGELOG.md`](BUILD_WEEK_CHANGELOG.md).
 
 ## What works now
 
