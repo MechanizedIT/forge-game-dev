@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "starterId": "top-down-arena",
+  "version": "1.0.0",
+  "foundation": "top_down_arena",
+  "projectFile": "project.godot",
+  "mainScene": "res://scenes/main.tscn",
+  "verificationScript": "res://scripts/verify_project.gd",
+  "successMarker": "FORGE_TOP_DOWN_ARENA_VERIFY_OK",
+  "requiredNodes": [
+    "Main",
+    "Main/Player",
+    "Main/ObjectiveMarker"
+  ],
+  "requiredInputActions": [
+    "ui_left",
+    "ui_right",
+    "ui_up",
+    "ui_down"
+  ],
+  "files": [
+    ".gitignore",
+    "project.godot",
+    "scenes/main.tscn",
+    "scripts/main.gd",
+    "scripts/objective_marker.gd",
+    "scripts/player.gd",
+    "scripts/verify_project.gd"
+  ],
+  "substitutions": [
+    {
+      "file": "project.godot",
+      "token": "__FORGE_PROJECT_NAME__",
+      "owner": "forge"
+    }
+  ]
+}

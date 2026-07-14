@@ -129,7 +129,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Refine Task 2 visual hierarchy, roadmap semantics, game preview, Companion placement, and responsive progression.
 - [x] Reframe and browser-review the real sample flow inside the Living Game Workshop without changing backend semantics.
 - [x] Add focused GPT-5.6 idea intake and Top-down arena blueprint generation.
-- [ ] Create and verify one real Top-down arena starter project.
+- [x] Create and verify one real Top-down arena starter project.
 - [ ] Persist and reopen the generated roadmap, documentation, project state, and Chronicle.
 - [ ] Harden and rehearse both required paths end to end.
 
@@ -175,4 +175,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Stop for approval. Task 5 may create and verify one real Godot project from the controlled Top-down arena starter, then persist its authoritative artifacts. Keep generated Project World integration and generated-quest Codex implementation outside that bounded task.
+Stop for approval. Task 6 may load the registered generated project into Project World from its existing authoritative artifacts. Keep project regeneration, generated-quest Codex implementation, additional starters, and sample-art work outside that bounded task.

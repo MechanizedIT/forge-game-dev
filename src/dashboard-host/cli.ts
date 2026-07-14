@@ -8,6 +8,7 @@ import { launchPreparedGame } from "../godot/run-fixture.js";
 import { OfficialCodexExecutor } from "../quest-runner/sdk.js";
 import { ForgeDashboardService } from "./service.js";
 import { createForgeDashboardServer } from "./server.js";
+import { ProjectCreationService } from "../project-creation/service.js";
 
 function parsePort(value: string | undefined): number {
   const port = Number(value ?? "4173");
@@ -47,10 +48,12 @@ const service = new ForgeDashboardService({
 const planningService = new BlueprintPlanningService(
   new OfficialBlueprintModelExecutor(repositoryRoot),
 );
+const creationService = new ProjectCreationService();
 const server = createForgeDashboardServer(
   service,
   path.join(repositoryRoot, "dist", "dashboard"),
   planningService,
+  creationService,
 );
 
 server.once("error", (error: NodeJS.ErrnoException) => {

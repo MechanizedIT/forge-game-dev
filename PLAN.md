@@ -245,7 +245,7 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
-**Current checkpoint:** Tasks 1 through 4A are complete. `npm run forge:v0.2` contains both the real protected sample workflow and the session-scoped GPT-5.6 intake-to-blueprint path; `npm run forge` and `npm run forge:v0.1` remain protected. The real rehearsal produced the validated five-quest **Last-Moment Pulse** blueprint in one GPT-5.6 high-reasoning response. No Godot project, generated-project artifacts, project commands, or persistent new-project state exist yet; Task 5 owns those changes.
+**Current checkpoint:** Tasks 1 through 5 are complete. Task 5 created and verified one real project from the controlled Top-down Arena starter, persisted and reloaded its authoritative artifacts, created a clean local Git baseline, registered it last, rediscovered it after restart, and passed responsive Edge review. Task 6 remains unapproved and owns generated-project Project World integration only; generated-quest implementation remains later and optional.
 
 ## Task 1 — exact acceptance criteria
 
@@ -301,6 +301,14 @@ The planning service uses the official SDK with `gpt-5.6`, high reasoning, a rea
 Blueprint Review leads with the game, first playable result, and ordered roadmap. Criteria, proof, scope, documentation, and Chronicle copy remain behind **Blueprint details**. Approval changes only the in-memory phase to **Blueprint Ready**, which explicitly reports no project files and no commands. The real rehearsal produced **Last-Moment Pulse**, five ordered quests, no clarification, one valid response, a sanitized thread ID, and approximately 29.5 seconds of latency. The deterministic Edge harness passed all requested desktop, tablet, mobile, and reduced-motion states.
 
 Task 4A does not create a starter, project directory, Git repository, Godot process, `.forge` artifact, persistent registry entry, or generated Project World. API-key-backed Codex auth was used for the required GPT-5.6 rehearsal; the current ChatGPT-authenticated Codex surface rejected that model and the runtime correctly did not substitute another model.
+
+## Task 5 — complete
+
+Task 5 adds one versioned, controlled Top-down Arena starter and a deterministic creation transaction. A still-current approved blueprint may proceed only after a separate exact filesystem confirmation. Forge owns the destination, copies the declared starter inventory, writes strict JSON plus deterministic Markdown records, reloads and validates them, runs fixed pinned-Godot verification, creates one clean local Git baseline with no remotes, promotes the staged directory, and registers it last through an atomic registry.
+
+The UI shows seven real stages and truthful cancellation, failure, created-project, recent-project, and reopen states. Cleanup is limited to canonical Forge-owned direct children and refuses symlink or traversal escape. The real GPT-to-project rehearsal created **Last-Moment Pulse**, passed the stable Godot marker, produced one clean Git commit, relaunched for 120 frames, survived service restart, and left the sample workspace unchanged. The deterministic Edge harness passed confirmation, progress, verification, success, failure, recent/reopen, responsive, focus, and reduced-motion checks.
+
+Task 5 deliberately stops at `Created · Project World integration pending`. It does not render generated project data in Project World, implement any generated quest, add starters, or alter sample art.
 
 ## Rollback strategy
 

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { z } from "zod";
 
 import {
@@ -15,6 +16,7 @@ import {
   type BlueprintUsage,
 } from "./shared.js";
 import type { BlueprintModelExecutor, BlueprintModelSession, BlueprintModelTurn } from "./types.js";
+import type { ApprovedBlueprintEnvelope } from "../project-creation/shared.js";
 
 type Subscriber = (event: BlueprintPlanningEvent) => void;
 
@@ -45,8 +47,13 @@ function blankSnapshot(): BlueprintPlanningSnapshot {
     validationPassed: false,
     validationProblems: [],
     error: null,
+    approval: null,
     effects: { projectFilesWritten: 0, commandsRun: 0, godotProcessesStarted: 0 },
   };
+}
+
+export function fingerprintBlueprint(blueprint: unknown): string {
+  return createHash("sha256").update(JSON.stringify(blueprint), "utf8").digest("hex");
 }
 
 function messageFrom(error: unknown): string {
@@ -206,8 +213,25 @@ export class BlueprintPlanningService {
     if (this.snapshot.phase !== "review" || !this.snapshot.blueprint || !this.snapshot.validationPassed) {
       throw new BlueprintPlanningConflictError("Only a validated blueprint can be approved.");
     }
-    this.snapshot = { ...this.snapshot, phase: "ready" };
+    this.snapshot = {
+      ...this.snapshot,
+      phase: "ready",
+      approval: {
+        blueprintSha256: fingerprintBlueprint(this.snapshot.blueprint),
+        approvedAt: new Date(this.now()).toISOString(),
+      },
+    };
     this.emit();
+  }
+
+  getApprovedBlueprint(): ApprovedBlueprintEnvelope | null {
+    if (this.snapshot.phase !== "ready" || !this.snapshot.blueprint || !this.snapshot.approval) return null;
+    return structuredClone({
+      blueprint: this.snapshot.blueprint,
+      blueprintSha256: this.snapshot.approval.blueprintSha256,
+      approvedAt: this.snapshot.approval.approvedAt,
+      provenance: this.snapshot.provenance,
+    });
   }
 
   async waitForIdle(): Promise<void> {

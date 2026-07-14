@@ -75,3 +75,20 @@ A real SDK rehearsal exposed and corrected one Godot 4.7 verifier typing issue, 
 - `npm run forge` and `npm run forge:v0.1` remain protected; `npm run forge:v0.2` owns this preview path.
 
 Task 5 still owns controlled starter copying, project-directory creation, Git initialization, Godot smoke verification, generated-project persistence, and registration. GPT-5.6 used API-key-backed Codex auth for the live rehearsal; ChatGPT Codex auth rejected the requested model and Forge did not silently substitute another.
+
+## v0.2 Task 5 — Controlled Top-down Arena Project Creation and Persistence
+
+**Date:** 2026-07-14
+**Status:** Complete — controlled creation, Godot verification, Git baseline, restart discovery, and responsive review passed
+
+- Added one committed Top-down Arena starter with an exact inventory, versioned manifest, code-native scene, player movement, objective marker, and Forge-owned verifier.
+- Added strict generated-project contracts for the starter, project, vision, first playable, quests, state, Chronicle, planning/creation provenance, Godot result, Git result, registry, and sanitized failure evidence.
+- A current approved blueprint now requires a second exact filesystem confirmation. A one-time same-origin mutation token prevents cross-origin, ambiguous, or replayed creation requests.
+- Creation uses seven honest stages, a staging directory, atomic artifact writes, strict reload validation, pinned Godot 4.7 verification, one clean local Git baseline commit with no remotes, atomic promotion, and registry-last persistence.
+- Canonical path, direct-child, reserved-name, length, collision, symlink/junction, duplicate, concurrent, cancellation, and controlled cleanup boundaries are covered by tests.
+- Launchpad recent-project summaries and created-project reopen/folder actions survive a fresh service instance while Project World integration remains explicitly pending.
+- The real GPT-5.6 rehearsal created **Last-Moment Pulse**, project `last-moment-pulse-6631032087`, with 32 controlled files and Git commit `9f73f5040bac9b67e806a56129170a150c139637`; Godot emitted the exact success marker and a visible launch ran 120 frames.
+- Edge review passed ten confirmation, progress, verification, created, reduced-motion, recent/reopen, and controlled-failure captures with no console, network, layout, focus, or action issues.
+- `npm run check` passes 79/79 and `npm run check:v0.1` passes the production build plus all 37 protected compatibility tests. The sample hash remained unchanged and GPT supplied no paths, commands, arbitrary files, or source code.
+
+Task 6 owns generated-project Project World integration. Generated-quest implementation, additional starters, and sample-art changes remain deferred.

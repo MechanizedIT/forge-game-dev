@@ -1,0 +1,24 @@
+; Forge controlled Top-down Arena starter.
+; The display name token is replaced only by deterministic Forge code.
+
+config_version=5
+
+[application]
+
+config/name="__FORGE_PROJECT_NAME__"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+run/main_scene="res://scenes/main.tscn"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
+window/size/window_width_override=960
+window/size/window_height_override=540
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.018, 0.027, 0.055, 1)

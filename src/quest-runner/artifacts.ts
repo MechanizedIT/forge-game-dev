@@ -23,3 +23,14 @@ export async function writeJsonLinesAtomic(filePath: string, values: unknown[]):
     await rm(temporaryPath, { force: true });
   }
 }
+
+export async function writeTextAtomic(filePath: string, contents: string): Promise<void> {
+  await mkdir(path.dirname(filePath), { recursive: true });
+  const temporaryPath = `${filePath}.${process.pid}-${Date.now()}.tmp`;
+  try {
+    await writeFile(temporaryPath, contents.endsWith("\n") ? contents : `${contents}\n`, "utf8");
+    await rename(temporaryPath, filePath);
+  } finally {
+    await rm(temporaryPath, { force: true });
+  }
+}

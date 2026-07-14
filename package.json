@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit && tsc -p tsconfig.dashboard.json --noEmit",
-    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/blueprint-planning.test.ts",
+    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/blueprint-planning.test.ts tests/project-creation.test.ts",
     "check": "npm run typecheck && npm test",
     "check:v0.1": "npm run typecheck && npm run dashboard:build && tsx --test tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/legacy-sample.test.ts",
     "dashboard:dev": "vite",
@@ -23,7 +23,9 @@
     "visual:review:v0.2:reset": "tsx src/visual-review/v0.2.ts reset",
     "visual:review:v0.2:live": "tsx src/visual-review/v0.2.ts live",
     "visual:review:v0.2:blueprint": "tsx src/visual-review/v0.2-blueprint.ts",
+    "visual:review:v0.2:creation": "npm run dashboard:build && tsx src/visual-review/v0.2-creation.ts",
     "blueprint:rehearse": "tsx src/blueprint-planner/rehearsal.ts",
+    "project:create:rehearse": "tsx src/project-creation/rehearsal.ts",
     "demo:prepare": "tsx src/demo/cli.ts prepare",
     "demo:reset": "tsx src/demo/cli.ts reset",
     "demo:play": "tsx src/demo/cli.ts play",

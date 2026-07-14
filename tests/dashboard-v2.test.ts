@@ -146,9 +146,13 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(newGame, /Blueprint Review/);
   assert.match(newGame, /Approve blueprint/);
   assert.match(newGame, /Your game blueprint is ready\./);
-  assert.match(newGame, /Create the Godot project — next task/);
-  assert.match(newGame, /Project files written/);
-  assert.match(newGame, /Commands run/);
+  assert.match(newGame, /Create the Godot project/);
+  assert.match(newGame, /Confirm and create project/);
+  assert.match(newGame, /projectCreationStages/);
+  assert.match(newGame, /Your Godot project is ready\./);
+  assert.match(newGame, /Enter Project World — next task/);
+  assert.match(app, /Recent projects/);
+  assert.match(app, /project\.stateLabel/);
   assert.match(planningSdk, /model: "gpt-5\.6"/);
   assert.match(planningSdk, /modelReasoningEffort: "high"/);
   assert.match(planningSdk, /sandboxMode: "read-only"/);
@@ -156,6 +160,8 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(planningSdk, /webSearchMode: "disabled"/);
   assert.match(planningService, /buildRepairPrompt/);
   assert.match(server, /\/api\/planning\/approve/);
+  assert.match(server, /\/api\/projects\/create/);
+  assert.match(server, /x-forge-mutation-token/);
   assert.match(styles, /\.complete-segment \{ width: 100%; background: var\(--mint\)/);
   assert.match(styles, /\.available-segment \{ background: var\(--ember\)/);
   assert.match(styles, /\.planned-segment \{ width: 100%; border-top: 2px dashed/);

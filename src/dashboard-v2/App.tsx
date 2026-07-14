@@ -5,7 +5,9 @@ import {
   cancelQuestApproval,
   confirmCreatorResult,
   launchGame,
+  loadCreatedProject,
   loadDashboard,
+  loadProjectCreationState,
   resetDemo,
   subscribeToDashboard,
 } from "../dashboard/api.js";
@@ -16,6 +18,7 @@ import {
   type DashboardSnapshot,
   type DemoResetAction,
 } from "../dashboard/shared.js";
+import type { CreatedProjectSummary, RecentProjectSummary } from "../project-creation/shared.js";
 import {
   approvedFiles,
   buildSampleWorkflowPresentation,
@@ -23,11 +26,11 @@ import {
   type SampleRoadmapNode,
 } from "./sample-workflow.js";
 import { viewForLaunchChoice, type LaunchChoice } from "./state.js";
-import { NewGameFlow } from "./NewGameFlow.js";
+import { CreatedProjectSummaryView, NewGameFlow } from "./NewGameFlow.js";
 
 type CompanionState = "ready" | "focused" | "thinking" | "complete";
 type IconName = "arrow" | "back" | "check" | "code" | "file" | "idea" | "play" | "spark";
-type AppView = "launchpad" | "sample" | "new_game";
+type AppView = "launchpad" | "sample" | "new_game" | "created_project";
 type SampleView = "world" | "quest" | "build" | "playtest" | "proof" | "complete";
 
 function Icon({ name }: { name: IconName }) {
@@ -64,8 +67,8 @@ function LaunchChoiceCard({ accent, description, label, onChoose, title }: { acc
   return <article className={`launch-choice launch-${accent}`}>{accent === "ember" ? <SamplePathPreview /> : <CreatePathPreview />}<div className="choice-content"><span className="choice-kicker">{accent === "ember" ? "Verified path" : "Creative path"}</span><h2>{title}</h2><p>{description}</p><button className={`v2-button button-${accent}`} onClick={onChoose} type="button">{label}<Icon name="arrow" /></button></div></article>;
 }
 
-function Launchpad({ onChoose }: { onChoose: (choice: LaunchChoice) => void }) {
-  return <main className="launchpad"><header className="launch-header"><ForgeBrand /><span className="preview-chip"><span /> v0.2 preview</span></header><section className="launch-hero" aria-labelledby="launch-title"><div className="launch-hero-core"><CompanionCore state="ready" /></div><div><p className="v2-eyebrow">Your game starts with direction</p><h1 id="launch-title">What would you like to build?</h1><p className="launch-summary">Forge turns an idea into a playable roadmap, keeps Codex focused on one quest, verifies the result, and remembers what changed.</p></div></section><section className="launch-choices" aria-label="Choose a Forge experience"><LaunchChoiceCard accent="ember" description="Enter the real Sample Game workspace, review its prepared quest, and follow Codex from approval to playable proof." label="Explore sample world" onChoose={() => onChoose("explore_sample")} title="Explore the sample game" /><LaunchChoiceCard accent="violet" description="Describe a small 2D idea and see Forge shape it into a focused Godot project and quest roadmap." label="Start a new game" onChoose={() => onChoose("create_game")} title="Create a new game" /></section><footer className="launch-footer"><span><Icon name="code" /> Real Codex workflow in the sample</span><span>Godot 4 · Local workspace · Creator approval</span></footer></main>;
+function Launchpad({ onChoose, onOpenRecent, recentProjects }: { onChoose: (choice: LaunchChoice) => void; onOpenRecent: (projectId: string) => void; recentProjects: RecentProjectSummary[] }) {
+  return <main className="launchpad"><header className="launch-header"><ForgeBrand /><span className="preview-chip"><span /> v0.2 preview</span></header><section className="launch-hero" aria-labelledby="launch-title"><div className="launch-hero-core"><CompanionCore state="ready" /></div><div><p className="v2-eyebrow">Your game starts with direction</p><h1 id="launch-title">What would you like to build?</h1><p className="launch-summary">Forge turns an idea into a playable roadmap, keeps Codex focused on one quest, verifies the result, and remembers what changed.</p></div></section><section className="launch-choices" aria-label="Choose a Forge experience"><LaunchChoiceCard accent="ember" description="Enter the real Sample Game workspace, review its prepared quest, and follow Codex from approval to playable proof." label="Explore sample world" onChoose={() => onChoose("explore_sample")} title="Explore the sample game" /><LaunchChoiceCard accent="violet" description="Describe a small 2D idea and see Forge shape it into a focused Godot project and quest roadmap." label="Start a new game" onChoose={() => onChoose("create_game")} title="Create a new game" /></section>{recentProjects.length > 0 && <section className="recent-projects" aria-labelledby="recent-projects-title"><div><p className="v2-eyebrow">Forge local workspace · restart-safe</p><h2 id="recent-projects-title">Recent projects</h2></div><div className="recent-project-list">{recentProjects.map((project) => <article key={project.projectId}><span className={project.available ? "recent-status is-ready" : "recent-status is-missing"}>{project.stateLabel}</span><h3>{project.displayName}</h3><p>Top-down Arena · starter {project.starterVersion}</p><code>{project.projectId}</code><button className="v2-button button-violet" disabled={!project.available} onClick={() => onOpenRecent(project.projectId)} type="button">Reopen Project Created summary <Icon name="arrow" /></button></article>)}</div></section>}<footer className="launch-footer"><span><Icon name="code" /> Real Codex workflow in the sample</span><span>Godot 4 · Local workspace · Creator approval</span></footer></main>;
 }
 
 function WorkshopHeader({ snapshot, active, onBack, onNavigate }: { snapshot: DashboardSnapshot; active: "World" | "Proof" | "Chronicle"; onBack: () => void; onNavigate: (view: "World" | "Proof" | "Chronicle") => void }) {
@@ -167,6 +170,8 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
+  const [recentProjects, setRecentProjects] = useState<RecentProjectSummary[]>([]);
+  const [createdProject, setCreatedProject] = useState<CreatedProjectSummary | null>(null);
   const selectedRef = useRef(false);
 
   const refresh = useCallback(async () => { try { setSnapshot(await loadDashboard()); setError(null); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } }, []);
@@ -174,6 +179,7 @@ export default function App() {
   useEffect(() => { if (view === "sample" && !selectedRef.current) { selectedRef.current = true; void refresh(); } }, [refresh, view]);
   useEffect(() => { if (!snapshot || view !== "sample") return; if (snapshot.phase === "implementation_running") setSampleView("build"); else if (["ready_to_play", "launching_game", "awaiting_confirmation"].includes(snapshot.phase)) setSampleView("playtest"); else if (snapshot.phase === "quest_complete") setSampleView("complete"); }, [snapshot?.phase, view]);
   useEffect(() => { document.title = view === "sample" ? `${snapshot?.quest.title ?? "Sample Game"} · Forge Project World` : "Forge · Living Game Workshop"; window.setTimeout(() => window.scrollTo({ left: 0, top: 0 }), 50); }, [sampleView, snapshot?.quest.title, view]);
+  useEffect(() => { if (view !== "launchpad") return; void loadProjectCreationState().then((state) => setRecentProjects(state.recentProjects)).catch(() => {}); }, [view]);
 
   const choose = (choice: LaunchChoice) => { const selected = viewForLaunchChoice(choice); setView(selected === "sample_world" ? "sample" : "new_game"); setSampleView("world"); };
   const run = async () => { if (busy) return; setBusy(true); try { await approveQuest(); await refresh(); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } finally { setBusy(false); } };
@@ -181,9 +187,11 @@ export default function App() {
   const play = async () => { if (busy || !snapshot) return; setBusy(true); setSnapshot({ ...snapshot, phase: "launching_game", notice: "Godot is running. Return after the game closes." }); try { setSnapshot(await launchGame()); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); await refresh(); } finally { setBusy(false); } };
   const confirm = async (response: CreatorConfirmation) => { if (busy) return; setBusy(true); try { const next = await confirmCreatorResult(response); setSnapshot(next); setSampleView(next.phase === "quest_complete" ? "complete" : "playtest"); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); await refresh(); } finally { setBusy(false); } };
   const performReset = async (action: DemoResetAction) => { if (busy) return; setBusy(true); try { setSnapshot(await resetDemo(action)); setShowReset(false); setSampleView("world"); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } finally { setBusy(false); } };
+  const openRecent = async (projectId: string) => { if (busy) return; setBusy(true); try { setCreatedProject(await loadCreatedProject(projectId)); setView("created_project"); setError(null); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } finally { setBusy(false); } };
 
-  if (view === "launchpad") return <Launchpad onChoose={choose} />;
+  if (view === "launchpad") return <Launchpad onChoose={choose} onOpenRecent={(projectId) => void openRecent(projectId)} recentProjects={recentProjects} />;
   if (view === "new_game") return <NewGameFlow onBack={() => setView("launchpad")} />;
+  if (view === "created_project" && createdProject) return <CreatedProjectSummaryView onBack={() => { setCreatedProject(null); setView("launchpad"); }} project={createdProject} />;
   if (!snapshot) return <main className="v2-loading"><CompanionCore state="thinking" /><h1>Opening the real Sample Game workspace</h1><p>{error ?? "Loading validated quest, roadmap, and completion artifacts…"}</p></main>;
 
   const activeNav = sampleView === "proof" || sampleView === "playtest" ? "Proof" : sampleView === "complete" ? "Chronicle" : "World";

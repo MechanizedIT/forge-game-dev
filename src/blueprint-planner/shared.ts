@@ -51,6 +51,10 @@ export interface BlueprintPlanningSnapshot {
   validationPassed: boolean;
   validationProblems: string[];
   error: string | null;
+  approval: {
+    blueprintSha256: string;
+    approvedAt: string;
+  } | null;
   effects: {
     projectFilesWritten: 0;
     commandsRun: 0;

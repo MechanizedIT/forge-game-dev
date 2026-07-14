@@ -9,6 +9,11 @@ import type {
   BlueprintPlanningSnapshot,
 } from "../blueprint-planner/shared.js";
 import type { ClarificationTopic } from "../contracts/index.js";
+import type {
+  CreatedProjectSummary,
+  ProjectCreationEvent,
+  ProjectCreationStateResponse,
+} from "../project-creation/shared.js";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
@@ -116,6 +121,54 @@ export function subscribeToBlueprintPlanning(
 ): () => void {
   const stream = new EventSource("/api/planning/events");
   stream.onmessage = (message) => onEvent(JSON.parse(message.data) as BlueprintPlanningEvent);
+  stream.onerror = onDisconnect;
+  return () => stream.close();
+}
+
+export function loadProjectCreationState(): Promise<ProjectCreationStateResponse> {
+  return request<ProjectCreationStateResponse>("/api/projects/state");
+}
+
+export function createApprovedProject(mutationToken: string): Promise<ProjectCreationStateResponse> {
+  return request<ProjectCreationStateResponse>("/api/projects/create", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-forge-mutation-token": mutationToken,
+    },
+    body: JSON.stringify({ confirmation: "CONFIRM CREATE" }),
+  });
+}
+
+export function cancelProjectCreation(mutationToken: string): Promise<ProjectCreationStateResponse> {
+  return request<ProjectCreationStateResponse>("/api/projects/create/cancel", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-forge-mutation-token": mutationToken,
+    },
+    body: JSON.stringify({ action: "CANCEL CREATE" }),
+  });
+}
+
+export function loadCreatedProject(projectId: string): Promise<CreatedProjectSummary> {
+  return request<CreatedProjectSummary>(`/api/projects/${encodeURIComponent(projectId)}`);
+}
+
+export function openCreatedProjectFolder(projectId: string): Promise<{ opened: true }> {
+  return request<{ opened: true }>("/api/projects/open-folder", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ projectId }),
+  });
+}
+
+export function subscribeToProjectCreation(
+  onEvent: (event: ProjectCreationEvent) => void,
+  onDisconnect: () => void,
+): () => void {
+  const stream = new EventSource("/api/projects/events");
+  stream.onmessage = (message) => onEvent(JSON.parse(message.data) as ProjectCreationEvent);
   stream.onerror = onDisconnect;
   return () => stream.close();
 }

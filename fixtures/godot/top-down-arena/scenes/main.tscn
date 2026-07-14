@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/player.gd" id="2_player"]
+[ext_resource type="Script" path="res://scripts/objective_marker.gd" id="3_objective"]
+
+[sub_resource type="CircleShape2D" id="PlayerShape"]
+radius = 18.0
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="ArenaBoundary" type="Node2D" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(240, 320)
+script = ExtResource("2_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("PlayerShape")
+
+[node name="ObjectiveMarker" type="Area2D" parent="."]
+position = Vector2(720, 280)
+script = ExtResource("3_objective")
+
+[node name="Title" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 28.0
+offset_right = 680.0
+offset_bottom = 58.0
+theme_override_colors/font_color = Color(0.87, 0.93, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "TOP-DOWN ARENA"
+
+[node name="Objective" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 62.0
+offset_right = 760.0
+offset_bottom = 88.0
+theme_override_colors/font_color = Color(0.45, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "OBJECTIVE · Reach the signal relay · Move with WASD or arrow keys"
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(480, 270)
+enabled = true

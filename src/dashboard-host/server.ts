@@ -1,4 +1,5 @@
 import { createReadStream } from "node:fs";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import path from "node:path";
@@ -10,6 +11,10 @@ import {
 } from "../blueprint-planner/service.js";
 import type { CreatorConfirmation, DashboardEvent } from "../dashboard/shared.js";
 import { DashboardConflictError, ForgeDashboardService } from "./service.js";
+import {
+  ProjectCreationConflictError,
+  ProjectCreationService,
+} from "../project-creation/service.js";
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -122,12 +127,68 @@ function openPlanningEventStream(
   });
 }
 
+function openProjectCreationEventStream(
+  request: IncomingMessage,
+  response: ServerResponse,
+  creationService: ProjectCreationService,
+): void {
+  response.writeHead(200, {
+    "content-type": "text/event-stream",
+    "cache-control": "no-cache, no-transform",
+    connection: "keep-alive",
+  });
+  response.write(`data: ${JSON.stringify({ type: "refresh" })}\n\n`);
+  const unsubscribe = creationService.subscribe((event) => response.write(`data: ${JSON.stringify(event)}\n\n`));
+  const heartbeat = setInterval(() => response.write(": keep-alive\n\n"), 15_000);
+  request.on("close", () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  });
+}
+
+function requireSameOrigin(request: IncomingMessage): void {
+  const origin = request.headers.origin;
+  const host = request.headers.host;
+  if (!origin || !host) throw new Error("Creation mutations require a same-origin request.");
+  let parsed: URL;
+  try {
+    parsed = new URL(origin);
+  } catch {
+    throw new Error("Creation mutations require a valid same-origin request.");
+  }
+  if (parsed.protocol !== "http:" || parsed.host !== host || !["127.0.0.1", "localhost", "[::1]"].includes(parsed.hostname)) {
+    throw new Error("Creation mutations require the current loopback Forge origin.");
+  }
+}
+
+function tokensMatch(received: string | undefined, expected: string): boolean {
+  if (!received) return false;
+  const left = Buffer.from(received, "utf8");
+  const right = Buffer.from(expected, "utf8");
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
 export function createForgeDashboardServer(
   service: ForgeDashboardService,
   staticRoot: string,
   planningService?: BlueprintPlanningService,
+  creationService?: ProjectCreationService,
 ): Server {
   const resolvedStaticRoot = path.resolve(staticRoot);
+  let creationMutationToken = randomBytes(32).toString("hex");
+  const creationState = async () => ({
+    creation: creationService?.getSnapshot(),
+    recentProjects: creationService ? await creationService.listRecentProjects() : [],
+    mutationToken: creationMutationToken,
+  });
+  const consumeCreationToken = (request: IncomingMessage): void => {
+    requireSameOrigin(request);
+    const received = request.headers["x-forge-mutation-token"];
+    if (Array.isArray(received) || !tokensMatch(received, creationMutationToken)) {
+      throw new Error("The creation mutation token is missing, invalid, or already used. Refresh Forge before retrying.");
+    }
+    creationMutationToken = randomBytes(32).toString("hex");
+  };
   return createServer(async (request, response) => {
     try {
       const url = new URL(request.url ?? "/", "http://127.0.0.1");
@@ -145,6 +206,46 @@ export function createForgeDashboardServer(
       }
       if (request.method === "GET" && url.pathname === "/api/planning/events" && planningService) {
         openPlanningEventStream(request, response, planningService);
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/projects/state" && creationService) {
+        sendJson(response, 200, await creationState());
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/projects/events" && creationService) {
+        openProjectCreationEventStream(request, response, creationService);
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/projects/create" && creationService && planningService) {
+        consumeCreationToken(request);
+        const body = await readJsonBody(request);
+        if (body.confirmation !== "CONFIRM CREATE") throw new Error("Project creation requires the exact final confirmation.");
+        const approved = planningService.getApprovedBlueprint();
+        if (!approved) throw new ProjectCreationConflictError("A validated approved blueprint is required before project creation.");
+        creationService.beginCreation(approved);
+        sendJson(response, 202, await creationState());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/projects/create/cancel" && creationService) {
+        consumeCreationToken(request);
+        const body = await readJsonBody(request);
+        if (body.action !== "CANCEL CREATE") throw new Error("Project creation cancellation requires the exact action.");
+        creationService.cancelCreation();
+        sendJson(response, 202, await creationState());
+        return;
+      }
+      if (request.method === "GET" && url.pathname.startsWith("/api/projects/") && creationService) {
+        const projectId = decodeURIComponent(url.pathname.slice("/api/projects/".length));
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        sendJson(response, 200, await creationService.getCreatedProject(projectId));
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/projects/open-folder" && creationService) {
+        requireSameOrigin(request);
+        const body = await readJsonBody(request);
+        if (typeof body.projectId !== "string") throw new Error("A registered project ID is required.");
+        await creationService.openProjectFolder(body.projectId);
+        sendJson(response, 200, { opened: true });
         return;
       }
       if (request.method === "POST" && url.pathname === "/api/planning/start" && planningService) {
@@ -232,7 +333,7 @@ export function createForgeDashboardServer(
       }
       sendJson(response, 404, { error: "Not found" });
     } catch (error) {
-      const status = error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError ? 409 : 400;
+      const status = error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof ProjectCreationConflictError ? 409 : 400;
       sendJson(response, status, {
         error: error instanceof Error ? error.message : String(error),
       });

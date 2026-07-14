@@ -3,17 +3,27 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ClarificationTopic, GameBlueprint } from "../contracts/index.js";
 import {
   approveBlueprint,
+  cancelProjectCreation,
   cancelBlueprintPlanning,
+  createApprovedProject,
   loadBlueprintPlanning,
+  loadProjectCreationState,
+  openCreatedProjectFolder,
   reviseBlueprintIdea,
   startBlueprintPlanning,
   submitBlueprintAnswers,
   subscribeToBlueprintPlanning,
+  subscribeToProjectCreation,
 } from "../dashboard/api.js";
 import {
   blueprintPlanningStages,
   type BlueprintPlanningSnapshot,
 } from "../blueprint-planner/shared.js";
+import {
+  projectCreationStages,
+  type CreatedProjectSummary,
+  type ProjectCreationStateResponse,
+} from "../project-creation/shared.js";
 
 const examples = [
   "A top-down arena where the player pushes enemies away.",
@@ -25,8 +35,8 @@ function PlanningCore({ state }: { state: "ready" | "thinking" | "focused" | "va
   const companionState = state === "validated" ? "complete" : state;
   return <span aria-label={`Forge Companion ${state}`} className={`companion-core companion-${companionState}`} role="img"><span className="companion-orbit orbit-a" /><span className="companion-orbit orbit-b" /><span className="companion-center" /></span>;
 }
-function NewGameHeader({ state, onBack }: { state: "ready" | "thinking" | "focused" | "validated"; onBack: () => void }) {
-  return <header className="new-game-header"><button className="back-button" onClick={onBack} type="button"><span aria-hidden="true">←</span> Launchpad</button><div className="forge-brand"><PlanningCore state={state} /><div><strong>Forge</strong><span>New Game Blueprint</span></div></div><span className="planning-provenance">GPT-5.6 · High reasoning</span></header>;
+function NewGameHeader({ state, onBack, backLabel = "Launchpad" }: { state: "ready" | "thinking" | "focused" | "validated"; onBack: () => void; backLabel?: string }) {
+  return <header className="new-game-header"><button className="back-button" onClick={onBack} type="button"><span aria-hidden="true">←</span> {backLabel}</button><div className="forge-brand"><PlanningCore state={state} /><div><strong>Forge</strong><span>New Game Blueprint</span></div></div><span className="planning-provenance">GPT-5.6 · High reasoning</span></header>;
 }
 
 function ScopeRail() {
@@ -61,9 +71,40 @@ function BlueprintReview({ snapshot, busy, error, onApprove, onBack, onRevise }:
   return <main className="new-game-shell blueprint-review-screen"><NewGameHeader onBack={onBack} state="focused" /><section className="blueprint-review"><header className="blueprint-hero"><div><p className="v2-eyebrow">Blueprint Review · creator approval required</p><h1>{blueprint.projectName}</h1><p>{blueprint.vision}</p></div><PlanningCore state="focused" /><span className="foundation-badge">Top-down arena foundation</span></header><section className="blueprint-promises"><article><span>01</span><p className="v2-eyebrow">What game are we making?</p><h2>{blueprint.coreAction}</h2><p>The fun target: {blueprint.funTarget}</p></article><article><span>02</span><p className="v2-eyebrow">What will be playable first?</p><h2>{blueprint.smallestPlayableResult}</h2><p>{blueprint.firstPlayableMilestone}</p></article><article><span>03</span><p className="v2-eyebrow">How will you play?</p><h2>{blueprint.inputMode.replaceAll("_", " ")}</h2><p>Godot 4 · 2D · GDScript · code-native visuals</p></article></section><section className="blueprint-map-section"><div><p className="v2-eyebrow">Ordered quest roadmap</p><h2>{blueprint.quests.length} achievable steps to the first playable milestone</h2></div><RoadmapReview blueprint={blueprint} /></section><BlueprintDetails blueprint={blueprint} /><div className="blueprint-validation"><span>✓</span><div><strong>Blueprint validation passed</strong><p>Quest references are valid and acyclic. Criteria link to verification ideas. No paths, commands, packages, project files, or workflow claims were accepted.</p></div><small>GPT-5.6 · high · {snapshot.provenance.attempts === 1 ? "first response valid" : "validated after one repair"}</small></div>{error && <p className="planning-error" role="alert">{error}</p>}<footer className="blueprint-actions"><button className="v2-button button-quiet" onClick={onBack} type="button">Cancel</button><button className="v2-button button-quiet" onClick={onRevise} type="button">Revise idea</button><button className="v2-button button-ember" disabled={busy} onClick={onApprove} type="button">Approve blueprint <span aria-hidden="true">→</span></button></footer></section></main>;
 }
 
-function BlueprintReady({ snapshot, onBack, onRevise }: { snapshot: BlueprintPlanningSnapshot; onBack: () => void; onRevise: () => void }) {
+function BlueprintReady({ snapshot, onBack, onCreate, onRevise }: { snapshot: BlueprintPlanningSnapshot; onBack: () => void; onCreate: () => void; onRevise: () => void }) {
   const blueprint = snapshot.blueprint!;
-  return <main className="new-game-shell blueprint-ready-screen"><NewGameHeader onBack={onBack} state="validated" /><section className="ready-panel"><div className="ready-core"><PlanningCore state="validated" /><span>✓</span></div><p className="v2-eyebrow">Blueprint Ready · validated planning result</p><h1>Your game blueprint is ready.</h1><p>Forge has prepared the vision, first playable milestone, and quest roadmap. The next step will create the real Godot project from the controlled Top-down Arena starter.</p><div className="ready-summary"><article><span>Validation</span><strong>Passed</strong></article><article><span>Planning provenance</span><strong>GPT-5.6 · High</strong></article><article><span>Roadmap</span><strong>{blueprint.quests.length} quests</strong></article><article><span>Foundation</span><strong>Top-down arena</strong></article><article><span>Project files written</span><strong>None</strong></article><article><span>Commands run</span><strong>None</strong></article></div><div className="ready-boundary"><strong>{blueprint.projectName}</strong><span>{blueprint.firstPlayableMilestone}</span><small>Session blueprint only · Task 5 will own project creation and persistence.</small></div><button className="v2-button button-mint" disabled type="button">Create the Godot project — next task</button><div className="ready-actions"><button className="v2-button button-quiet" onClick={onRevise} type="button">Revise blueprint</button><button className="v2-button button-violet" onClick={onBack} type="button">Return to Launchpad</button></div></section></main>;
+  return <main className="new-game-shell blueprint-ready-screen"><NewGameHeader onBack={onBack} state="validated" /><section className="ready-panel"><div className="ready-core"><PlanningCore state="validated" /><span>✓</span></div><p className="v2-eyebrow">Blueprint Ready · validated planning result</p><h1>Your game blueprint is ready.</h1><p>Forge has prepared the vision, first playable milestone, and quest roadmap. You can now review the final filesystem action before anything is written.</p><div className="ready-summary"><article><span>Project name</span><strong>{blueprint.projectName}</strong></article><article><span>Foundation</span><strong>Top-down arena</strong></article><article><span>Roadmap</span><strong>{blueprint.quests.length} quests</strong></article><article><span>Destination owner</span><strong>Forge local workspace</strong></article><article><span>Engine</span><strong>Godot 4 · 2D · GDScript</strong></article><article><span>Dependencies</span><strong>None · code-native only</strong></article></div><div className="ready-boundary"><strong>Forge will smoke-check Godot and create a local Git baseline.</strong><span>{blueprint.firstPlayableMilestone}</span><small>No project directory, command, or registry entry exists yet.</small></div><button className="v2-button button-ember" onClick={onCreate} type="button">Create the Godot project <span aria-hidden="true">→</span></button><div className="ready-actions"><button className="v2-button button-quiet" onClick={onRevise} type="button">Revise blueprint</button><button className="v2-button button-violet" onClick={onBack} type="button">Return to Launchpad</button></div></section></main>;
+}
+
+function CreationConfirmation({ blueprint, busy, error, onBack, onConfirm }: { blueprint: GameBlueprint; busy: boolean; error: string | null; onBack: () => void; onConfirm: () => void }) {
+  return <main className="new-game-shell creation-confirmation-screen"><NewGameHeader onBack={onBack} state="focused" /><section className="creation-confirmation"><PlanningCore state="focused" /><p className="v2-eyebrow">Final creation confirmation · filesystem action</p><h1>Create {blueprint.projectName}?</h1><p>Nothing will be written until you confirm this exact action.</p><div className="creation-facts"><article><span>Project</span><strong>{blueprint.projectName}</strong></article><article><span>Foundation</span><strong>Top-down Arena</strong></article><article><span>Roadmap</span><strong>{blueprint.quests.length} planned quests</strong></article><article><span>Destination</span><strong>Forge local workspace</strong></article><article><span>Technology</span><strong>Godot 4 · 2D · GDScript</strong></article><article><span>Assets and dependencies</span><strong>None external</strong></article></div><div className="creation-promise"><strong>Forge controls every operation.</strong><ul><li>Copy the committed Top-down Arena starter.</li><li>Write and reload validated project records.</li><li>Run the fixed Godot smoke check.</li><li>Create one local Git baseline with no remotes.</li><li>Register the project only after every step passes.</li></ul></div>{error && <p className="planning-error" role="alert">{error}</p>}<footer className="creation-confirm-actions"><button className="v2-button button-quiet" disabled={busy} onClick={onBack} type="button">Not yet</button><button className="v2-button button-ember" disabled={busy} onClick={onConfirm} type="button">{busy ? "Starting safely…" : "Confirm and create project"}</button></footer></section></main>;
+}
+
+function useCreationElapsedTime(startedAt: string | null): string {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { if (!startedAt) return; const timer = window.setInterval(() => setNow(Date.now()), 1_000); return () => window.clearInterval(timer); }, [startedAt]);
+  if (!startedAt) return "00:00";
+  const total = Math.max(0, Math.floor((now - Date.parse(startedAt)) / 1_000));
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function CreationProgress({ state, busy, onCancel }: { state: ProjectCreationStateResponse; busy: boolean; onCancel: () => void }) {
+  const creation = state.creation;
+  const elapsed = useCreationElapsedTime(creation.startedAt);
+  const verifying = creation.stage === "Checking the Godot project" || creation.stage === "Creating the baseline";
+  return <main className="new-game-shell creation-progress-screen"><NewGameHeader onBack={() => {}} state="thinking" /><section className="creation-progress" aria-live="polite"><div className={`creation-companion ${verifying ? "is-verifying" : "is-assembling"}`}><PlanningCore state="thinking" /><span>{verifying ? "VERIFYING" : "ASSEMBLING"}</span></div><p className="v2-eyebrow">Controlled project creation · live deterministic stages</p><h1>{creation.stage ?? "Preparing project creation"}</h1><p>{creation.explanation}</p><div className="creation-identity"><span><small>Project</small><strong>{creation.displayName}</strong></span><span><small>Foundation</small><strong>Top-down Arena</strong></span><span><small>Project identifier</small><strong>{creation.relativeProjectIdentifier ?? "Allocating safely…"}</strong></span><span><small>Elapsed</small><strong>{elapsed}</strong></span></div><ol className="creation-stage-list">{projectCreationStages.map((stage, index) => { const complete = creation.completedStages.includes(stage); const active = creation.stage === stage; return <li className={complete ? "stage-complete" : active ? "stage-active" : "stage-pending"} key={stage}><span>{complete ? "✓" : String(index + 1).padStart(2, "0")}</span><strong>{stage}</strong><em>{complete ? "Complete" : active ? "In progress" : "Waiting"}</em></li>; })}</ol><p className="creation-truth">Stages come from the creation service. Forge does not use percentages, estimates, invented file counts, or model-generated commands.</p><button className="v2-button button-quiet" disabled={busy} onClick={onCancel} type="button">Cancel before promotion</button></section></main>;
+}
+
+export function CreatedProjectSummaryView({ project, onBack }: { project: CreatedProjectSummary; onBack: () => void }) {
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const openFolder = async () => { try { await openCreatedProjectFolder(project.projectId); setNotice("Project folder opened."); setError(null); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } };
+  return <main className="new-game-shell project-created-screen"><NewGameHeader onBack={onBack} state="validated" /><section className="project-created"><div className="ready-core"><PlanningCore state="validated" /><span>✓</span></div><p className="v2-eyebrow">Project Created · verified and registered</p><h1>Your Godot project is ready.</h1><p>{project.displayName} is a real local Godot project built from Forge’s controlled Top-down Arena starter.</p><div className="created-proof-grid"><article><span>Project</span><strong>{project.displayName}</strong></article><article><span>Foundation</span><strong>Top-down Arena</strong></article><article><span>Roadmap</span><strong>{project.questCount} planned quests</strong></article><article><span>Godot smoke check</span><strong>Passed · {project.godotVersion}</strong></article><article><span>Local Git baseline</span><strong>{project.gitCommitSha.slice(0, 12)}</strong></article><article><span>Starter</span><strong>{project.starterVersion}</strong></article><article><span>Project documentation</span><strong>Saved</strong></article><article><span>Chronicle</span><strong>Initialized</strong></article><article><span>Restart discovery</span><strong>Registered</strong></article></div><div className="project-location"><span>Project location</span><code>{project.projectLocation}</code></div><div className="created-boundary"><strong>Project World integration is next.</strong><p>The generated roadmap is persisted, but Task 6 will connect it to the full Project World. Forge is not claiming generated quest implementation yet.</p></div>{notice && <p className="workflow-notice" role="status">{notice}</p>}{error && <p className="planning-error" role="alert">{error}</p>}<div className="created-actions"><button className="v2-button button-quiet" onClick={() => void openFolder()} type="button">Open project folder</button><button className="v2-button button-mint" disabled type="button">Enter Project World — next task</button><button className="v2-button button-violet" onClick={onBack} type="button">Return to Launchpad</button></div><details className="v2-details"><summary>Technical creation evidence</summary><div><p><code>{project.godotSuccessMarker}</code></p><p>Git baseline <code>{project.gitCommitSha}</code></p><p>Project ID <code>{project.projectId}</code></p></div></details></section></main>;
+}
+
+function CreationFailure({ state, onBack, onRetry }: { state: ProjectCreationStateResponse; onBack: () => void; onRetry: () => void }) {
+  const creation = state.creation;
+  return <main className="new-game-shell creation-failure-screen"><NewGameHeader onBack={onBack} state="focused" /><section className="creation-failure" role="alert"><PlanningCore state="focused" /><p className="v2-eyebrow">Project creation stopped safely</p><h1>The project was not created.</h1><p>{creation.explanation}</p><div className="failure-stage"><span>Stopped at</span><strong>{creation.stage ?? "Before creation"}</strong></div><p>{creation.error}</p>{creation.failureEvidence && <small>Safe failure record: <code>{creation.failureEvidence}</code></small>}<ul><li>No project was registered as ready.</li><li>The known staging directory was removed only after containment checks.</li><li>The sample workspace and other generated projects were untouched.</li></ul><div><button className="v2-button button-quiet" onClick={onBack} type="button">Return to Launchpad</button><button className="v2-button button-ember" onClick={onRetry} type="button">Review and retry creation</button></div></section></main>;
 }
 
 function PlanningFailure({ snapshot, onBack, onRevise }: { snapshot: BlueprintPlanningSnapshot; onBack: () => void; onRevise: () => void }) {
@@ -74,11 +115,15 @@ export function NewGameFlow({ onBack }: { onBack: () => void }) {
   const [snapshot, setSnapshot] = useState<BlueprintPlanningSnapshot | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [creationState, setCreationState] = useState<ProjectCreationStateResponse | null>(null);
+  const [showCreationConfirmation, setShowCreationConfirmation] = useState(false);
   const refresh = useCallback(async () => {
     try { setSnapshot(await loadBlueprintPlanning()); setError(null); }
     catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); }
   }, []);
   useEffect(() => { void refresh(); return subscribeToBlueprintPlanning(() => void refresh(), () => {}); }, [refresh]);
+  const refreshCreation = useCallback(async () => { try { setCreationState(await loadProjectCreationState()); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } }, []);
+  useEffect(() => { void refreshCreation(); return subscribeToProjectCreation(() => void refreshCreation(), () => {}); }, [refreshCreation]);
   const run = useCallback(async (action: () => Promise<BlueprintPlanningSnapshot>) => {
     setBusy(true);
     try { setSnapshot(await action()); setError(null); }
@@ -88,12 +133,30 @@ export function NewGameFlow({ onBack }: { onBack: () => void }) {
   const cancel = useCallback(() => { void cancelBlueprintPlanning().finally(onBack); }, [onBack]);
   const revise = useCallback(() => void run(reviseBlueprintIdea), [run]);
   const view = useMemo(() => snapshot?.phase ?? "intake", [snapshot?.phase]);
+  const confirmCreation = useCallback(async () => {
+    if (!creationState || busy) return;
+    setBusy(true);
+    try { setCreationState(await createApprovedProject(creationState.mutationToken)); setShowCreationConfirmation(false); setError(null); }
+    catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); await refreshCreation(); }
+    finally { setBusy(false); }
+  }, [busy, creationState, refreshCreation]);
+  const cancelCreation = useCallback(async () => {
+    if (!creationState || busy) return;
+    setBusy(true);
+    try { setCreationState(await cancelProjectCreation(creationState.mutationToken)); setError(null); }
+    catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); await refreshCreation(); }
+    finally { setBusy(false); }
+  }, [busy, creationState, refreshCreation]);
 
   if (!snapshot) return <main className="v2-loading"><PlanningCore state="thinking" /><h1>Opening New Game Intake</h1><p>{error ?? "Loading the session planning boundary…"}</p></main>;
+  if (showCreationConfirmation && snapshot.blueprint) return <CreationConfirmation blueprint={snapshot.blueprint} busy={busy} error={error} onBack={() => setShowCreationConfirmation(false)} onConfirm={() => void confirmCreation()} />;
+  if (creationState?.creation.phase === "creating") return <CreationProgress busy={busy} onCancel={() => void cancelCreation()} state={creationState} />;
+  if (creationState?.creation.phase === "created" && creationState.creation.createdProject) return <CreatedProjectSummaryView onBack={onBack} project={creationState.creation.createdProject} />;
+  if (creationState?.creation.phase === "failed") return <CreationFailure onBack={onBack} onRetry={() => setShowCreationConfirmation(true)} state={creationState} />;
   if (view === "planning") return <Planning onBack={cancel} snapshot={snapshot} />;
   if (view === "clarification") return <Clarification busy={busy} error={error} onBack={cancel} onRevise={revise} onSubmit={(answers) => void run(() => submitBlueprintAnswers(answers))} snapshot={snapshot} />;
   if (view === "review") return <BlueprintReview busy={busy} error={error} onApprove={() => void run(approveBlueprint)} onBack={cancel} onRevise={revise} snapshot={snapshot} />;
-  if (view === "ready") return <BlueprintReady onBack={onBack} onRevise={revise} snapshot={snapshot} />;
+  if (view === "ready") return <BlueprintReady onBack={onBack} onCreate={() => setShowCreationConfirmation(true)} onRevise={revise} snapshot={snapshot} />;
   if (view === "failed") return <PlanningFailure onBack={onBack} onRevise={revise} snapshot={snapshot} />;
   return <Intake busy={busy} error={error} initialIdea={snapshot.idea} onBack={onBack} onStart={(idea) => void run(() => startBlueprintPlanning(idea))} />;
 }

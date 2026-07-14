@@ -356,3 +356,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Sanitized live planning thread `019f5f61-62a…`; primary submission `/feedback` ID remains pending
 - **Next step:** Stop for approval. Task 5 may create and verify the real controlled Top-down arena project, without beginning generated Project World integration or generated-quest Codex implementation.
+
+---
+
+## 2026-07-14 — Create, verify, baseline, and persist the controlled Top-down Arena project
+
+- **Actor/model surface:** Codex repository implementation; official `@openai/codex-sdk` `0.144.3`; real GPT-5.6 high-reasoning blueprint planning; pinned Godot 4.7; local Git; pinned Playwright `1.61.1`; Microsoft Edge `150.0.4078.65`
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 5 only; required one controlled Top-down Arena starter, a separate exact filesystem confirmation, deterministic Forge-owned creation, strict persisted artifacts, pinned Godot verification, a clean local Git baseline, restart discovery, responsive review, and no Task 6 Project World work, generated-quest implementation, extra starter, or sample-art change.
+- **AI contribution:** Added the controlled starter and manifest; strict generated-project contracts; safe path allocation, staging, atomic artifact writes and reload validation; fixed Godot verification; local Git initialization; registry-last persistence and recovery; cancellation/failure cleanup and evidence; same-origin one-time mutation authorization; the seven-stage UI, created/recent/reopen states; focused tests; real rehearsal; and Edge visual evidence.
+- **Files changed:** Controlled Godot starter; generated-project contracts; project-creation service, filesystem, starter, artifact, registry, Godot, Git, process, and rehearsal modules; additive host/API routes; v0.2 UI and styles; focused tests and visual harness; Task 5 plan/handoff/review/closeout/evidence; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog, and this log.
+- **Verification:** `npm run check` passed 79/79; `npm run check:v0.1` passed the production build and 37/37 protected tests; the real rehearsal planned then created **Last-Moment Pulse** as `last-moment-pulse-6631032087`, wrote 32 controlled files, emitted the exact pinned-Godot success marker, created clean no-remote Git commit `9f73f5040bac9b67e806a56129170a150c139637`, relaunched Godot visibly for 120 frames, and reloaded through a fresh service instance. Edge captured ten required states without console, network, layout, focus, overlap, action, or reduced-motion issues. The sample hash stayed unchanged and the model supplied no destination paths, commands, arbitrary files, source code, or verification commands.
+- **Known limitation:** Created projects reopen to `Created · Project World integration pending`; Task 6 must render the existing authoritative artifacts without regenerating them. The installed in-app Browser plugin still fails before tab creation, so the pinned local Edge harness remains the repeatable visual-review path.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Sanitized live planning thread `019f5f83-a6f…`; created project `last-moment-pulse-6631032087`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 6 may connect the registered project to Project World from its existing artifacts, without generated-quest implementation or another starter.
