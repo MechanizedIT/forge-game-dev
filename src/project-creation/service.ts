@@ -283,13 +283,8 @@ export class ProjectCreationService {
   }
 
   async openProjectFolder(projectId: string): Promise<void> {
-    const entry = await this.registry.find(projectId);
-    if (!entry) throw new Error(`Project ${projectId} is not registered.`);
-    const canonical = await realpath(entry.canonicalPath).catch(() => null);
-    if (!canonical || canonical !== entry.canonicalPath) throw new Error(`Project ${projectId} is missing or moved.`);
-    const projectFile = await stat(path.join(canonical, "project.godot")).catch(() => null);
-    if (!projectFile?.isFile()) throw new Error(`Project ${projectId} is missing project.godot.`);
-    this.openFolder(canonical);
+    const entry = await this.registry.resolveRegisteredProject(projectId);
+    this.openFolder(entry.canonicalPath);
   }
 
   private async writeFailureEvidence(options: {

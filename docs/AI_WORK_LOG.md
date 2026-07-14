@@ -371,3 +371,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Sanitized live planning thread `019f5f83-a6f…`; created project `last-moment-pulse-6631032087`; primary submission `/feedback` ID remains pending
 - **Next step:** Stop for approval. Task 6 may connect the registered project to Project World from its existing artifacts, without generated-quest implementation or another starter.
+
+---
+
+## 2026-07-14 — Connect generated projects to a truthful, restart-safe Project World
+
+- **Actor/model surface:** Codex repository implementation; strict local artifact adapter; pinned Godot 4.7; local Git metadata; pinned Playwright `1.61.1`; Microsoft Edge `150.0.4078.65`
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 6 only from protected checkpoint `302002f49ed819c453695dea4154f0bcdeb250df`; required read-only GET, projectId-only explicit open mutation, idea-owned derived activity instead of Chronicle mutation, byte-identical Chronicle/roadmap after idea saves, truthful preview labels, unavailable generated-quest implementation, real Last-Moment Pulse rehearsal, protected regressions, and one clean commit.
+- **AI contribution:** Added strict generated-world response/idea contracts; canonical registry resolution and cross-artifact joins; read-only/open/state/idea/launch host boundaries; Launchpad and generated Project World UI; planning-only briefs; Chronicle/activity and documentation views; atomic idea persistence; local Git handling for mutable Forge state; deterministic failure/accessibility/responsive review; focused tests; real restart/Godot rehearsal; and closeout documentation.
+- **Files changed:** Generated-project contracts; generated-world service/shared/rehearsal; registry summaries/resolution; additive host/API routes; generated UI and styles; creation-summary entry action; focused tests and Edge harness; Task 6 plan/evidence/handoff/review/closeout; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, README, changelog, and this log.
+- **Verification:** `npm run check` passed typechecking plus 86/86 tests; `npm run check:v0.1` passed the production build plus 37/37 protected tests; real Last-Moment Pulse restart restored quest `q4-implement-the-push-pulse`, one idea, derived activity, and the authoritative Chronicle; roadmap/Chronicle SHA-256 values remained identical; generated Git stayed clean; sample hash stayed unchanged; pinned Godot launched 120 frames and exited `0`; Edge captured 11 states with zero issues.
+- **Known limitation:** Generated quests remain planning-only; additional starters, import, scanning, sample art, and final Task 7 hardening remain deferred. The installed Browser plugin still fails before tab creation, so the repository-local Edge harness remains the repeatable path.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; real project `last-moment-pulse-6631032087`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 7 may harden and rehearse both completed required paths without adding deferred capabilities.

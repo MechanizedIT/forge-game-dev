@@ -92,3 +92,20 @@ Task 5 still owns controlled starter copying, project-directory creation, Git in
 - `npm run check` passes 79/79 and `npm run check:v0.1` passes the production build plus all 37 protected compatibility tests. The sample hash remained unchanged and GPT supplied no paths, commands, arbitrary files, or source code.
 
 Task 6 owns generated-project Project World integration. Generated-quest implementation, additional starters, and sample-art changes remain deferred.
+
+## v0.2 Task 6 — Generated Project World Integration
+
+**Date:** 2026-07-14
+**Status:** Complete — validated open, restart state, idea activity, real Godot launch, and responsive review passed
+
+- Launchpad recent projects now open through a same-origin `POST` accepting only the registered project ID. Full validation precedes the atomic `lastOpenedAt` update.
+- Read-only reload uses `GET /world` and changes no registry or project bytes.
+- Project World renders the persisted vision, first playable milestone, four-node roadmap, planning briefs, Chronicle, derived idea activity, documentation disclosures, and controlled actions.
+- The code-native canvas is explicitly a **Verified starter layout** / **Playable-state preview**, not a captured Godot frame. Enemy approach and push pulse remain planned.
+- Generated quest implementation remains `not_enabled` and is explained without a fake or unexplained Build action.
+- One optional `.forge/idea-seeds.json` record owns idea text plus the activity note merged into the Chronicle view. Authoritative Chronicle and roadmap hashes remain unchanged.
+- A fresh service restored Last-Moment Pulse, the fourth selected quest, one idea seed, and its derived activity. The generated Git baseline stayed clean and the sample hash stayed unchanged.
+- Pinned Godot launched the canonical project for 120 frames with exit code `0`.
+- `npm run check` passes 86/86; `npm run check:v0.1` passes the production build and 37/37; Edge review passes 11 states with zero issues.
+
+Task 7 owns final required-path hardening. Generated-quest implementation, more starters, import, generalized scanning, and sample art remain deferred.

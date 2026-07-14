@@ -245,7 +245,7 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
-**Current checkpoint:** Tasks 1 through 5 are complete. Task 5 created and verified one real project from the controlled Top-down Arena starter, persisted and reloaded its authoritative artifacts, created a clean local Git baseline, registered it last, rediscovered it after restart, and passed responsive Edge review. Task 6 remains unapproved and owns generated-project Project World integration only; generated-quest implementation remains later and optional.
+**Current checkpoint:** Tasks 1 through 6 are complete. Last-Moment Pulse now opens from its registered ID into a validated, restart-safe Project World with a verifier-labelled starter preview, persisted roadmap navigation, planning-only quest briefs, Chronicle plus separately labelled derived idea activity, documentation disclosure, pinned Godot launch, and controlled folder access. Task 7 remains the next approval boundary; generated-quest implementation remains later and optional.
 
 ## Task 1 — exact acceptance criteria
 
@@ -309,6 +309,16 @@ Task 5 adds one versioned, controlled Top-down Arena starter and a deterministic
 The UI shows seven real stages and truthful cancellation, failure, created-project, recent-project, and reopen states. Cleanup is limited to canonical Forge-owned direct children and refuses symlink or traversal escape. The real GPT-to-project rehearsal created **Last-Moment Pulse**, passed the stable Godot marker, produced one clean Git commit, relaunched for 120 frames, survived service restart, and left the sample workspace unchanged. The deterministic Edge harness passed confirmation, progress, verification, success, failure, recent/reopen, responsive, focus, and reduced-motion checks.
 
 Task 5 deliberately stops at `Created · Project World integration pending`. It does not render generated project data in Project World, implement any generated quest, add starters, or alter sample art.
+
+## Task 6 — complete
+
+Task 6 adds one bounded generated-project adapter. The registry resolves only canonical registered locations; strict project-local artifacts own identity, vision, first playable, roadmap, quest briefs, selected state, Chronicle, verification, and documentation disclosures. Launchpad open is an explicit same-origin mutation that validates before updating registry recency, while `GET /world` remains byte-for-byte read-only.
+
+The Project World labels its code-native visual as a **Verified starter layout** and **Playable-state preview**. It claims only the bounded arena, project/main-scene load, required nodes/scripts, objective relay, and keyboard movement proven by Task 5 verification. Enemy approach and the push pulse remain planned. All four quest briefs show their generated intended outcomes, scope, criteria, proof ideas, dependencies, and the exact `not_enabled` implementation boundary.
+
+Idea saves atomically write one optional `.forge/idea-seeds.json` owner containing both creator text and its activity note. The Chronicle view merges that note as distinctly labelled derived activity without rewriting authoritative `chronicle.json`; roadmap bytes also remain unchanged. Explicit project-state writes persist the selected view and quest, and fixed local Git metadata keeps Forge-owned mutable state from dirtying the generated baseline.
+
+The real Last-Moment Pulse rehearsal restored the fourth quest and saved idea after a fresh service, kept Chronicle/roadmap hashes identical, preserved a clean generated-project worktree and the sample workspace hash, and launched pinned Godot for 120 frames. Edge review passed 11 responsive, focus, accessibility, reduced-motion, success, missing, invalid, idea-failure, and launch-failure captures with zero issues.
 
 ## Rollback strategy
 

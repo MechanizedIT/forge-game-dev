@@ -1,0 +1,457 @@
+---
+title: "Forge v0.2 Task 6 — Generated Project World Integration"
+brief: "Connect the real generated Last-Moment Pulse artifacts to a truthful, restart-safe Project World while preserving the sample path and Task 5 creation boundary."
+version: 1
+---
+
+## Outcome
+
+Task 6 turns a registered generated game into a restart-safe Project World without regenerating the project or implying that arbitrary generated quests can be implemented. Done means **Last-Moment Pulse** opens from Launchpad, renders only validated persisted artifacts, launches the verified starter in Godot, opens its folder, atomically saves an idea seed with an activity note shown in the Chronicle view, and restores the same project and selected quest after restart.
+
+<Callout id="truth-decision" tone="decision">
+
+**Separate verified starter truth from blueprint intent.** The current playable state may claim only what persisted Godot verification proved: the bounded arena, keyboard movement, objective relay, required scripts/nodes, and code-native project load. The visual is labelled **Verified starter layout** / **Playable-state preview** and is a static, verification-derived layout. Enemy approach and push pulse remain roadmap outcomes. Quest briefs label their text as the generated **intended outcome**; Task 6 does not infer a trustworthy code delta or hide starter overlap. `chronicle.json` remains authoritative for real Chronicle events, while idea-seed activity appears only as derived activity in the Chronicle view.
+
+</Callout>
+
+## Scope and non-goals
+
+In scope: Launchpad recent-project integration; generated Project World; roadmap and quest brief rendering; Chronicle and documentation disclosure; idea-seed persistence; selected view/quest reload; Godot launch; folder opening; responsive and accessible behavior; browser, service, API, and protected regression evidence.
+
+Deferred: generated-quest implementation or regeneration, additional starters, existing-project import, Graphify, Godot MCP, general chat, project scanning, sample art, default-command changes, and submission packaging.
+
+## Data ownership and load boundary
+
+<Diagram id="data-ownership-diagram" caption={"The registry resolves location; project-local artifacts own content; the UI receives a derived snapshot."} frame="show">
+
+```html
+<div class="diagram-panel" style="display:grid;grid-template-columns:1fr 1.5fr 1.2fr;gap:14px">
+  <section class="diagram-box"><strong>Forge home</strong><div class="diagram-node">project-registry.json<br><small>canonical path + lastOpenedAt</small></div><div class="diagram-node">GeneratedProjectWorldService<br><small>containment + validation</small></div></section>
+  <section class="diagram-box"><strong>Project-local authority</strong><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="diagram-node">project-manifest.json<br><small>identity + artifact map</small></div><div class="diagram-node">game-vision.json<br><small>vision + playable promise</small></div><div class="diagram-node">roadmap.json<br><small>order, state, dependencies</small></div><div class="diagram-node">quests/*.json<br><small>scope, criteria, proof ideas</small></div><div class="diagram-node">project-state.json<br><small>view + selected quest</small></div><div class="diagram-node">chronicle.json<br><small>authoritative Chronicle events</small></div><div class="diagram-node">idea-seeds.json<br><small>seed + activity-note metadata</small></div></div></section>
+  <section class="diagram-box"><strong>Derived UI only</strong><div class="diagram-node">Recent project card</div><div class="diagram-node">Project World snapshot</div><div class="diagram-node">Quest brief</div><div class="diagram-node">Derived idea activity in Chronicle view</div><div class="diagram-node">Documentation disclosure</div></section>
+</div>
+```
+
+```css
+.diagram-panel,.diagram-box{min-width:0}.diagram-box{display:flex;flex-direction:column;gap:8px;padding:12px;border:1.4px solid var(--wf-line);background:var(--wf-card)}.diagram-node{padding:9px;border:1.4px solid var(--wf-line);background:var(--wf-paper)}
+```
+
+</Diagram>
+
+<Table
+  id="ownership-table"
+  columns={["Displayed value", "Authoritative owner", "Rule"]}
+  rows={[
+    [
+      "Project name, foundation, engine",
+      "project-manifest.json",
+      "Validate projectId and every relative artifact path before joining.",
+    ],
+    [
+      "Vision and current playable promise",
+      "game-vision.json + local Godot verification",
+      "Playable copy is a fixed adapter over verifier facts, never inferred from quest outcomes.",
+    ],
+    [
+      "First playable milestone",
+      "first-playable.json",
+      "Quest IDs must match roadmap order and existing quest artifacts.",
+    ],
+    [
+      "Roadmap order, state, dependencies",
+      "roadmap.json",
+      "Read-only in Task 6; idea saves never alter it.",
+    ],
+    [
+      "Quest brief",
+      "quests/&lt;questId&gt;.json",
+      "Implementation must remain not_enabled.",
+    ],
+    [
+      "Selected quest and current view",
+      "project-state.json",
+      "Atomic write after explicit navigation; selected ID must belong to the loaded roadmap.",
+    ],
+    [
+      "Idea seed and its activity note",
+      ".forge/idea-seeds.json",
+      "One atomic record owns seed text, timestamp, and an activity note shown in the Chronicle view; absence means no saved seeds.",
+    ],
+    [
+      "Chronicle events",
+      "chronicle.json",
+      "Remain authoritative for real Chronicle events. The UI may merge derived idea activity into the feed with a distinct activity label.",
+    ],
+    [
+      "Recent-project location and recency",
+      "project-registry.json",
+      "Resolve a registered canonical path; preserve missing entries and never scan arbitrary folders.",
+    ],
+  ]}
+  density="compact"
+/>
+
+<Callout id="persistence-decision" tone="decision">
+
+**Atomic idea persistence uses one mutable owner without turning Chronicle into idea state.** Add a strict optional `.forge/idea-seeds.json` artifact containing `{ schemaVersion, projectId, seeds[] }`; each seed stores `ideaSeedId`, creator text, `createdAt`, and one concise `activityNote`. A single `writeJsonAtomic` call persists the idea seed and the activity note shown in the Chronicle view. The Project World feed visually merges authoritative events from `chronicle.json` with clearly labelled derived idea activity at read time. `chronicle.json` and `roadmap.json` are never rewritten by an idea save. Existing Task 5 projects treat an absent idea file as an empty list.
+
+</Callout>
+
+## Reuse map and exact change surface
+
+Reuse the current Launchpad, Forge brand/core, sample Project World visual grammar, `IdeaDock`, roadmap module styling, `TechnicalDetails`, `ProjectRegistryStore`, strict Zod contracts, `writeJsonAtomic`, pinned Godot resolution, and server-side OS process boundaries. Add one bounded generated-project adapter rather than a router, database, scanner, or generalized project model.
+
+<FileTree
+  id="reuse-tree"
+  title="Likely Task 6 files and responsibilities"
+  title="Likely Task 6 files and responsibilities"
+  entries={[
+    {
+      path: "src/contracts/generated-project.ts",
+      change: "modified",
+      note: "Add the generated Project World response contract, broaden project-state views, and add the optional idea-seeds artifact schema while retaining existing Chronicle records.",
+    },
+    {
+      path: "src/generated-project-world/shared.ts",
+      change: "added",
+      note: "UI-safe snapshot/action response types and creator-facing status labels.",
+    },
+    {
+      path: "src/generated-project-world/service.ts",
+      change: "added",
+      note: "Resolve registered paths, validate/join artifacts, persist selection, atomically save one idea-seeds file, merge clearly labelled derived activity into the Chronicle view, launch Godot, and reuse controlled folder opening.",
+    },
+    {
+      path: "src/project-creation/registry.ts",
+      change: "modified",
+      note: "Expose a canonical registered-project resolver without weakening missing-entry preservation.",
+    },
+    {
+      path: "src/project-creation/service.ts",
+      change: "modified",
+      note: "Keep creation behavior intact; delegate or reuse the existing server-controlled folder action only.",
+    },
+    {
+      path: "src/dashboard-host/server.ts",
+      change: "modified",
+      note: "Add generated-world read/state/idea/launch routes before the existing project-summary catch-all; enforce safe IDs and same origin on mutations/actions.",
+    },
+    {
+      path: "src/dashboard/api.ts",
+      change: "modified",
+      note: "Add named helpers; no raw fetch inside components.",
+    },
+    {
+      path: "src/dashboard-v2/GeneratedProjectWorld.tsx",
+      change: "added",
+      note: "Generated Project World, quest brief, Chronicle disclosure, docs disclosure, actions, and truth labels.",
+    },
+    {
+      path: "src/dashboard-v2/App.tsx",
+      change: "modified",
+      note: "Route recent-project and creation-success entry into the generated world while preserving sample workflow state.",
+    },
+    {
+      path: "src/dashboard-v2/NewGameFlow.tsx",
+      change: "modified",
+      note: "Replace the Task 5 'next task' action with the real Project World entry.",
+    },
+    {
+      path: "src/dashboard-v2/styles.css",
+      change: "modified",
+      note: "Reuse workshop tokens; add roadmap-dominant generated layouts and narrow ordering.",
+    },
+    {
+      path: "tests/generated-project-world.test.ts",
+      change: "added",
+      note: "Artifact joins, containment, schema failures, state writes, atomic idea events, launch/folder boundaries, and restart reload.",
+    },
+    {
+      path: "tests/dashboard-v2.test.ts",
+      change: "modified",
+      note: "Truthful labels, generated/sample isolation, semantics, and responsive source guards.",
+    },
+    {
+      path: "src/visual-review/v0.2-project-world.ts",
+      change: "added",
+      note: "Deterministic Edge review for all five states, failures, responsiveness, focus, reduced motion, and reload.",
+    },
+  ]}
+/>
+
+## New and reused host actions
+
+All paths are resolved from a registered `projectId`; clients never submit filesystem paths, commands, Godot executables, quest state, or arbitrary document names.
+
+Opening from Launchpad uses **`POST /api/projects/:projectId/open`**. It accepts only the path `projectId`, resolves and validates the registered project, atomically updates registry `lastOpenedAt` only after validation succeeds, and returns the validated Project World snapshot. **`GET /api/projects/:projectId/world` is strictly read-only** and is used for reloads of an already-open world without changing recency. Selected-view persistence remains a separate same-origin `POST /api/projects/:projectId/state` action.
+
+<Endpoint id="api-load" summary="Read a validated generated Project World snapshot without mutation" method="GET" path="/api/projects/:projectId/world" summary="Read a validated generated Project World snapshot without mutation" auth="Loopback Forge host" change="added" params={[
+  {
+    "name": "projectId",
+    "in": "path",
+    "type": "safe slug",
+    "required": true
+  }
+]} responses={[
+  {
+    "status": "200",
+    "description": "Returns the already-open project's manifest, vision, playable truth, milestone, roadmap, quests, state, authoritative Chronicle events, derived idea activity, documents, and action availability. No write occurs."
+  },
+  {
+    "status": "404",
+    "description": "Registry entry missing or project unavailable."
+  },
+  {
+    "status": "409",
+    "description": "Artifacts exist but fail strict join or ownership validation."
+  }
+]}>
+
+Strictly read-only. It does not update registry recency, project state, Chronicle, idea seeds, roadmap, verification, Git, or any project file.
+
+</Endpoint>
+
+<Endpoint id="api-state" summary="Open a registered project from Launchpad and update recency" method="POST" path="/api/projects/:projectId/open" summary="Open a registered project from Launchpad and update recency" auth="Same-origin loopback request" change="added" params={[
+  {
+    "name": "projectId",
+    "in": "path",
+    "type": "safe slug",
+    "required": true,
+    "description": "Registered Forge project identifier; never a filesystem path."
+  }
+]} request={{
+  "contentType": "application/json",
+  "example": "{ \"currentView\": \"quest_brief\", \"selectedQuestId\": \"q1-build-the-bounded-arena\" }"
+}} responses={[
+  {
+    "status": "200",
+    "description": "Validated Project World snapshot returned after lastOpenedAt is atomically persisted."
+  },
+  {
+    "status": "404",
+    "description": "Project is not registered or is missing locally; registry entry is preserved."
+  },
+  {
+    "status": "409",
+    "description": "Registered artifacts fail validation; lastOpenedAt is unchanged and no partial world is returned."
+  }
+]}>
+
+Accepts only projectId from the path. Resolve the canonical registered project, validate the complete Project World join, then atomically update registry lastOpenedAt and return the validated snapshot. Validation failure leaves recency unchanged.
+
+</Endpoint>
+
+<Endpoint id="api-idea" summary="Atomically save one idea seed and its derived activity note" method="POST" path="/api/projects/:projectId/ideas" summary="Atomically save one idea seed and its derived activity note" auth="Same-origin loopback request" change="added" request={{
+  "contentType": "application/json",
+  "example": "{ \"idea\": \"Leave a fading ring after each pulse.\" }"
+}} responses={[
+  {
+    "status": "201",
+    "description": "Atomically writes one idea-seeds artifact and returns the persisted idea seed plus the activity note shown in the Chronicle view."
+  },
+  {
+    "status": "400",
+    "description": "Empty, oversized, or unsafe creator text."
+  },
+  {
+    "status": "409",
+    "description": "Project changed or the idea-seeds artifact no longer validates; no optimistic seed or derived activity row remains."
+  }
+]}>
+
+</Endpoint>
+
+<Endpoint id="api-launch" summary="Launch the registered starter with pinned Godot" method="POST" path="/api/projects/:projectId/launch" summary="Launch the registered starter with pinned Godot" auth="Same-origin loopback request" change="added" responses={[
+  {
+    "status": "202",
+    "description": "Server resolved the pinned executable and launched --path <canonical registered project>."
+  },
+  {
+    "status": "409",
+    "description": "Already launching, project moved, or Godot unavailable."
+  }
+]}>
+
+</Endpoint>
+
+<Endpoint id="api-folder" summary="Open the registered project folder" method="POST" path="/api/projects/open-folder" summary="Open the registered project folder" auth="Same-origin loopback request" change="modified" request={{
+  "contentType": "application/json",
+  "example": "{ \"projectId\": \"last-moment-pulse-6631032087\" }"
+}} responses={[
+  {
+    "status": "200",
+    "description": "Existing controlled action opens the canonical registered directory."
+  },
+  {
+    "status": "400",
+    "description": "Missing, moved, or non-canonical project."
+  }
+]}>
+
+</Endpoint>
+
+## Persistence, failure, and empty behavior
+
+Opening from Launchpad calls `POST /api/projects/:projectId/open`. The action resolves the registry entry, canonicalizes the registered directory, verifies it is still the same direct child of Forge's projects root, reads the manifest, resolves only manifest-owned relative artifacts, validates every artifact and cross-reference, then atomically updates registry `lastOpenedAt` and returns the validated snapshot. Validation failure performs no recency write.
+
+`GET /api/projects/:projectId/world` repeats the validated read for an already-open Project World and is strictly read-only. Reloading cannot update `lastOpenedAt`, selected state, Chronicle, ideas, roadmap, verification, Git, or registration.
+
+Quest selection writes only `project-state.json` through its explicit state mutation. Returning to Launchpad is runtime navigation; it does not erase the last selected quest. Reopening after restart uses the same recent-project ID and project-local state—no creation service, GPT call, starter copy, Godot verification rewrite, Git operation, or registry duplication runs. An absent `.forge/idea-seeds.json` is the valid empty state; it is created only by the first successful idea save. `chronicle.json` stays authoritative for real Chronicle events; idea activity is derived from the idea-seed record and labelled as activity in the merged feed.
+
+<Table
+  id="failure-table"
+  columns={["State", "Creator experience", "Invariant"]}
+  rows={[
+    [
+      "No recent projects",
+      "Show only the two Launchpad paths and no empty business-dashboard panel.",
+      "No filesystem scan.",
+    ],
+    [
+      "Registered project missing",
+      "Keep the recent card with Missing locally; disable Open Project World and explain how to locate the folder.",
+      "Do not delete the registry entry.",
+    ],
+    [
+      "Artifact invalid or cross-reference broken",
+      "Show a bounded 'Forge could not open this Project World' screen with retry, Launchpad, and safe folder access when containment still passes.",
+      "Do not partially render or rewrite artifacts.",
+    ],
+    [
+      "Selected quest stale",
+      "Keep the world visible, focus the first available roadmap node in memory, and show a repair notice; persist only after an explicit selection.",
+      "Never silently mutate the roadmap.",
+    ],
+    [
+      "No idea seeds",
+      "Composer remains available; Chronicle shows the project-created entry.",
+      "No placeholder seed.",
+    ],
+    [
+      "Idea save fails",
+      "Keep the text in the composer and show an inline error; do not add a violet seed or derived activity row.",
+      "No optimistic persistence claim.",
+    ],
+    [
+      "Godot launch fails or is already running",
+      "Keep Project World intact and report the server-owned launch error beside the action.",
+      "No roadmap or verification-state mutation.",
+    ],
+    [
+      "Folder open fails",
+      "Explain missing/moved path and leave the project registered.",
+      "No arbitrary fallback path.",
+    ],
+  ]}
+  density="compact"
+/>
+
+## Responsive and accessibility requirements
+
+Desktop keeps the verified starter layout / playable-state preview anchored beside a visually dominant horizontal roadmap. Tablet stacks the identity and starter world preview above the roadmap while preserving the four-node left-to-right order with controlled horizontal overflow only inside the roadmap rail. At narrow width the roadmap becomes one ordered vertical sequence with dependencies between adjacent nodes; the Companion sits below the recommended node; Chronicle and documentation follow the roadmap; the idea composer becomes a full-width stacked dock; quest brief sections become a single reading column; Godot/folder actions remain visible without covering content.
+
+Use semantic landmarks and heading order, real buttons, `aria-current="step"` on the selected quest, labelled dependency/status text in addition to color, a polite live region for persisted/launch results, error alerts, visible focus, logical tab order, minimum control targets, contrast-compliant ember/cyan/violet/mint tokens, and `prefers-reduced-motion` behavior. Focus returns to the triggering roadmap node after closing a brief and moves to the saved seed status after a successful idea write.
+
+## Recommended implementation sequence
+
+1. **Contracts and join rules:** extend only generated-project state/Chronicle contracts; define the UI-safe snapshot and cross-artifact validation.
+2. **Read-only adapter:** implement registered-path resolution and full artifact load behind the strictly read-only `GET /world`; prove reload changes no recency or project bytes.
+3. **Read-only UI:** enrich the Launchpad card, add Generated Project World, roadmap, Chronicle/docs disclosure, and quest brief with honest implementation messaging.
+4. **Server-controlled actions:** add the explicit `POST /open` Launchpad mutation, pinned-Godot launch, and the canonical open-folder boundary.
+5. **Persistence:** atomically write selection state and one idea-seeds artifact; show its clearly labelled derived activity note in the Chronicle view; reload with a fresh service instance.
+6. **Responsive, accessibility, and failure states:** add narrow ordering, focus recovery, reduced motion, invalid/missing project handling, and no-optimism errors.
+7. **Evidence and closeout:** focused tests, protected v0.1 checks, real Last-Moment Pulse restart/launch rehearsal, five-state Edge review, diff review, roadmap/handoff/work-log updates, and one task-scoped commit.
+
+## Exact Task 6 acceptance criteria
+
+<Checklist
+  id="acceptance"
+  items={[
+    {
+      id: "ac1",
+      label:
+        "Launchpad shows Last-Moment Pulse as a project card with Top-down Arena, Created, four planned quests, smoke check passed, and Open Project World.",
+    },
+    {
+      id: "ac2",
+      label:
+        "Launchpad Open Project World uses POST /api/projects/:projectId/open with only a projectId; it validates the registered project, atomically updates lastOpenedAt, and performs no GPT, creation, copy, verification rewrite, Git, registration, or roadmap mutation.",
+    },
+    {
+      id: "ac3",
+      label:
+        "The main screen renders the real name, vision, verified starter layout/playable-state preview, current playable facts, first playable milestone, four ordered quests, dependencies, Companion, activity feed, docs access, idea composer, Godot launch, and folder action in the intended visual hierarchy.",
+    },
+    {
+      id: "ac4",
+      label:
+        "Playable-state copy claims only starter behaviors backed by the persisted Godot verification; enemy and pulse remain planned.",
+    },
+    {
+      id: "ac5",
+      label:
+        "Every quest brief renders outcome, why it matters, proof approach, included/excluded scope, criteria, verification ideas, and dependencies from its own artifact.",
+    },
+    {
+      id: "ac6",
+      label:
+        "Every generated quest explains 'Quest planned · Codex implementation not enabled yet'; no disabled unexplained Build button appears.",
+    },
+    {
+      id: "ac7",
+      label:
+        "Saving an idea performs no GPT call, creates no quest, starts no implementation, and leaves roadmap bytes unchanged.",
+    },
+    {
+      id: "ac8",
+      label:
+        "One successful idea mutation atomically persists one idea-seeds record containing the idea seed and its activity note shown in the Chronicle view; chronicle.json and roadmap.json remain byte-identical.",
+    },
+    {
+      id: "ac9",
+      label:
+        "A fresh host/service instance uses the read-only GET to reload the same registered project with the same roadmap, authoritative Chronicle events, derived idea activity, and valid selected quest without changing lastOpenedAt or creating duplicate artifacts.",
+    },
+    {
+      id: "ac10",
+      label:
+        "Godot launch uses the pinned executable and only the canonical registered project path; folder opening remains server-controlled and containment-checked.",
+    },
+    {
+      id: "ac11",
+      label:
+        "Missing, invalid, stale-selection, idea-save, launch, and folder failures remain truthful and do not mutate unrelated state.",
+    },
+    {
+      id: "ac12",
+      label:
+        "Desktop, tablet, mobile, keyboard, focus, contrast, screen-reader labels, reduced motion, and no-horizontal-page-overflow review pass.",
+    },
+    {
+      id: "ac13",
+      label:
+        "Focused generated-world tests, npm run check, npm run check:v0.1, production build, git diff --check, and a real Last-Moment Pulse launch/restart rehearsal pass.",
+    },
+    {
+      id: "ac14",
+      label:
+        "The Sample Game Enemy Targeting path, Task 5 creation/restart behavior, default commands, and protected workspace hash remain unchanged.",
+    },
+  ]}
+/>
+
+## Rollback strategy
+
+<Callout id="rollback" tone="risk">
+
+Keep the Task 5 **Project Created** summary as the fallback surface until Task 6 closes. Generated-world routes and components are additive under `npm run forge:v0.2`; `npm run forge`, `npm run forge:v0.1`, sample endpoints, and the controlled creation transaction stay untouched. A code rollback removes the new adapter/routes/component and restores the summary action. Task 6's broader project-state view and optional idea-seeds file remain ignored by the Task 5 summary loader, so rollback does not require deleting user data. Never roll back by deleting a registered project or rewriting its roadmap.
+
+</Callout>
+
+## Testing and real rehearsal
+
+Add contract and service tests around exact Task 5 artifacts, traversal/symlink/path-move rejection, manifest-relative joins, quest dependency consistency, state selection, optional idea-file creation, one-file idea atomicity, unchanged Chronicle/roadmap hashes, concurrent saves, fixed launch argv, and fresh-service reload. Add host tests proving `GET /world` is byte-for-byte read-only, `POST /open` accepts only projectId, validates before atomically updating `lastOpenedAt`, and preserves route ordering, same-origin actions, safe IDs, response statuses, and the existing creation-summary catch-all.
+
+The browser harness must capture the five canvas states at 1440×900, 768×900, and 390×844 where relevant, plus missing project, invalid artifact, failed idea save, and failed Godot launch. Audit primary action visibility, focus return, live status, overlap, page overflow, console/network errors, and reduced-motion durations.
+
+The real rehearsal uses the existing Last-Moment Pulse registry entry: record artifact hashes, open Project World, open every quest, launch the actual project, open the folder through an injected/testable boundary, save one sanitized idea, stop and recreate the host/service, reopen, and assert the same roadmap, selected quest, authoritative Chronicle events, derived idea activity note, idea seed, unchanged reload recency, clean generated-project Git status, sample workspace hash, and no duplicate files.

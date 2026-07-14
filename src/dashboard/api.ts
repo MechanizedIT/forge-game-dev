@@ -14,6 +14,12 @@ import type {
   ProjectCreationEvent,
   ProjectCreationStateResponse,
 } from "../project-creation/shared.js";
+import type {
+  GeneratedIdeaSaveResponse,
+  GeneratedLaunchResponse,
+  GeneratedProjectWorldSnapshot,
+  GeneratedWorldStateInput,
+} from "../generated-project-world/shared.js";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
@@ -153,6 +159,41 @@ export function cancelProjectCreation(mutationToken: string): Promise<ProjectCre
 
 export function loadCreatedProject(projectId: string): Promise<CreatedProjectSummary> {
   return request<CreatedProjectSummary>(`/api/projects/${encodeURIComponent(projectId)}`);
+}
+
+export function loadGeneratedProjectWorld(projectId: string): Promise<GeneratedProjectWorldSnapshot> {
+  return request<GeneratedProjectWorldSnapshot>(`/api/projects/${encodeURIComponent(projectId)}/world`);
+}
+
+export function openGeneratedProjectWorld(projectId: string): Promise<GeneratedProjectWorldSnapshot> {
+  return request<GeneratedProjectWorldSnapshot>(`/api/projects/${encodeURIComponent(projectId)}/open`, {
+    method: "POST",
+  });
+}
+
+export function saveGeneratedProjectState(
+  projectId: string,
+  state: GeneratedWorldStateInput,
+): Promise<GeneratedProjectWorldSnapshot> {
+  return request<GeneratedProjectWorldSnapshot>(`/api/projects/${encodeURIComponent(projectId)}/state`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(state),
+  });
+}
+
+export function saveGeneratedIdea(projectId: string, idea: string): Promise<GeneratedIdeaSaveResponse> {
+  return request<GeneratedIdeaSaveResponse>(`/api/projects/${encodeURIComponent(projectId)}/ideas`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ idea }),
+  });
+}
+
+export function launchGeneratedProject(projectId: string): Promise<GeneratedLaunchResponse> {
+  return request<GeneratedLaunchResponse>(`/api/projects/${encodeURIComponent(projectId)}/launch`, {
+    method: "POST",
+  });
 }
 
 export function openCreatedProjectFolder(projectId: string): Promise<{ opened: true }> {

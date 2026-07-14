@@ -87,6 +87,19 @@ npm run forge
 
 The dashboard reads the real persistent workspace, prepared quest and plan, roadmap, review evidence, and completion artifacts. **Build with Codex** starts the existing official SDK runner exactly once. Friendly progress arrives live; raw sanitized events stay behind technical disclosure. **Play the result** launches the verified Godot workspace and completion persists only after the creator explicitly chooses **I saw it work**.
 
+### Open a generated Project World
+
+Run `npm run forge:v0.2`, then choose **Open Project World** on the Last-Moment Pulse recent-project card. Forge resolves only the registered project ID, validates its project-local manifest and artifacts, and opens its persisted roadmap without regenerating the project.
+
+The displayed arena is a **Verified starter layout** / **Playable-state preview** derived from the fixed Godot smoke result; it is not a captured game frame. Generated quest briefs are planning artifacts and explicitly state that Codex implementation is not enabled. Saving an idea records local planning input plus a separately labelled derived activity note; it does not create a quest, call GPT, start Codex, or alter the authoritative roadmap or Chronicle.
+
+For repeatable verification:
+
+```powershell
+npm run project:world:rehearse
+npm run visual:review:v0.2:project-world
+```
+
 ### Run the live Enemy Targeting quest
 
 The original command-line golden path remains available:

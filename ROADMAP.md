@@ -130,7 +130,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Reframe and browser-review the real sample flow inside the Living Game Workshop without changing backend semantics.
 - [x] Add focused GPT-5.6 idea intake and Top-down arena blueprint generation.
 - [x] Create and verify one real Top-down arena starter project.
-- [ ] Persist and reopen the generated roadmap, documentation, project state, and Chronicle.
+- [x] Persist and reopen the generated roadmap, documentation, project state, Chronicle, and derived idea activity.
 - [ ] Harden and rehearse both required paths end to end.
 
 #### Optional after required rehearsal
@@ -175,4 +175,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Stop for approval. Task 6 may load the registered generated project into Project World from its existing authoritative artifacts. Keep project regeneration, generated-quest Codex implementation, additional starters, and sample-art work outside that bounded task.
+Stop for approval. Task 7 may harden and rehearse the two completed required paths end to end. Keep generated-quest Codex implementation, additional starters, import, generalized scanning, and sample-art work outside that bounded task.

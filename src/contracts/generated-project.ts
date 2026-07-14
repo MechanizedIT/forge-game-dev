@@ -118,7 +118,7 @@ export const generatedQuestArtifactSchema = z.object({
 export const generatedProjectStateSchema = z.object({
   schemaVersion: schemaVersionSchema,
   projectId: slugSchema,
-  currentView: z.literal("project_created"),
+  currentView: z.enum(["project_created", "project_world", "quest_brief", "chronicle", "documents"]),
   selectedQuestId: slugSchema.nullable(),
   lastOpenedAt: timestampSchema,
 }).strict();
@@ -133,6 +133,24 @@ export const chronicleSchema = z.object({
     summary: nonEmptyStringSchema,
   }).strict()).min(1),
 }).strict();
+
+export const ideaSeedSchema = z.object({
+  ideaSeedId: slugSchema,
+  idea: z.string().trim().min(1).max(500),
+  createdAt: timestampSchema,
+  activityNote: nonEmptyStringSchema,
+}).strict();
+
+export const ideaSeedsSchema = z.object({
+  schemaVersion: schemaVersionSchema,
+  projectId: slugSchema,
+  seeds: z.array(ideaSeedSchema).max(100),
+}).strict().superRefine((value, context) => {
+  const ids = value.seeds.map((seed) => seed.ideaSeedId);
+  if (new Set(ids).size !== ids.length) {
+    context.addIssue({ code: "custom", message: "Idea seed IDs must be unique", path: ["seeds"] });
+  }
+});
 
 export const planningProvenanceSchema = z.object({
   schemaVersion: schemaVersionSchema,
@@ -227,6 +245,10 @@ export const creationFailureRecordSchema = z.object({
 export type TopDownArenaStarterManifest = z.infer<typeof topDownArenaStarterManifestSchema>;
 export type GeneratedProjectManifest = z.infer<typeof generatedProjectManifestSchema>;
 export type GeneratedQuestArtifact = z.infer<typeof generatedQuestArtifactSchema>;
+export type GeneratedProjectState = z.infer<typeof generatedProjectStateSchema>;
+export type Chronicle = z.infer<typeof chronicleSchema>;
+export type IdeaSeed = z.infer<typeof ideaSeedSchema>;
+export type IdeaSeeds = z.infer<typeof ideaSeedsSchema>;
 export type ProjectRegistry = z.infer<typeof projectRegistrySchema>;
 export type ProjectRegistryEntry = z.infer<typeof projectRegistryEntrySchema>;
 export type GodotVerificationResult = z.infer<typeof godotVerificationResultSchema>;

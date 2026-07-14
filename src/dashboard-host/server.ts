@@ -15,6 +15,12 @@ import {
   ProjectCreationConflictError,
   ProjectCreationService,
 } from "../project-creation/service.js";
+import {
+  GeneratedProjectWorldConflictError,
+  GeneratedProjectWorldNotFoundError,
+  GeneratedProjectWorldService,
+} from "../generated-project-world/service.js";
+import type { GeneratedWorldStateInput, GeneratedWorldView } from "../generated-project-world/shared.js";
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -173,6 +179,7 @@ export function createForgeDashboardServer(
   staticRoot: string,
   planningService?: BlueprintPlanningService,
   creationService?: ProjectCreationService,
+  generatedWorldService?: GeneratedProjectWorldService,
 ): Server {
   const resolvedStaticRoot = path.resolve(staticRoot);
   let creationMutationToken = randomBytes(32).toString("hex");
@@ -216,6 +223,57 @@ export function createForgeDashboardServer(
         openProjectCreationEventStream(request, response, creationService);
         return;
       }
+      const generatedWorldMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/world$/u);
+      if (request.method === "GET" && generatedWorldMatch && generatedWorldService) {
+        const projectId = decodeURIComponent(generatedWorldMatch[1]!);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        sendJson(response, 200, await generatedWorldService.loadWorld(projectId));
+        return;
+      }
+      const generatedOpenMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/open$/u);
+      if (request.method === "POST" && generatedOpenMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = decodeURIComponent(generatedOpenMatch[1]!);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        const body = await readJsonBody(request);
+        if (Object.keys(body).length !== 0) throw new Error("Opening Project World accepts only the registered project ID from the request path.");
+        sendJson(response, 200, await generatedWorldService.openWorld(projectId));
+        return;
+      }
+      const generatedStateMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/state$/u);
+      if (request.method === "POST" && generatedStateMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = decodeURIComponent(generatedStateMatch[1]!);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        const body = await readJsonBody(request);
+        if (Object.keys(body).some((key) => key !== "currentView" && key !== "selectedQuestId")) throw new Error("Project state accepts only currentView and selectedQuestId.");
+        if (typeof body.currentView !== "string" || typeof body.selectedQuestId !== "string") throw new Error("A Project World view and selected quest are required.");
+        sendJson(response, 200, await generatedWorldService.saveState(projectId, {
+          currentView: body.currentView as GeneratedWorldView,
+          selectedQuestId: body.selectedQuestId,
+        } satisfies GeneratedWorldStateInput));
+        return;
+      }
+      const generatedIdeaMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/ideas$/u);
+      if (request.method === "POST" && generatedIdeaMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = decodeURIComponent(generatedIdeaMatch[1]!);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        const body = await readJsonBody(request);
+        if (Object.keys(body).some((key) => key !== "idea") || typeof body.idea !== "string") throw new Error("Idea saving accepts only creator idea text.");
+        sendJson(response, 201, await generatedWorldService.saveIdea(projectId, body.idea));
+        return;
+      }
+      const generatedLaunchMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/launch$/u);
+      if (request.method === "POST" && generatedLaunchMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = decodeURIComponent(generatedLaunchMatch[1]!);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        const body = await readJsonBody(request);
+        if (Object.keys(body).length !== 0) throw new Error("Godot launch accepts only the registered project ID from the request path.");
+        sendJson(response, 202, await generatedWorldService.launch(projectId));
+        return;
+      }
       if (request.method === "POST" && url.pathname === "/api/projects/create" && creationService && planningService) {
         consumeCreationToken(request);
         const body = await readJsonBody(request);
@@ -243,7 +301,7 @@ export function createForgeDashboardServer(
       if (request.method === "POST" && url.pathname === "/api/projects/open-folder" && creationService) {
         requireSameOrigin(request);
         const body = await readJsonBody(request);
-        if (typeof body.projectId !== "string") throw new Error("A registered project ID is required.");
+        if (Object.keys(body).some((key) => key !== "projectId") || typeof body.projectId !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(body.projectId)) throw new Error("Folder opening accepts only a safe registered project ID.");
         await creationService.openProjectFolder(body.projectId);
         sendJson(response, 200, { opened: true });
         return;
@@ -333,7 +391,11 @@ export function createForgeDashboardServer(
       }
       sendJson(response, 404, { error: "Not found" });
     } catch (error) {
-      const status = error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof ProjectCreationConflictError ? 409 : 400;
+      const status = error instanceof GeneratedProjectWorldNotFoundError
+        ? 404
+        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError
+          ? 409
+          : 400;
       sendJson(response, status, {
         error: error instanceof Error ? error.message : String(error),
       });

@@ -63,6 +63,8 @@ export interface RecentProjectSummary {
   starterVersion: string;
   available: boolean;
   stateLabel: string;
+  questCount: number | null;
+  godotSmokeCheckPassed: boolean;
 }
 
 export interface ProjectCreationStateResponse {

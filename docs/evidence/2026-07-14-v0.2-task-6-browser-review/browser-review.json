@@ -1,0 +1,45 @@
+{
+  "date": "2026-07-14",
+  "browser": "Microsoft Edge",
+  "browserVersion": "150.0.4078.65",
+  "channel": "msedge",
+  "states": [
+    "project-world-desktop",
+    "quest-brief-desktop",
+    "chronicle-desktop",
+    "documents-desktop",
+    "project-world-tablet",
+    "project-world-mobile",
+    "project-world-mobile-reduced-motion",
+    "idea-save-failure",
+    "godot-launch-failure",
+    "invalid-project-world",
+    "missing-project-launchpad"
+  ],
+  "screenshots": [
+    "project-world-desktop.png",
+    "quest-brief-desktop.png",
+    "chronicle-desktop.png",
+    "documents-desktop.png",
+    "project-world-tablet.png",
+    "project-world-mobile.png",
+    "project-world-mobile-reduced-motion.png",
+    "idea-save-failure.png",
+    "godot-launch-failure.png",
+    "invalid-project-world.png",
+    "missing-project-launchpad.png"
+  ],
+  "focusChecks": [
+    "quest-close: focus returned to roadmap node",
+    "idea-saved: persisted status focused"
+  ],
+  "reducedMotionDurations": [
+    "1e-06s",
+    "1e-06s",
+    "1e-06s",
+    "1e-06s"
+  ],
+  "visualStateSource": "temporary copy of the real registered Last-Moment Pulse Task 5 project; injected launch/folder process boundaries",
+  "issues": [],
+  "result": "PASS"
+}

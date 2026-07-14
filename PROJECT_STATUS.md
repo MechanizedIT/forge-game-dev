@@ -2,43 +2,43 @@
 
 **Last updated:** 2026-07-14
 
-**Current milestone:** `v0.2 Task 5 — Controlled Top-down Arena Project Creation and Persistence`
+**Current milestone:** `v0.2 Task 6 — Generated Project World Integration`
 
-**Overall state:** `COMPLETE` — Forge can turn an approved, current blueprint into one verified, Git-baselined Top-down Arena project and rediscover it after restart. Rendering the generated project inside Project World remains Task 6.
+**Overall state:** `COMPLETE` — registered generated projects now open as validated, restart-safe Project Worlds without regeneration or generated-quest implementation claims.
 
 ## What works now
 
-- Immutable tag `v0.1.0` still resolves to `99a439aff4425cc3572bd90eb2412ea89ff052ad`; refined fallback commit `4d276125aeb44d007cca96193daf9515fca2a99e` remains the recovery point.
-- Development continues on `feature/v0.2-living-workshop`; `npm run forge` and `npm run forge:v0.1` keep the protected sample experience, while `npm run forge:v0.2` opens the Living Game Workshop.
-- The complete sample journey still supports approval, official-SDK implementation, understandable progress, automated proof, Godot play, explicit creator confirmation, persistent completion, restart, and reset.
-- **Create a new game** produces a validated GPT-5.6 Top-down Arena blueprint and requires a separate, exact final filesystem confirmation before creation.
-- Forge—not GPT—allocates a direct child of its managed projects root, copies the versioned controlled starter inventory, writes strict project records, and reloads every artifact before promotion.
-- Creation reports the seven required honest stages: validating the blueprint, preparing the workspace, assembling the starter, writing project records, checking Godot, creating the baseline, and registering the project.
-- The pinned Godot 4.7 verifier checks the main scene, player, inputs, movement, objective, scripts, and external-resource boundary with a stable success marker.
-- Forge creates exactly one clean local Git baseline commit with a local identity and no remotes, then registers the project last through an atomic registry.
-- Restart discovery, recent-project summaries, reopen, and folder opening work. Reopened projects truthfully report `Created · Project World integration pending`.
-- Cancellation and failures preserve sanitized evidence and remove only Forge-owned staging or final paths after canonical path and symlink checks.
+- `npm run forge` and `npm run forge:v0.1` still open the protected sample experience; `npm run forge:v0.2` opens the Living Game Workshop.
+- The complete Sample Game Enemy Targeting path remains unchanged: approval, official-SDK implementation, understandable progress, automated proof, Godot play, creator confirmation, persistence, restart, and reset.
+- Task 4A still produces a strict GPT-5.6 Top-down Arena blueprint. Task 5 still creates, verifies, Git-baselines, promotes, and registers one controlled starter project.
+- Launchpad recent projects now show the real foundation, planned quest count, Godot smoke result, availability, and **Open Project World** action.
+- `POST /api/projects/:projectId/open` accepts only the registered ID, validates the whole Project World first, then updates registry recency. `GET /world` is strictly read-only.
+- Generated Project World joins the manifest, vision, first playable milestone, roadmap, quest artifacts, project state, Chronicle, verification, documentation disclosures, and optional idea seeds through canonical containment and strict cross-reference checks.
+- The current visual is explicitly labelled **Verified starter layout** and **Playable-state preview**. It represents verifier-backed code-native starter structure, not a captured Godot frame and not the planned enemy or pulse.
+- Every generated quest opens a complete planning brief and states **Quest planned · Codex implementation not enabled yet**.
+- Selection persists through `project-state.json`. Idea text and its derived activity note persist atomically in `.forge/idea-seeds.json`; `chronicle.json` and `roadmap.json` remain byte-identical.
+- Pinned Godot launch and folder opening resolve only the canonical registered project. Missing, invalid, stale-selection, idea, launch, and folder failures remain bounded and truthful.
 
-## Task 5 evidence
+## Task 6 evidence
 
-- `npm run check` passes 79/79 tests; `npm run check:v0.1` passes the production build and all 37 protected compatibility tests.
-- The real rehearsal planned and created **Last-Moment Pulse** as project `last-moment-pulse-6631032087`, wrote 32 controlled files, and produced clean Git commit `9f73f5040bac9b67e806a56129170a150c139637` with no remotes.
-- Pinned Godot `4.7.stable.official.5b4e0cb0f` emitted the exact Forge success marker, and a separate visible launch ran for 120 frames and exited successfully.
-- A fresh service instance found and reopened the project without regeneration. The committed sample hash remained unchanged before and after creation.
-- Edge `150.0.4078.65` reviewed confirmation, progress, Godot verification, created desktop/tablet/mobile states, reduced motion, recent/reopen, and controlled failure with no console, network, overflow, focus, action, or overlap issues.
-- The model supplied blueprint content only; it supplied no destination paths, commands, arbitrary files, source code, or verification commands.
+- `npm run check` passes typechecking and 86/86 tests. `npm run check:v0.1` passes the production build and all 37 protected tests.
+- The real **Last-Moment Pulse** rehearsal opened all four quest briefs, restored `q4-implement-the-push-pulse` after a fresh service, restored one idea seed plus derived activity, and left Chronicle/roadmap hashes identical.
+- The generated project remains on clean baseline commit `9f73f5040bac9b67e806a56129170a150c139637`; Forge-owned mutable state is hidden through local Git metadata without rewriting that commit.
+- Pinned Godot `4.7.stable.official.5b4e0cb0f` launched the canonical registered project for 120 visible frames and exited `0`.
+- The sample workspace hash remained `4ba967d30ee4039f93e109fa9d3d09b3396fe442c57c3944f398d349747fa9be` before and after rehearsal.
+- Edge `150.0.4078.65` captured 11 desktop/tablet/mobile, quest, Chronicle, documents, reduced-motion, idea failure, launch failure, invalid, and missing states with zero reported issues.
 
-The installed in-app Browser plugin still fails before tab creation with `Cannot redefine property: process`. The repeatable fallback is the pinned project-local `@playwright/test` `1.61.1` harness, with reports and screenshots in the Task 5 browser evidence.
+The installed in-app Browser plugin still fails before tab creation with `Cannot redefine property: process`; the repeatable review path is the pinned project-local Playwright `1.61.1` Edge harness.
 
 ## Required v0.2 scope still ahead
 
-- Generated-project Project World loading for the persisted roadmap, quest briefs, playable-state summary, documentation, Chronicle, selection state, and idea seed
-- Required end-to-end hardening after both complete paths exist
+- Task 7 end-to-end hardening and final required-path rehearsal across sample and generated-project journeys
+- Judge packaging items such as final replay instructions and submission evidence
 
-Optional only afterward: generated-quest implementation, Side-scrolling platformer, Movement sandbox, and the sample visual-art pass.
+Generated-quest implementation, additional starters, existing-project import, generalized scanning, and the sample visual-art pass remain deferred.
 
 ## Next bounded task
 
-Stop for approval. Task 6 may connect the created project to Project World using its existing authoritative artifacts. It must not regenerate the project, mutate the controlled starter, begin generated-quest Codex implementation, or add another starter.
+Stop for approval. Task 7 may harden and rehearse both already-complete required paths. It must not add generated-quest implementation, another starter, import, Graphify, Godot MCP, or sample art.
 
-See the [Task 5 handoff](docs/handoffs/2026-07-14-v0.2-task-5-project-creation.md), [review](docs/reviews/2026-07-14-v0.2-task-5-project-creation-review.md), [closeout](docs/closeouts/2026-07-14-v0.2-task-5-project-creation-closeout.md), [real creation evidence](docs/evidence/2026-07-14-v0.2-task-5-real-project-creation.json), and [browser evidence](docs/evidence/2026-07-14-v0.2-task-5-browser-review/README.md).
+See the [Task 6 handoff](docs/handoffs/2026-07-14-v0.2-task-6-generated-project-world.md), [review](docs/reviews/2026-07-14-v0.2-task-6-generated-project-world-review.md), [closeout](docs/closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md), [real rehearsal](docs/evidence/2026-07-14-v0.2-task-6-real-project-world.json), and [browser evidence](docs/evidence/2026-07-14-v0.2-task-6-browser-review/README.md).

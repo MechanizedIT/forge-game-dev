@@ -100,9 +100,11 @@ test("real sample adapter distinguishes fresh, preserved, active, and completed 
 });
 
 test("v0.2 source connects the protected sample API and real blueprint planning", async () => {
-  const [app, newGame, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, planningSdk, planningService, server] = await Promise.all([
+  const [app, newGame, generatedWorld, generatedShared, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, planningSdk, planningService, server] = await Promise.all([
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "App.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "NewGameFlow.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "GeneratedProjectWorld.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "generated-project-world", "shared.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "blueprint-planner", "shared.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "sample-workflow.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "styles.css"), "utf8"),
@@ -150,7 +152,18 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(newGame, /Confirm and create project/);
   assert.match(newGame, /projectCreationStages/);
   assert.match(newGame, /Your Godot project is ready\./);
-  assert.match(newGame, /Enter Project World — next task/);
+  assert.match(newGame, /Enter Project World/);
+  assert.match(generatedWorld, /verified starter layout/i);
+  assert.match(generatedWorld, /playable-state preview/i);
+  assert.match(generatedWorld, /NOT A CAPTURED GODOT FRAME/);
+  assert.match(generatedShared, /Generated intended outcome/);
+  assert.match(generatedShared, /Quest planned · Codex implementation not enabled yet/);
+  assert.match(generatedShared, /Idea activity · derived from saved seed/);
+  assert.match(generatedWorld, /No Build button, Codex run, project mutation, or progress claim/);
+  assert.match(generatedWorld, /aria-current/);
+  assert.match(generatedWorld, /role="status"/);
+  assert.match(generatedWorld, /role="alert"/);
+  assert.doesNotMatch(generatedWorld, /fetch\(/);
   assert.match(app, /Recent projects/);
   assert.match(app, /project\.stateLabel/);
   assert.match(planningSdk, /model: "gpt-5\.6"/);
@@ -162,6 +175,8 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(server, /\/api\/planning\/approve/);
   assert.match(server, /\/api\/projects\/create/);
   assert.match(server, /x-forge-mutation-token/);
+  assert.match(server, /\/world/);
+  assert.match(server, /Object\.keys\(body\)\.length !== 0/);
   assert.match(styles, /\.complete-segment \{ width: 100%; background: var\(--mint\)/);
   assert.match(styles, /\.available-segment \{ background: var\(--ember\)/);
   assert.match(styles, /\.planned-segment \{ width: 100%; border-top: 2px dashed/);
