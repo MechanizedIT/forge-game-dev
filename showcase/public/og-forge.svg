@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Forge — Build your game one verified quest at a time</title>
+  <desc id="description">A restrained graphite roadmap with ember, cyan, violet, and mint quest nodes.</desc>
+  <rect width="1200" height="630" fill="#0b1015"/>
+  <path d="M0 96H1200M0 536H1200" stroke="#25313b"/>
+  <g fill="none" stroke="#25313b"><path d="M70 0V630M1130 0V630"/><path d="M0 315H1200" stroke-dasharray="4 12"/></g>
+  <g transform="translate(86 91)"><path d="M42 0 84 42 42 84 0 42Z" fill="#111a22" stroke="#58c4ed" stroke-width="2"/><path d="M42 16 68 42 42 68 16 42Z" fill="none" stroke="#34414d"/><circle cx="42" cy="42" r="9" fill="#58c4ed"/></g>
+  <text x="194" y="135" fill="#f3f5f7" font-family="Arial, sans-serif" font-size="48" font-weight="700">Forge</text>
+  <text x="86" y="270" fill="#f3f5f7" font-family="Arial, sans-serif" font-size="64" font-weight="700">Build your game one</text>
+  <text x="86" y="346" fill="#ffb25f" font-family="Arial, sans-serif" font-size="64" font-weight="700">verified quest</text>
+  <text x="538" y="346" fill="#f3f5f7" font-family="Arial, sans-serif" font-size="64" font-weight="700">at a time.</text>
+  <g transform="translate(90 438)"><path d="M0 30H940" stroke="#34414d" stroke-width="3"/><path d="M0 30H682" stroke="#68cda0" stroke-width="3"/><g transform="translate(0)"><path d="M30 0 60 30 30 60 0 30Z" fill="#18231f" stroke="#68cda0" stroke-width="2"/><path d="m20 30 7 7 14-16" fill="none" stroke="#68cda0" stroke-width="3"/></g><g transform="translate(222)"><path d="M30 0 60 30 30 60 0 30Z" fill="#1f1a14" stroke="#ec8732" stroke-width="2"/><circle cx="30" cy="30" r="7" fill="#ec8732"/></g><g transform="translate(452)"><path d="M30 0 60 30 30 60 0 30Z" fill="#111e24" stroke="#58c4ed" stroke-width="2"/><circle cx="30" cy="30" r="7" fill="#58c4ed"/></g><g transform="translate(682)"><path d="M30 0 60 30 30 60 0 30Z" fill="#1a1726" stroke="#9b7af1" stroke-width="2"/><circle cx="30" cy="30" r="7" fill="#9b7af1"/></g><g transform="translate(912)"><path d="M30 0 60 30 30 60 0 30Z" fill="#11161c" stroke="#53606b" stroke-width="2"/></g></g>
+  <text x="86" y="584" fill="#8fa0ad" font-family="Arial, sans-serif" font-size="22" letter-spacing="3">OPENAI BUILD WEEK · DEVELOPER TOOLS</text>
+</svg>

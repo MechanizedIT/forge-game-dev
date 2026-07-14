@@ -1,0 +1,19 @@
+import { release } from "./release";
+import type { EvidenceAsset } from "./types";
+
+const task = "v0.2 Task 7 end-to-end hardening";
+const common = { task, sourceCommit: release.sourceCommit, captureDate: release.evidenceCaptureDate, publicSafe: true } as const;
+
+export const evidenceAssets: EvidenceAsset[] = [
+  { ...common, id: "launchpad", publicPath: "/evidence/launchpad.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/real-launchpad-desktop.png", state: "Launchpad with both required paths", classification: "Real Forge application state", alt: "Forge Launchpad offering Explore the sample game and Create a new game." },
+  { ...common, id: "quest-forge", publicPath: "/evidence/quest-forge.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/real-quest-forge-desktop.png", state: "Enemy Targeting approval contract", classification: "Real Forge application state", alt: "Enemy Targeting Quest Forge showing the outcome, three approved files, verification, and approval button." },
+  { ...common, id: "codex-build", publicPath: "/evidence/codex-build.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/real-active-build-desktop.png", state: "Official Codex SDK run in progress", classification: "Real Forge application state", alt: "Forge Active Build showing the first of five truthful Codex stages and a locked scope." },
+  { ...common, id: "automated-proof", publicPath: "/evidence/automated-proof.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/real-playtest-gate-desktop.png", state: "Automated proof complete; creator proof pending", classification: "Real Forge application state", alt: "Forge Playtest Gate showing passed automated checks, three approved files changed, zero unexpected files, and creator confirmation still pending." },
+  { ...common, id: "playtest", publicPath: "/evidence/playtest.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/real-playtest-gate-desktop.png", state: "Creator Playtest Gate", classification: "Real Forge application state", alt: "Forge asks the creator to play the result and observe idle, chasing, and return to idle." },
+  { ...common, id: "completion", publicPath: "/evidence/completion.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/manual-confirmed-completion-desktop.png", state: "Creator-confirmed persistent completion", classification: "Real Forge application state", alt: "Enemy Targeting marked verified and persisted after automated proof and creator confirmation." },
+  { ...common, id: "blueprint", publicPath: "/evidence/blueprint.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/blueprint/blueprint-review-desktop.png", state: "GPT-5.6 Blueprint Review", classification: "Real Forge application state", alt: "Forge Blueprint Review showing a game vision, first playable result, and three-quest roadmap before approval." },
+  { ...common, id: "creation", publicPath: "/evidence/creation.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/creation/godot-verification-desktop.png", state: "Controlled project creation and Godot verification", classification: "Real Forge application state", alt: "Forge controlled creation at the Godot verification stage, with completed and waiting stages shown as text." },
+  { ...common, id: "generated-world", publicPath: "/evidence/generated-world.webp", sourcePath: "docs/evidence/2026-07-14-v0.2-task-7-browser-review/project-world/project-world-desktop.png", state: "Persistent generated Project World", classification: "Real Forge application state", alt: "Generated Project World with a verified starter layout, four planning-only quests, Chronicle, documents, Godot actions, and idea seed." },
+];
+
+export const evidenceById = new Map(evidenceAssets.map((asset) => [asset.id, asset]));

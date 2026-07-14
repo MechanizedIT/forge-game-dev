@@ -15,3 +15,5 @@ Target: under three minutes. Use real captured execution and label any shortened
 | 2:45–3:00 | Final value: creators direct AI work without losing scope, proof, or project memory. |
 
 Capture the slow Codex and GPT/creation sections ahead of the edit from genuine runs. Keep stage order and evidence intact, and do not imply generated-quest implementation is enabled.
+
+The Task 8 showcase video section should point to this final public edit when its URL is available. Its text summary covers the same two paths for visitors who cannot or do not watch; the page does not duplicate the full shot list, autoplay media, or commit a video file.

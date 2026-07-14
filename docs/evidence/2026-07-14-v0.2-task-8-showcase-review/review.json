@@ -1,0 +1,38 @@
+{
+  "date": "2026-07-14",
+  "browser": "Microsoft Edge",
+  "viewports": [
+    {
+      "name": "desktop-1440x900",
+      "width": 1440,
+      "height": 900,
+      "overflow": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "tablet-768x900",
+      "width": 768,
+      "height": 900,
+      "overflow": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "mobile-390x844",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "result": "PASS"
+    }
+  ],
+  "interactions": [
+    "Arrow-key walkthrough navigation",
+    "Focus moved to changed step heading",
+    "Touch/click path and step controls",
+    "Deep link to a new-game step",
+    "Unconfigured video dialog and Escape close",
+    "Focus returned to video trigger",
+    "Reduced-motion deep-link review"
+  ],
+  "issues": [],
+  "result": "PASS"
+}

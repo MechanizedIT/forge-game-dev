@@ -124,3 +124,16 @@ Task 7 owns final required-path hardening. Generated-quest implementation, more 
 - Promoted `npm run forge` to v0.2 after every gate passed, retained `npm run forge:v0.1` as the protected compatibility launch and `npm run forge:v0.2` as an explicit alias, and added a default-routing regression.
 
 Generated-quest execution, additional starters, import, generalized scanning, Graphify, Godot MCP, general chat, automatic idea conversion, and sample art remain deferred.
+
+## v0.2 Task 8 — Public Showcase and Guided Walkthrough
+
+**Date:** 2026-07-14
+**Status:** Complete — static build, content/privacy validation, responsive Edge review, and release regressions pass
+
+- Added an isolated static `showcase/` surface representing the immutable `v0.2.0` release at commit `08cffa7`.
+- Added a concise product narrative, category-level workflow problem, Forge method, interface tour, two seven-step guided replays, neutral comparison, explicit current/next/future horizons, progressive technical architecture, Task 7 proof, local setup, submission links, and a static-site limitation boundary.
+- Reused nine inspected Task 7 application states with typed provenance; generated one decorative hero through the built-in OpenAI image tool and created deterministic SVG favicon/Open Graph assets. Illustrations are never classified as evidence.
+- Added truthful configured/unconfigured public links, an accessible non-autoplay video dialog, query-string walkthrough deep links, keyboard and touch controls, focus management, live announcements, and reduced-motion behavior.
+- Added static/Vercel deployment, content refresh, evidence sanitation, public-link, image record, architecture decision, and future cloud/local companion documentation.
+- Added content tests, static/privacy/truth validation, asset budgets, and Microsoft Edge review at desktop, tablet, mobile, and reduced-motion states without operational imports or runtime data calls.
+- The Task 7 release, `npm run forge`, `npm run forge:v0.1`, operational sources, sample/generated projects, and `v0.2.0` tag remain unchanged. No deployment occurred.

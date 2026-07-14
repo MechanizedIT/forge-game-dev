@@ -415,3 +415,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Session ID:** Sample Codex thread `019f6208-05c8-7752-8dc0-47e4efc7b0f8`; primary submission `/feedback` ID remains pending
 - **Known limitation:** Generated-quest implementation remains intentionally unavailable. License, public submission media/URLs, repository visibility, and the primary `/feedback` ID remain owner decisions.
 - **Next step:** Complete submission packaging and push or submit only with explicit owner authorization.
+
+---
+
+## 2026-07-14 — Build the public Forge showcase and guided workflow replay
+
+- **Actor/model surface:** Codex repository implementation; built-in OpenAI image generation; vanilla TypeScript/Vite; pinned Playwright `1.61.1`; Microsoft Edge; existing Task 7 evidence
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Authorized safe preflight cleanup in a separate commit, selected the next Task 8 identifier, approved an isolated static site, required two truthful guided replays, public evidence provenance, current/future separation, public-link pending states, Vercel/generic static readiness, no deployment, and no operational Forge or release-tag changes.
+- **AI contribution:** Classified and committed portable project tooling separately; created typed release/link/tour/walkthrough/evidence/proof/vision content; built the static public page, interactions, metadata, deterministic favicon/Open Graph card, accessible video dialog, deep links, and performance budgets; generated and inspected one decorative hero; selected and optimized nine Task 7 captures; added validation, content tests, responsive Edge review, deployment/content/evidence/link/image/architecture documentation, repository routing, and milestone closeout artifacts.
+- **Files changed:** New `showcase/` static application and documentation; root showcase scripts and Vercel config; Task 8 plan/handoff/review/closeout/evidence; repository guide/change map/context validator; README, plan, status, roadmap, changelog, judge guide, video shot list, submission checklist, and this log. Operational Forge source, fixtures, Task 7 evidence, and release tags were unchanged.
+- **Verification:** `npm run showcase:check` passed 5/5 content tests, static build, privacy/truth validation, and budgets; `npm run showcase:review` passed Edge desktop/tablet/mobile/reduced-motion review with zero issues; context validation passed 11 subsystems and 10 routes; `npm run check` passed 89/89; main production build passed; `npm run check:v0.1` passed 37/37 plus build; final diff, secret-sensitive scan, tag/default-launch checks, and cleanliness are completed before the showcase commit.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains a private owner placeholder and is not published
+- **Next step:** Owner reviews public copy, supplies video/live/Devpost URLs, deploys the static site, selects the license, and pushes/submits only with explicit authorization.

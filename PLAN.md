@@ -326,6 +326,14 @@ Task 7 verified the clean setup path, ran a fresh official-SDK Enemy Targeting b
 
 All required gates pass. `npm run forge` now launches v0.2, `npm run forge:v0.1` preserves direct compatibility, the default-route regression passes, and the release checkpoint is eligible for the planned v0.2 tag.
 
+## Task 8 — complete
+
+Task 8 adds a separate `showcase/` static site representing the immutable `v0.2.0` release at `08cffa7`. Typed content owns release identity, public links, interface concepts, both seven-step guided replays, evidence provenance, proof facts, current/next/future claims, and limitations. The walkthrough makes no runtime API call and cannot access files, run Codex or GPT-5.6, launch Godot or Git, modify a game, or persist visitor state.
+
+The public surface reuses inspected Task 7 application captures as evidence, labels one generated hero as decorative, and uses deterministic code-native favicon and Open Graph assets. Validation protects evidence sources, optional-link states, privacy, truth boundaries, static output, and performance budgets. Edge review covers desktop, tablet, mobile, keyboard navigation, focus movement, deep links, the truthful pending-video dialog, Escape/focus return, and reduced motion.
+
+Task 8 does not alter the operational Forge application, Task 7 evidence, default launch, protected v0.1 path, sample or generated projects, release tag, or external deployment state.
+
 ## Rollback strategy
 
 - Never move, replace, or delete `v0.1.0`.
