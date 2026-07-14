@@ -12,6 +12,7 @@
     "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/blueprint-planning.test.ts tests/project-creation.test.ts tests/generated-project-world.test.ts",
     "check": "npm run typecheck && npm test",
     "check:v0.1": "npm run typecheck && npm run dashboard:build && tsx --test tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/legacy-sample.test.ts",
+    "context:check": "node scripts/validate-repository-context.mjs",
     "dashboard:dev": "vite",
     "dashboard:build": "vite build",
     "dashboard:preview": "vite preview",

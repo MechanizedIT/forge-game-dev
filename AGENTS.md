@@ -7,12 +7,22 @@ This repository is the OpenAI Build Week implementation of Forge: a gamified gam
 Before starting a task, read only the minimum governing context:
 
 1. `AGENTS.md`
-2. `README.md` for the product promise and judge path
-3. `ROADMAP.md` for sequence and scope
-4. `BUILD_WEEK_BASELINE.md` when provenance or prior work matters
-5. The selected quest, plan, or handoff files relevant to the current task
+2. `docs/REPOSITORY_GUIDE.md` to identify the owning subsystem and authoritative state
+3. `README.md` for the product promise and judge path
+4. `ROADMAP.md` for sequence and scope
+5. `BUILD_WEEK_BASELINE.md` when provenance or prior work matters
+6. The selected subsystem instructions, tests, quest, plan, or handoff relevant to the task
 
 Do not load unrelated documents merely because they exist. Prefer focused context and inspect additional files only when the task requires them.
+
+## Repository routing
+
+- Use `docs/REPOSITORY_GUIDE.md` first and `docs/CHANGE_MAP.md` for symptom-oriented navigation.
+- Identify the authoritative owner and mutation boundary before editing a consumer.
+- Read only the relevant nested `AGENTS.md`, implementation entry points, contracts, and protecting tests.
+- Use `rg` to confirm imports, callers, routes, and artifact paths; do not infer ownership from directory names alone.
+- Do not load all historical plans, handoffs, reviews, or evidence. Open the latest relevant closeout only when a decision needs provenance.
+- Treat generated repository maps and packed indexes as derived navigation aids, never as authoritative state or architecture.
 
 ## Product contract
 

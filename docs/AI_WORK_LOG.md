@@ -386,3 +386,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; real project `last-moment-pulse-6631032087`; primary submission `/feedback` ID remains pending
 - **Next step:** Stop for approval. Task 7 may harden and rehearse both completed required paths without adding deferred capabilities.
+
+---
+
+## 2026-07-14 — Harden repository navigation and authoritative context routing
+
+- **Actor/model surface:** Codex repository inspection, documentation, and local validation; primary tool documentation reviewed for Graphify, Repomix, and Aider-style repository maps
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Requested a bounded context-hardening task only; prohibited product features, runtime behavior changes, third-party indexing installation, production dependencies, exhaustive inventories, historical evidence rewrites, and duplicated project status; required one clean commit.
+- **AI contribution:** Mapped ten stable subsystems from source imports, contracts, persisted writes, tests, and Tasks 3–6 closeouts; added a task-oriented repository guide, authoritative-state matrix, symptom change map, and bounded context-tool evaluation; added six brief local instruction files at high-risk ownership boundaries; routed root instructions through the guide; added a zero-dependency staleness validator for structure, unique IDs, linked paths, and test references.
+- **Files changed:** Root and six nested `AGENTS.md` files; `docs/REPOSITORY_GUIDE.md`; `docs/CHANGE_MAP.md`; `docs/research/REPOSITORY_CONTEXT_TOOLS.md`; `scripts/validate-repository-context.mjs`; the `context:check` package script; and this log. `PROJECT_STATUS.md`, historical task artifacts, product source, fixtures, lockfile, and runtime dependencies were unchanged.
+- **Verification:** `npm run context:check` passed 10 subsystem entries, 9 change routes, 230 path references, and 65 test references; an injected duplicate subsystem ID was rejected; `npm run check` passed typechecking plus 86/86 tests; `npm run check:v0.1` passed the production build plus 37/37 protected tests; five representative maintenance routes resolved to the intended owner/start file; final staged diff and `git diff --check` are run before commit.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Use the curated guide and change map during Task 7; after Build Week, run only the documented disposable Graphify experiment before considering optional adoption.
