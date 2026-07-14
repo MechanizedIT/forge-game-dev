@@ -78,14 +78,14 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ### Milestone 6 — Package for judging
 
-- [ ] Verify the single-command launch path on a clean Windows environment.
+- [x] Verify the documented repository setup and launch path in an isolated clean Windows checkout.
 - [x] Complete one end-to-end dashboard rehearsal on the development Windows machine.
 - [x] Pin and checksum the portable Godot download.
 - [ ] Provide an offline or replay fallback for the core demonstration.
-- [ ] Replace README mockups and placeholder links.
+- [x] Replace README mockups and placeholder links with real screenshots and honest pending-submission labels.
 - [ ] Record a public demo video under three minutes.
 - [ ] Preserve the primary Codex `/feedback` session ID.
-- [ ] Run the exact judge path repeatedly and fix reliability issues.
+- [x] Run the exact judge path repeatedly and fix reliability issues.
 
 **Exit:** Every submission link works, the repository is understandable, and the golden path is repeatable within a few minutes.
 
@@ -123,4 +123,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The command-line loop, dashboard integration, and one real human-confirmed dashboard rehearsal are `COMPLETE`. The reliability rehearsal is recorded in its [plan](docs/plans/2026-07-13-dashboard-judge-path-reliability.md), [review](docs/reviews/2026-07-13-dashboard-judge-path-reliability-review.md), and [closeout](docs/closeouts/2026-07-13-dashboard-judge-path-reliability-closeout.md). The next bounded milestone is repeating the path on a clean Windows environment.
+The command-line loop, dashboard integration, development-machine run, and isolated clean-Windows judge rehearsal are `COMPLETE`. The clean rehearsal is recorded in its [plan](docs/plans/2026-07-13-judge-readiness-rehearsal.md), [review](docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md), and [closeout](docs/closeouts/2026-07-13-judge-readiness-rehearsal-closeout.md). The next bounded milestone is manual submission packaging: video, final links and metadata, `/feedback` ID, license decision, and an offline-fallback decision.

@@ -227,3 +227,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Included in the milestone commit; exact SHA reported in the task response
 - **Session ID:** Live Codex thread `019f5dfe-7e18-78c2-a858-e4a6bdd7384a`; primary `/feedback` ID pending
 - **Next step:** Repeat the exact judge path on a clean Windows environment and finish packaging.
+
+---
+
+## 2026-07-13 — Rehearse judge readiness from a clean Windows checkout
+
+- **Actor/model surface:** Codex repository review, isolated remote checkout, official `@openai/codex-sdk` live run, Godot 4.7, in-app browser, and visible creator confirmation
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Treat the implementation at `a5321ed1406c599de70a9ba951552d81aee82e7a` as complete; test only the README judge path; permit only small installation, comprehension, recovery, replay, and documentation corrections; prohibit new product features and infrastructure.
+- **AI contribution:** Created an isolated Forge home and fresh remote clone; installed dependencies; exercised the first-time pinned Godot download and later cache reuse; ran the real dashboard SDK path; observed idle, chase, and retreat states before confirmation; verified persistence and reset; audited requirements, authentication, recovery, provenance, and committed evidence; corrected the Node range, README guidance, missing screenshots, and port-conflict error; wrote sanitized review and closeout evidence.
+- **Files changed:** Package engine metadata; dashboard-host startup error; `README.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, dashboard capability status, real dashboard screenshots, bounded plan, sanitized evidence, review, closeout, and this log.
+- **Verification:** Fresh clone matched the requested baseline. Dependency install reported zero vulnerabilities. First prepare downloaded and validated Godot `4.7.stable.official.5b4e0cb0f`; second prepare used the cache. The live run changed exactly three approved files, emitted `FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass`, reached final `PASS` only after visible confirmation, persisted 1-of-1 completion, reset to 0 of 1 available after host restart, and exposed no committed credentials or local user paths. Final `npm ci`, typechecking, 45/45 offline tests, production build, baseline Godot verification, friendly occupied-port failure, alternate-port HTTP state check, browser console audit, link audit, and diff checks passed.
+- **Commit:** Created after this entry; SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains a manual packaging item
+- **Next step:** Record the public video, add final submission URLs and metadata, preserve the primary `/feedback` ID, choose the license, and decide on the optional offline fallback.

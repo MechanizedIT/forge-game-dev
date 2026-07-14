@@ -19,7 +19,7 @@ Four labels are used consistently:
 - **Deferred:** A longer-term Forge concept or stretch goal that should not appear as functional prototype scope.
 - **Owner review:** A gap or contradiction cannot be resolved from current repository evidence.
 
-This document originally preceded dashboard implementation. The repository now contains the React/Vite dashboard under `src/dashboard/` and a thin local Node/TypeScript host under `src/dashboard-host/`. The judge path reads validated workspace artifacts and delegates to the existing runner, review, Godot launch, and completion services. There is still no storyboard, landmark contract, or separate dashboard/workspace vision document; README images remain placeholders. Prior Forge materials should influence the prototype only after they are deliberately added or cited.
+This document originally preceded dashboard implementation. The repository now contains the React/Vite dashboard under `src/dashboard/` and a thin local Node/TypeScript host under `src/dashboard-host/`. The judge path reads validated workspace artifacts and delegates to the existing runner, review, Godot launch, and completion services. There is still no storyboard, landmark contract, or separate dashboard/workspace vision document; the README now uses screenshots captured from the real dashboard. Prior Forge materials should influence the prototype only after they are deliberately added or cited.
 
 ## 1. Prototype objective
 

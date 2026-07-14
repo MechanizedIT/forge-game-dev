@@ -57,4 +57,4 @@ Reset is destructive to the demo workspace and therefore requires explicit confi
 npm run demo:reset -- confirm-reset
 ```
 
-Use `confirm-reset` exactly as shown. Without it, Forge cancels the reset and changes nothing. Direct CLI callers may also pass `--yes`; the positional confirmation avoids npm treating `--yes` as its own configuration flag.
+Stop the dashboard host before resetting, then restart it after reset so its in-memory notice state matches the restored workspace. Use `confirm-reset` exactly as shown. Without it, Forge cancels the reset and changes nothing. Direct CLI callers may also pass `--yes`; the positional confirmation avoids npm treating `--yes` as its own configuration flag.

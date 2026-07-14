@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "sanitized-clean-windows-judge-rehearsal",
+  "baselineCommit": "a5321ed1406c599de70a9ba951552d81aee82e7a",
+  "environment": {
+    "operatingSystem": "Windows 11 Home 64-bit",
+    "node": "22.17.1",
+    "npm": "10.9.2",
+    "git": "2.41.0.windows.1"
+  },
+  "isolation": {
+    "freshRemoteClone": true,
+    "emptyForgeHomeAtStart": true,
+    "existingDemoStateReused": false,
+    "existingGodotCacheReusedForFirstPrepare": false
+  },
+  "setup": {
+    "dependencyInstall": "passed",
+    "reportedVulnerabilities": 0,
+    "firstPrepareSource": "download",
+    "godotVersion": "4.7.stable.official.5b4e0cb0f",
+    "secondPrepareSource": "cache"
+  },
+  "goldenPath": {
+    "runId": "enemy-targeting-1783989407063",
+    "officialCodexSdkRun": "completed",
+    "changedFiles": [
+      "main.tscn",
+      "scripts/enemy.gd",
+      "scripts/verify_fixture.gd"
+    ],
+    "unexpectedFiles": [],
+    "automatedVerdict": "CONDITIONAL PASS",
+    "godotSignal": "FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass",
+    "observedPlayStates": [
+      "IDLE outside detection range",
+      "CHASING after approach",
+      "IDLE after retreat"
+    ],
+    "creatorConfirmation": "I SAW IT WORK",
+    "finalVerdict": "PASS",
+    "workflowState": "COMPLETE",
+    "persistedRoadmapState": "completed"
+  },
+  "replay": {
+    "explicitReset": "passed",
+    "generatedRunRemoved": true,
+    "restartedRoadmapState": "available",
+    "restartedProgress": "0 of 1 complete"
+  },
+  "findings": [
+    "Resetting while the host remains open can retain a stale in-memory completion notice until restart.",
+    "A port conflict previously emitted an unhandled Node EADDRINUSE stack.",
+    "The README used missing placeholder images and did not give an exact bundled Codex login check.",
+    "The declared Node range was broader than the installed Vite version supports."
+  ],
+  "safetyAudit": {
+    "credentialsCommitted": false,
+    "privateTranscriptCommitted": false,
+    "absoluteUserPathCommitted": false,
+    "downloadedGodotBinaryCommitted": false
+  }
+}

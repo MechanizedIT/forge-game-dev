@@ -45,6 +45,17 @@ const server = createForgeDashboardServer(
   path.join(repositoryRoot, "dist", "dashboard"),
 );
 
+server.once("error", (error: NodeJS.ErrnoException) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Forge could not start because http://127.0.0.1:${port} is already in use.`);
+    console.error("Close the other Forge terminal, or choose another port before retrying:");
+    console.error("$env:FORGE_PORT=4174; npm run forge");
+    process.exit(1);
+  }
+  console.error(`Forge could not start: ${error.message}`);
+  process.exit(1);
+});
+
 server.listen(port, "127.0.0.1", () => {
   const url = `http://127.0.0.1:${port}`;
   console.log(`Forge Workshop is ready: ${url}`);

@@ -2,51 +2,46 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** Real dashboard judge path proven end to end
+**Current milestone:** Clean Windows judge rehearsal complete
 
-**Overall state:** The golden path has succeeded on the development Windows machine; clean-machine repetition and submission packaging remain
+**Overall state:** `READY` for live judge testing from a clean checkout; manual submission packaging remains
 
 ## What works now
 
-A creator can prepare the bundled Godot project, approve Enemy Targeting, let the official Codex SDK implement it, follow plain-language progress, receive automated verification, launch the changed game, and explicitly confirm whether the mechanic worked.
+A clean 64-bit Windows 11 checkout at `a5321ed1406c599de70a9ba951552d81aee82e7a` completed the README path with Node 22.17.1 and Git 2.41:
 
-Forge completes the quest only after all of these succeed:
+- Locked npm installation completed with zero reported vulnerabilities.
+- Explicit first-run consent downloaded, checksummed, and extracted pinned Godot 4.7; a later prepare reused the verified cache.
+- The dashboard launched at its printed local URL and loaded the available Enemy Targeting quest.
+- The official Codex SDK changed exactly the three approved Godot files.
+- Project checks and deterministic Godot verification passed.
+- The game visibly moved from `IDLE` to `CHASING` and back to `IDLE` after retreat.
+- Forge requested creator confirmation only after play, persisted final `PASS`, and reloaded a 1-of-1 completed roadmap.
+- An explicit reset restored the immutable fixture and a restarted host showed Enemy Targeting available at 0 of 1 complete.
 
-- The bounded Codex run finishes with only approved files changed.
-- Project and Godot verification pass.
-- The verified Godot game launches and closes successfully.
-- The creator enters exactly `I SAW IT WORK`.
-
-Completion persists the workflow as `COMPLETE`, changes the roadmap node to `completed`, records the confirmation time, and writes final review and closeout evidence. Failure, cancellation, missing interactive input, or launch failure leaves the quest incomplete. Rerunning a completed quest explains its state instead of rebuilding it.
-
-The Forge Workshop dashboard now reads the real prepared quest, plan, roadmap, review, verification, and completion artifacts. Its approval action starts the existing official Codex SDK runner, the five existing friendly stages stream into the UI, Godot launch returns to an explicit confirmation dialog, and completion appears only after the existing atomic persistence succeeds.
-
-A fresh dashboard rehearsal now proves that full path. The official SDK changed exactly the three approved Godot files, all deterministic checks passed, the creator played the game and entered `I SAW IT WORK`, and a fresh dashboard read showed a `PASS` review plus the completed roadmap. The earlier failed rehearsal was traced to an unreliable generated node-reference form; the bounded work packet now requires the proven exported-`NodePath` resolution pattern.
+The README now gives exact supported Node ranges, bundled Codex login checks, first-download behavior, the dashboard URL, reset/replay steps, and common recovery commands. Real dashboard screenshots replace the prior missing mockups. Port conflicts now produce a short actionable message instead of an unhandled Node stack.
 
 ## Try the dashboard
 
 ```powershell
-npm install
+npm ci
+npx codex login status
 npm run demo:prepare -- confirm-download
 npm run forge
 ```
 
-The prepare command is needed only for first-time pinned Godot setup. `npm run forge` builds the dashboard, starts the local host, and opens Forge Workshop. Review Enemy Targeting, choose **Build with Codex**, wait for real proof, choose **Play the result**, then confirm only what you observed.
-
-The immutable fixture remains the idle reset baseline. `npm run demo:reset -- confirm-reset` explicitly starts over and removes generated completion state.
-
-## Command-line fallback
-
-`npm run quest:run -- enemy-targeting` remains the authoritative terminal path and uses the same runner, review, launch, confirmation, and persistence services as the dashboard.
+Review Enemy Targeting, choose **Build with Codex**, wait for automated proof, choose **Play the result**, and confirm only what you observe. To replay, stop Forge with `Ctrl+C`, run `npm run demo:reset -- confirm-reset`, then run `npm run forge` again.
 
 ## Still incomplete
 
-- Restart recovery for an in-progress host process; live run ownership is intentionally in memory, while durable outcomes remain in existing artifacts.
-- Plan refinement, contextual questions, and a multi-entry Chronicle index
-- Clean-machine judge rehearsal and replay fallback
+- Public demo video and Devpost URLs
+- Primary Codex `/feedback` ID and final submission metadata
+- Offline/replay fallback if live Codex or network access is unavailable
+- License selection
+- Plan refinement, contextual questions, and the multi-entry Chronicle remain honestly deferred product work
 
 ## Next milestone
 
-Repeat the successful dashboard path on a clean Windows environment, then finish the labeled replay fallback and submission packaging.
+Record the under-three-minute video, add final submission links and metadata, preserve the `/feedback` ID, choose the license, and decide whether an honestly labeled offline fallback is required.
 
-Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md). Dashboard specification: [`docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`](docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md).
+Rehearsal evidence: [`docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md`](docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md). Operational details: [`README.md`](README.md) and [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md).

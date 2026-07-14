@@ -12,12 +12,9 @@ Forge turns AI-assisted game development into a visual, guided series of quests.
 
 ## Demo
 
-- **[Watch the three-minute demo](VIDEO_URL_HERE)**
-- **[View the Devpost submission](DEVPOST_URL_HERE)**
+The public three-minute video and Devpost links will be added during final submission packaging. The repository path below is the verified live demonstration.
 
 ![Forge roadmap dashboard](docs/assets/forge-dashboard.png)
-
-_Mockup placeholder: replace with the final roadmap dashboard screenshot._
 
 ## The Build Week experience
 
@@ -39,46 +36,43 @@ Complete the quest
 
 The current bundled Godot experience starts with a visual roadmap backed by one real prepared quest. Select **Enemy Targeting** and the Forge companion explains what was planned, what Codex may change, and how the result will be verified. The creator can review the validated plan and explicitly approve or leave without starting work. Plan refinement and contextual questions remain later milestones.
 
-After approval, Forge will give Codex a bounded work packet, translate technical activity into understandable progress, verify the result, launch the game, and update the roadmap with satisfying quest-completion feedback.
+After approval, Forge gives Codex a bounded work packet, translates technical activity into understandable progress, verifies the result, launches the game, and updates the roadmap only after explicit creator confirmation.
 
 ## Judge quick start
 
-### Planned requirements
+### Requirements
 
-- Windows 10 or 11
-- Node.js 20.19 or newer
-- Git
-- Codex installed and authenticated
-- Internet access during initial setup
+- 64-bit Windows 10 or 11
+- Node.js 20.19.x, or Node.js 22.12 or newer
+- Git 2.x
+- A Codex-capable ChatGPT or OpenAI API account
+- Internet access for dependency installation, the first Godot download, and the live Codex run
 
-Godot does not need to be installed in advance. Forge will offer to download a pinned portable build after receiving permission.
+Godot and a separate global Codex CLI do not need to be installed in advance. The locked npm dependencies include the official Codex SDK and CLI, and Forge downloads a pinned portable Godot build only after the explicit command below.
 
-### Target published launch
-
-```bash
-npx forge-game-dev demo
-```
-
-> This is the target judge command. The published package name and command will be verified before submission.
-
-### Current repository launch
+### Clean repository launch
 
 ```powershell
 git clone https://github.com/MechanizedIT/forge-game-dev.git
 cd forge-game-dev
-npm install
+npm ci
+npx codex login status
+# If the status command says you are signed out:
+npx codex login
 npm run demo:prepare -- confirm-download
 npm run forge
 ```
 
-The prepare command performs the first-time pinned Godot setup with explicit download consent. After that, the single launch command is `npm run forge`; it builds the dashboard, starts the local Node/TypeScript host, and opens Forge Workshop in the browser.
+`npx codex login` opens the official browser sign-in flow; API-key users may use the CLI's documented API-key login instead. Do not place credentials in this repository.
+
+The prepare command is explicit consent for the approximately 84 MB first-time Godot download. Forge checks the pinned SHA-256 before extraction and reports whether the build came from `download` or `cache`. After setup, `npm run forge` builds the dashboard, starts the local host, prints `http://127.0.0.1:4173`, and opens Forge Workshop in the default browser. Forge stores the generated demo and Godot cache under `%LOCALAPPDATA%\Forge`, not in the checkout.
 
 To run only the current Godot fixture foundation, see [`docs/GODOT_FIXTURE.md`](docs/GODOT_FIXTURE.md).
 
 To run only the playable baseline:
 
 ```powershell
-npm install
+npm ci
 npm run demo:prepare -- confirm-download
 npm run demo:play
 ```
@@ -122,7 +116,27 @@ The complete judge path is designed to take only a few minutes.
 
 ![Selected quest and companion](docs/assets/forge-quest-details.png)
 
-_Mockup placeholder: replace with the final selected-quest screenshot._
+## Reset and replay
+
+Reset is intentionally destructive only to Forge's generated demo workspace. It does not remove the repository checkout or the verified Godot cache.
+
+1. Stop Forge with `Ctrl+C` in the terminal that is running it.
+2. Reset the generated demo workspace.
+3. Launch Forge again.
+
+```powershell
+npm run demo:reset -- confirm-reset
+npm run forge
+```
+
+The roadmap should return to **0 of 1 complete** with Enemy Targeting available. Stopping and restarting the host is required so no in-memory completion notice from the prior run remains on screen.
+
+## Common recovery
+
+- **Port 4173 is already in use:** close the other Forge terminal, or run `$env:FORGE_PORT=4174; npm run forge` and open the printed URL.
+- **Codex reports an authentication problem:** stop Forge, run `npx codex login status`, use `npx codex login` if needed, then relaunch.
+- **Godot download fails:** confirm internet access and rerun `npm run demo:prepare -- confirm-download`; incomplete downloads are not installed as a valid cache.
+- **A quest fails or is cancelled:** read the preserved dashboard evidence. To return to the immutable starting point, use the stop/reset/relaunch sequence above.
 
 ## What makes Forge different
 
