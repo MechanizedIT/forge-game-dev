@@ -17,7 +17,9 @@ import { ForgeDashboardService } from "../dashboard-host/service.js";
 import { repositoryRoot } from "../demo/paths.js";
 import { ProjectCreationService } from "../project-creation/service.js";
 
-const evidenceRoot = path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-task-5-browser-review");
+const evidenceRoot = process.env.FORGE_REVIEW_EVIDENCE_ROOT
+  ? path.resolve(process.env.FORGE_REVIEW_EVIDENCE_ROOT)
+  : path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-task-5-browser-review");
 const blueprint = JSON.stringify({
   resultType: "blueprint",
   clarificationQuestions: [],
@@ -182,9 +184,11 @@ async function main(): Promise<void> {
   await mkdir(evidenceRoot, { recursive: true });
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), "forge-creation-visual-"));
   let browser: Browser | null = null;
+  let successServer: Awaited<ReturnType<typeof startServer>> | null = null;
+  let failureServer: Awaited<ReturnType<typeof startServer>> | null = null;
   try {
     browser = await launchBrowser();
-    const successServer = await startServer({ forgeHome: path.join(temporaryRoot, "success"), failGodot: false, gateGodot: true });
+    successServer = await startServer({ forgeHome: path.join(temporaryRoot, "success"), failGodot: false, gateGodot: true });
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     observe(page, successServer.baseUrl, "success");
@@ -221,16 +225,14 @@ async function main(): Promise<void> {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.getByRole("button", { name: "Return to Launchpad" }).click();
     await page.getByRole("heading", { name: "Recent projects" }).waitFor();
-    await audit(page, "launchpad-recent-project", "Reopen Project Created summary");
+    await audit(page, "launchpad-recent-project", "Open Project World");
     await capture(page, "launchpad-recent-project");
-    await page.getByRole("button", { name: "Reopen Project Created summary" }).click();
-    await page.getByRole("heading", { name: "Your Godot project is ready." }).waitFor();
-    await audit(page, "reopened-project-created", "Open project folder");
-    await capture(page, "reopened-project-created");
     await context.close();
-    await new Promise<void>((resolve) => successServer.server.close(() => resolve()));
+    const completedSuccessServer = successServer;
+    await new Promise<void>((resolve) => completedSuccessServer.server.close(() => resolve()));
+    successServer = null;
 
-    const failureServer = await startServer({ forgeHome: path.join(temporaryRoot, "failure"), failGodot: true, gateGodot: false });
+    failureServer = await startServer({ forgeHome: path.join(temporaryRoot, "failure"), failGodot: true, gateGodot: false });
     const failureContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const failurePage = await failureContext.newPage();
     observe(failurePage, failureServer.baseUrl, "failure");
@@ -241,11 +243,18 @@ async function main(): Promise<void> {
     await audit(failurePage, "creation-failure-controlled", "Review and retry creation");
     await capture(failurePage, "creation-failure-controlled");
     await failureContext.close();
-    await new Promise<void>((resolve) => failureServer.server.close(() => resolve()));
+    const completedFailureServer = failureServer;
+    await new Promise<void>((resolve) => completedFailureServer.server.close(() => resolve()));
+    failureServer = null;
   } catch (error) {
     report.issues.push({ kind: "exception", state: "harness", message: error instanceof Error ? error.message : String(error) });
   } finally {
     await browser?.close().catch(() => undefined);
+    for (const running of [successServer, failureServer]) {
+      if (running?.server.listening) {
+        await new Promise<void>((resolve) => running.server.close(() => resolve()));
+      }
+    }
     await rm(temporaryRoot, { recursive: true, force: true });
   }
   report.result = report.issues.length === 0 ? "PASS" : "FAIL";

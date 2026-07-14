@@ -17,6 +17,8 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 | Need | Start |
 | --- | --- |
 | Product promise and judge commands | [README](../README.md) |
+| Final v0.2 judge walkthrough and recovery | [Judge guide](JUDGE_GUIDE.md) |
+| Video rehearsal and submission gates | [Video shot list](VIDEO_SHOT_LIST.md) and [submission checklist](SUBMISSION_CHECKLIST.md) |
 | Current milestone truth | [Project status](../PROJECT_STATUS.md) |
 | Required/deferred sequence | [Roadmap](../ROADMAP.md) |
 | Approved v0.2 journeys and boundaries | [Plan](../PLAN.md) |

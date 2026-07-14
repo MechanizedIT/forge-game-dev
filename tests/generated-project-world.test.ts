@@ -235,6 +235,14 @@ test("Godot launch uses only pinned executable and canonical registered project 
   });
 });
 
+test("the default generated-project launcher keeps the Godot game window visible", async () => {
+  const source = await readFile(path.join(process.cwd(), "src", "generated-project-world", "service.ts"), "utf8");
+  assert.match(
+    source,
+    /function defaultLauncher[\s\S]*?spawn\(request\.executable, request\.args,[\s\S]*?windowsHide: false/,
+  );
+});
+
 test("host keeps GET read-only and requires same origin plus exact bodies for generated-world mutations", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "forge-generated-world-host-test-"));
   const calls: string[] = [];

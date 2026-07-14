@@ -131,7 +131,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Add focused GPT-5.6 idea intake and Top-down arena blueprint generation.
 - [x] Create and verify one real Top-down arena starter project.
 - [x] Persist and reopen the generated roadmap, documentation, project state, Chronicle, and derived idea activity.
-- [ ] Harden and rehearse both required paths end to end.
+- [x] Harden and rehearse both required paths end to end, including creator-confirmed sample play, default v0.2 promotion, compatibility, browser, reset, generated-project cleanliness, and clean-clone gates.
 
 #### Optional after required rehearsal
 

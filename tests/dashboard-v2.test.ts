@@ -50,6 +50,19 @@ test("v0.2 launch choices route to the real sample path and New Game Intake", ()
   assert.equal(returnToLaunchpad(), "launchpad");
 });
 
+test("default Forge launch targets v0.2 while v0.1 remains directly available", async () => {
+  const packageJson = await readJson("package.json") as { scripts: Record<string, string> };
+  assert.equal(
+    packageJson.scripts.forge,
+    "npm run dashboard:build && npm run dashboard:host -- --v0.2",
+  );
+  assert.equal(
+    packageJson.scripts["forge:v0.1"],
+    "npm run dashboard:build && npm run dashboard:host -- --legacy",
+  );
+  assert.equal(packageJson.scripts.forge, packageJson.scripts["forge:v0.2"]);
+});
+
 test("real sample adapter distinguishes fresh, preserved, active, and completed workspace states", async () => {
   const fresh = await sampleSnapshot();
   const freshPresentation = buildSampleWorkflowPresentation(fresh);
@@ -201,10 +214,12 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
     scripts: Record<string, string>;
     devDependencies: Record<string, string>;
   };
-  assert.equal(packageJson.scripts.forge, "npm run dashboard:build && npm run dashboard:host");
+  assert.equal(packageJson.scripts.forge, "npm run dashboard:build && npm run dashboard:host -- --v0.2");
   assert.equal(packageJson.scripts["forge:v0.1"], "npm run dashboard:build && npm run dashboard:host -- --legacy");
   assert.equal(packageJson.scripts["forge:v0.2"], "npm run dashboard:build && npm run dashboard:host -- --v0.2");
-  assert.equal(packageJson.scripts["visual:review:v0.2"], "tsx src/visual-review/v0.2.ts");
-  assert.equal(packageJson.scripts["visual:review:v0.2:blueprint"], "tsx src/visual-review/v0.2-blueprint.ts");
+  assert.equal(packageJson.scripts["visual:review:v0.2"], "npm run dashboard:build && tsx src/visual-review/v0.2.ts");
+  assert.equal(packageJson.scripts["visual:review:v0.2:blueprint"], "npm run dashboard:build && tsx src/visual-review/v0.2-blueprint.ts");
+  assert.match(visualReview, /spawn\(process\.execPath, \[tsxCli, "src\/dashboard-host\/cli\.ts", "--v0\.2"\]/);
+  assert.match(visualReview, /FORGE_REVIEW_EVIDENCE_ROOT/);
   assert.equal(packageJson.devDependencies["@playwright/test"], "1.61.1");
 });

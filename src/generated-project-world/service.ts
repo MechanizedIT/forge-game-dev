@@ -78,7 +78,7 @@ function defaultLauncher(request: GeneratedWorldLaunchRequest): void {
     cwd: request.cwd,
     detached: true,
     stdio: "ignore",
-    windowsHide: true,
+    windowsHide: false,
   });
   child.once("exit", request.onExit);
   child.once("error", request.onExit);

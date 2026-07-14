@@ -182,6 +182,14 @@ test("a validated approved blueprint creates the controlled project tree and rou
   });
 });
 
+test("the default project-folder launcher keeps File Explorer visible", async () => {
+  const source = await readFile(path.join(process.cwd(), "src", "project-creation", "service.ts"), "utf8");
+  assert.match(
+    source,
+    /this\.openFolder[\s\S]*?spawn\(command\.executable, command\.args,[\s\S]*?windowsHide: false/,
+  );
+});
+
 test("stale blueprints fail before project allocation and never register", async () => {
   await withRoot(async (root) => {
     const approved = envelope();

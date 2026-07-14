@@ -109,3 +109,18 @@ Task 6 owns generated-project Project World integration. Generated-quest impleme
 - `npm run check` passes 86/86; `npm run check:v0.1` passes the production build and 37/37; Edge review passes 11 states with zero issues.
 
 Task 7 owns final required-path hardening. Generated-quest implementation, more starters, import, generalized scanning, and sample art remain deferred.
+
+## v0.2 Task 7 — End-to-End Hardening and Judge Rehearsal
+
+**Date:** 2026-07-14
+**Status:** Pass — both required journeys and all release gates complete
+
+- Verified a clean temporary clone through `npm ci`, Codex login status, first-time pinned Godot download, and demo preparation.
+- Ran a fresh official-SDK Enemy Targeting implementation that changed only the three approved files and passed every automated criterion. A creator then visibly observed `IDLE → CHASING → IDLE`, entered the exact success confirmation, and Forge persisted final `PASS` through host reload before a verified safe reset.
+- Used real GPT-5.6 high reasoning and exact approvals to create **Gravity Tap Arena**, verify it in pinned Godot, establish clean no-remote Git commit `7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8`, register it, reopen Project World, restore selection and idea activity, and preserve roadmap/Chronicle bytes and the sample workspace.
+- Fixed Windows review-host `spawn EINVAL`, stale visual-harness composition and cleanup, prior-evidence overwrite risk, and hidden generated Godot/File Explorer actions.
+- Edge `150.0.4078.65` passed 48 automated captures across six suites with zero console, network, layout, action, focus, accessibility, or reduced-motion issues; one additional real completion capture records creator-confirmed proof.
+- Added a judge guide, video shot list, submission checklist, final review/closeout, handoff, and sanitized Task 7 evidence.
+- Promoted `npm run forge` to v0.2 after every gate passed, retained `npm run forge:v0.1` as the protected compatibility launch and `npm run forge:v0.2` as an explicit alias, and added a default-routing regression.
+
+Generated-quest execution, additional starters, import, generalized scanning, Graphify, Godot MCP, general chat, automatic idea conversion, and sample art remain deferred.

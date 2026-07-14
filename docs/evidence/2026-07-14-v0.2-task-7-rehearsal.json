@@ -1,0 +1,108 @@
+{
+  "date": "2026-07-14",
+  "objective": "Forge v0.2 Task 7 end-to-end hardening and judge rehearsal",
+  "environment": {
+    "node": "22.17.1",
+    "npm": "10.9.2",
+    "git": "2.41.0.windows.1",
+    "playwright": "1.61.1",
+    "edge": "150.0.4078.65",
+    "godot": "4.7.stable.official.5b4e0cb0f",
+    "codexAuth": "ChatGPT login available",
+    "gpt56Credential": "API key present; value not recorded"
+  },
+  "freshClone": {
+    "npmCi": "PASS; 42 packages, 0 vulnerabilities",
+    "codexLoginStatus": "PASS",
+    "godotSource": "download",
+    "demoWorkspaceCreated": true,
+    "checkoutClean": true
+  },
+  "sampleJourney": {
+    "runId": "enemy-targeting-1784056119542",
+    "officialCodexSdk": true,
+    "approvedFilesChanged": [
+      "main.tscn",
+      "scripts/enemy.gd",
+      "scripts/verify_fixture.gd"
+    ],
+    "unexpectedFiles": [],
+    "automatedReview": "CONDITIONAL PASS",
+    "manualObservation": "Creator moved toward the enemy and observed chasing, then moved away and observed the return to idle.",
+    "godotVerification": "FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass",
+    "godotWindowOpened": true,
+    "creatorConfirmationUiReached": true,
+    "creatorConfirmation": "I SAW IT WORK",
+    "creatorSuccessRecorded": true,
+    "finalReview": "PASS",
+    "completionPersistedAfterHostReload": true,
+    "resetCancellationPreservedHash": true,
+    "confirmedResetRestoredFreshState": true,
+    "result": "PASS"
+  },
+  "newGameJourney": {
+    "projectId": "gravity-tap-arena-6cbe7b2a54",
+    "model": "gpt-5.6",
+    "reasoningEffort": "high",
+    "blueprintValidation": "PASS",
+    "exactCreationConfirmation": "CONFIRM CREATE",
+    "godotVerification": "FORGE_TOP_DOWN_ARENA_VERIFY_OK",
+    "gitBaseline": "7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8",
+    "projectWorldRestart": "PASS",
+    "ideaPersistence": "PASS",
+    "roadmapAndChronicleUnchangedByIdea": true,
+    "visibleGodotLaunch": "PASS after Task 7 fix",
+    "visibleFolderOpen": "PASS after Task 7 fix",
+    "sampleWorkspaceUntouched": true,
+    "result": "PASS"
+  },
+  "browserReview": {
+    "reports": 6,
+    "automatedScreenshots": 48,
+    "manualConfirmationScreenshots": 1,
+    "screenshots": 49,
+    "issues": 0,
+    "viewports": ["1440x900", "768x900", "390x844"],
+    "result": "PASS"
+  },
+  "finalVerification": {
+    "contextCheck": "PASS; 10 subsystems, 9 routes, 233 path references, 65 test references",
+    "fullSuite": "PASS; 89/89 including promoted default-launch regression",
+    "protectedV01": "PASS; 37/37 plus production build",
+    "defaultLaunchProbe": "PASS; npm run forge starts dashboard host with --v0.2 and prints the /v0.2.html URL; explicit legacy page remains HTTP 200",
+    "finalCleanClone": "PASS; npm ci reported 42 packages and 0 vulnerabilities; Codex login, context check, production build, and 89/89 tests passed",
+    "diffCheck": "PASS after documentation whitespace correction",
+    "generatedProjectsClean": "PASS; Last-Moment Pulse and Gravity Tap Arena"
+  },
+  "issues": [
+    {
+      "classification": "blocker",
+      "observed": "The sample visual harness failed to spawn its Windows host with EINVAL.",
+      "resolution": "Start the TypeScript host through the current Node executable and build assets before review.",
+      "status": "fixed"
+    },
+    {
+      "classification": "reliability risk",
+      "observed": "Browser harnesses could overwrite earlier milestone evidence or leak a temporary server after failure.",
+      "resolution": "Added explicit evidence-root routing, current host composition, updated handoff labels, expected SSE handling, and finally cleanup.",
+      "status": "fixed"
+    },
+    {
+      "classification": "blocker",
+      "observed": "Generated Godot and File Explorer actions returned success but opened no visible window on Windows.",
+      "resolution": "Keep both detached Windows UI processes visible and protect the behavior with focused regressions.",
+      "status": "fixed"
+    },
+    {
+      "classification": "release gate",
+      "observed": "Automation could not truthfully perform the sample held-key playtest.",
+      "resolution": "The creator visibly observed chase and retreat, entered the exact success confirmation, and completion/reload/reset checks passed before promotion.",
+      "status": "resolved"
+    }
+  ],
+  "defaultLaunchPromoted": true,
+  "v01CompatibilityPreserved": true,
+  "releaseTagCreated": true,
+  "releaseTag": "v0.2.0",
+  "result": "PASS"
+}

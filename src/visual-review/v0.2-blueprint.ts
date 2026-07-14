@@ -1,6 +1,7 @@
 import { once } from "node:events";
 import { mkdir, writeFile } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
+import os from "node:os";
 import path from "node:path";
 
 import { chromium, type Browser, type Page } from "@playwright/test";
@@ -10,8 +11,11 @@ import type { BlueprintModelExecutor } from "../blueprint-planner/types.js";
 import { createForgeDashboardServer } from "../dashboard-host/server.js";
 import { ForgeDashboardService } from "../dashboard-host/service.js";
 import { repositoryRoot } from "../demo/paths.js";
+import { ProjectCreationService } from "../project-creation/service.js";
 
-const evidenceRoot = path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-task-4a-browser-review");
+const evidenceRoot = process.env.FORGE_REVIEW_EVIDENCE_ROOT
+  ? path.resolve(process.env.FORGE_REVIEW_EVIDENCE_ROOT)
+  : path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-task-4a-browser-review");
 
 const clarification = JSON.stringify({
   resultType: "clarification",
@@ -115,7 +119,8 @@ function observe(page: Page, baseUrl: string): void {
     if (response.url().startsWith(baseUrl) && response.status() >= 400) report.issues.push({ kind: "network", state: "runtime", message: `${response.status()} ${response.url()}` });
   });
   page.on("requestfailed", (request) => {
-    if (!request.url().startsWith(baseUrl) || (request.url().endsWith("/api/planning/events") && request.failure()?.errorText.includes("ERR_ABORTED"))) return;
+    if (!request.url().startsWith(baseUrl)) return;
+    if (request.url().endsWith("/events") && request.failure()?.errorText.includes("ERR_ABORTED")) return;
     report.issues.push({ kind: "network", state: "runtime", message: `${request.method()} ${request.url()}: ${request.failure()?.errorText}` });
   });
 }
@@ -140,7 +145,15 @@ async function main(): Promise<void> {
     gameLauncher: async () => { throw new Error("Godot launch is outside blueprint visual review."); },
   });
   const planningService = new BlueprintPlanningService(fakePlanningExecutor());
-  const server = createForgeDashboardServer(sampleService, path.join(repositoryRoot, "dist", "dashboard"), planningService);
+  const creationService = new ProjectCreationService({
+    forgeHome: path.join(os.tmpdir(), `forge-blueprint-visual-${process.pid}`),
+  });
+  const server = createForgeDashboardServer(
+    sampleService,
+    path.join(repositoryRoot, "dist", "dashboard"),
+    planningService,
+    creationService,
+  );
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   const port = (server.address() as AddressInfo).port;

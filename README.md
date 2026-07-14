@@ -12,7 +12,7 @@ Forge turns AI-assisted game development into a visual, guided series of quests.
 
 ## Demo
 
-The public three-minute video and Devpost links will be added during final submission packaging. The repository path below is the verified live demonstration.
+The public three-minute video and Devpost links will be added during final submission packaging. The current live path and remaining release gate are in the [v0.2 judge guide](docs/JUDGE_GUIDE.md).
 
 ![Forge roadmap dashboard](docs/assets/forge-dashboard.png)
 
@@ -65,7 +65,9 @@ npm run forge
 
 `npx codex login` opens the official browser sign-in flow; API-key users may use the CLI's documented API-key login instead. Do not place credentials in this repository.
 
-The prepare command is explicit consent for the approximately 84 MB first-time Godot download. Forge checks the pinned SHA-256 before extraction and reports whether the build came from `download` or `cache`. After setup, `npm run forge` builds the dashboard, starts the local host, prints `http://127.0.0.1:4173`, and opens Forge Workshop in the default browser. Forge stores the generated demo and Godot cache under `%LOCALAPPDATA%\Forge`, not in the checkout.
+The prepare command is explicit consent for the approximately 84 MB first-time Godot download. Forge checks the pinned SHA-256 before extraction and reports whether the build came from `download` or `cache`. After setup, `npm run forge` builds the dashboard, starts the local host, prints `http://127.0.0.1:4173/v0.2.html`, and opens the Living Game Workshop in the default browser. Forge stores the generated demo and Godot cache under `%LOCALAPPDATA%\Forge`, not in the checkout.
+
+`npm run forge:v0.1` remains the protected direct compatibility launch. `npm run forge:v0.2` is retained as an explicit alias for the default v0.2 workshop.
 
 To run only the current Godot fixture foundation, see [`docs/GODOT_FIXTURE.md`](docs/GODOT_FIXTURE.md).
 
@@ -87,9 +89,15 @@ npm run forge
 
 The dashboard reads the real persistent workspace, prepared quest and plan, roadmap, review evidence, and completion artifacts. **Build with Codex** starts the existing official SDK runner exactly once. Friendly progress arrives live; raw sanitized events stay behind technical disclosure. **Play the result** launches the verified Godot workspace and completion persists only after the creator explicitly chooses **I saw it work**.
 
+### Create a new game
+
+Choose **Create a new game**, enter one small Top-down Arena idea, and review the GPT-5.6 blueprint. Blueprint approval writes nothing. A second explicit confirmation lets Forge copy only the controlled starter, validate its project records, run the pinned Godot smoke check, create a clean local Git baseline, and register the project last. Forge never uses model-authored paths, shell commands, packages, dependencies, or source files.
+
+The resulting Project World shows the verified playable starter, persisted roadmap, quest briefs, documents, Chronicle, and idea seeds. Generated-quest implementation is deliberately unavailable in v0.2.
+
 ### Open a generated Project World
 
-Run `npm run forge:v0.2`, then choose **Open Project World** on the Last-Moment Pulse recent-project card. Forge resolves only the registered project ID, validates its project-local manifest and artifacts, and opens its persisted roadmap without regenerating the project.
+Run `npm run forge`, then choose **Open Project World** on a recent-project card. Forge resolves only the registered project ID, validates its project-local manifest and artifacts, and opens its persisted roadmap without regenerating the project.
 
 The displayed arena is a **Verified starter layout** / **Playable-state preview** derived from the fixed Godot smoke result; it is not a captured game frame. Generated quest briefs are planning artifacts and explicitly state that Codex implementation is not enabled. Saving an idea records local planning input plus a separately labelled derived activity note; it does not create a quest, call GPT, start Codex, or alter the authoritative roadmap or Chronicle.
 
@@ -125,7 +133,7 @@ For an explicitly approved non-interactive SDK run, use `npm run quest:run -- en
 
 If verification, launch, rejection, or cancellation fails, Forge preserves the evidence and leaves the roadmap incomplete. The dashboard does not contain a mocked judge-state controller; ordinary automated tests use injected fake SDK and launcher dependencies offline.
 
-The complete judge path is designed to take only a few minutes.
+Live GPT planning and Codex execution may take several minutes. Forge shows real elapsed time and stage changes without inventing a duration estimate.
 
 ![Selected quest and companion](docs/assets/forge-quest-details.png)
 
@@ -148,6 +156,7 @@ The roadmap should return to **0 of 1 complete** with Enemy Targeting available.
 
 - **Port 4173 is already in use:** close the other Forge terminal, or run `$env:FORGE_PORT=4174; npm run forge` and open the printed URL.
 - **Codex reports an authentication problem:** stop Forge, run `npx codex login status`, use `npx codex login` if needed, then relaunch.
+- **GPT-5.6 planning is unavailable:** configure an authorized OpenAI API key/model entitlement and retry. Forge stops safely and does not substitute another model.
 - **Godot download fails:** confirm internet access and rerun `npm run demo:prepare -- confirm-download`; incomplete downloads are not installed as a valid cache.
 - **A quest fails or is cancelled:** read the preserved dashboard evidence. To return to the immutable starting point, use the stop/reset/relaunch sequence above.
 
@@ -235,6 +244,7 @@ The judge testing path is fully contained in this repository; the prior project 
 - Windows is the primary tested platform.
 - The companion lives inside Forge rather than in an operating-system-level overlay.
 - Live implementation requires Codex authentication and internet access.
+- Generated-project quests are planning briefs only; their Codex implementation is intentionally deferred.
 
 ## Built with
 
@@ -242,4 +252,4 @@ Codex · GPT · TypeScript · React · Godot 4 · Node.js · Git
 
 ## License
 
-License details will be added before submission.
+A repository license still requires the submission owner's explicit selection before release.

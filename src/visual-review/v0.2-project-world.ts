@@ -18,7 +18,9 @@ import type { GeneratedIdeaSaveResponse, GeneratedLaunchResponse } from "../gene
 import { ProjectCreationService } from "../project-creation/service.js";
 
 const projectId = "last-moment-pulse-6631032087";
-const evidenceRoot = path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-task-6-browser-review");
+const evidenceRoot = process.env.FORGE_REVIEW_EVIDENCE_ROOT
+  ? path.resolve(process.env.FORGE_REVIEW_EVIDENCE_ROOT)
+  : path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-task-6-browser-review");
 
 interface Issue { kind: "console" | "exception" | "network" | "layout" | "action" | "focus" | "accessibility"; state: string; message: string }
 const report = {

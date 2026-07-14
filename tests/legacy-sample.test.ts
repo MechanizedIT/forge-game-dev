@@ -6,12 +6,12 @@ import { fileURLToPath } from "node:url";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("default and legacy entries render the same protected sample experience", async () => {
-  const defaultAppEntry = await readFile(
+test("the direct v0.1 entry keeps the protected sample while the default command targets v0.2", async () => {
+  const protectedSampleEntry = await readFile(
     path.join(repositoryRoot, "src", "dashboard", "App.tsx"),
     "utf8",
   );
-  assert.equal(defaultAppEntry.trim(), 'export { default } from "./LegacySampleApp.js";');
+  assert.equal(protectedSampleEntry.trim(), 'export { default } from "./LegacySampleApp.js";');
 
   const legacyMain = await readFile(
     path.join(repositoryRoot, "src", "dashboard", "legacy-main.tsx"),
@@ -25,7 +25,7 @@ test("default and legacy entries render the same protected sample experience", a
   ) as { scripts: Record<string, string> };
   assert.equal(
     packageJson.scripts.forge,
-    "npm run dashboard:build && npm run dashboard:host",
+    "npm run dashboard:build && npm run dashboard:host -- --v0.2",
   );
   assert.equal(
     packageJson.scripts["forge:v0.1"],

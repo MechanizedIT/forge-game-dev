@@ -400,3 +400,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Use the curated guide and change map during Task 7; after Build Week, run only the documented disposable Graphify experiment before considering optional adoption.
+
+---
+
+## 2026-07-14 — Harden and rehearse both Forge v0.2 judge paths
+
+- **Actor/model surface:** Codex repository implementation and review; official `@openai/codex-sdk` live sample run; real GPT-5.6 high-reasoning planning; pinned Godot 4.7; local Git; Playwright `1.61.1`; Microsoft Edge `150.0.4078.65`; Windows app inspection
+- **Workflow stage:** Rehearse / Fix / Review / Document / Complete
+- **Human decisions:** Approved Task 7 only; required fresh-evaluator setup, both real journeys, responsive/accessibility review, submission documents, default promotion only after every gate, and no generated-quest execution or other deferred capability.
+- **AI contribution:** Audited the protected branch and tools; completed a clean-clone first-download rehearsal; ran the fresh real sample SDK path through creator confirmation; created and reopened real **Gravity Tap Arena** through exact HTTP approvals; fixed Windows host spawning, visual evidence isolation/composition/cleanup, and visible Godot/Explorer launching; recorded the creator's exact manual confirmation through the normal completion boundary; verified reload/reset; promoted the default launch only after all gates; produced judge, video, checklist, evidence, review, closeout, and handoff records.
+- **Files changed:** Two narrow Windows process options; Task 7 new-game rehearsal; four visual-review harnesses; default v0.2 package route; focused tests; README/status/plan/roadmap/changelog; judge/video/checklist; Task 7 evidence/review/closeout/handoff; this log.
+- **Verification:** Clean setup passed with zero npm vulnerabilities and a real Godot download. Sample run `enemy-targeting-1784056119542` changed only three approved files, passed automated Godot proof, then received exact creator confirmation after visible chase and retreat. Final `PASS` survived host reload; reset cancellation changed no bytes; confirmed reset restored all nine tracked fixture files, removed run artifacts, and left a clean sample Git worktree. Real project `gravity-tap-arena-6cbe7b2a54` passed GPT-5.6, exact creation confirmation, Godot, clean Git commit `7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8`, registry, restart, idea ownership, visible launch/folder actions, and sample isolation. Six Edge reports contain 48 automated captures and zero issues; one additional screenshot records real creator-confirmed completion. Context validation, full and protected suites, production build, default-route regression, final isolated clone, diff, and cleanliness checks pass.
+- **Commit:** Single conditional Task 7 checkpoint; exact SHA reported in the handoff response
+- **Session ID:** Sample Codex thread `019f6208-05c8-7752-8dc0-47e4efc7b0f8`; primary submission `/feedback` ID remains pending
+- **Known limitation:** Generated-quest implementation remains intentionally unavailable. License, public submission media/URLs, repository visibility, and the primary `/feedback` ID remain owner decisions.
+- **Next step:** Complete submission packaging and push or submit only with explicit owner authorization.

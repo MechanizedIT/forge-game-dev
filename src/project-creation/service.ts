@@ -149,7 +149,7 @@ export class ProjectCreationService {
       const child = spawn(command.executable, command.args, {
         detached: true,
         stdio: "ignore",
-        windowsHide: true,
+        windowsHide: false,
       });
       child.on("error", () => {});
       child.unref();

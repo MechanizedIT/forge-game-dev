@@ -245,7 +245,7 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
-**Current checkpoint:** Tasks 1 through 6 are complete. Last-Moment Pulse now opens from its registered ID into a validated, restart-safe Project World with a verifier-labelled starter preview, persisted roadmap navigation, planning-only quest briefs, Chronicle plus separately labelled derived idea activity, documentation disclosure, pinned Godot launch, and controlled folder access. Task 7 remains the next approval boundary; generated-quest implementation remains later and optional.
+**Current checkpoint:** Tasks 1 through 7 are complete. Both real journeys, creator-held sample play, clean setup, browser review, protected compatibility, reset, default v0.2 promotion, and final clean-clone gates pass. Generated-quest implementation remains later and optional.
 
 ## Task 1 — exact acceptance criteria
 
@@ -320,12 +320,18 @@ Idea saves atomically write one optional `.forge/idea-seeds.json` owner containi
 
 The real Last-Moment Pulse rehearsal restored the fourth quest and saved idea after a fresh service, kept Chronicle/roadmap hashes identical, preserved a clean generated-project worktree and the sample workspace hash, and launched pinned Godot for 120 frames. Edge review passed 11 responsive, focus, accessibility, reduced-motion, success, missing, invalid, idea-failure, and launch-failure captures with zero issues.
 
+## Task 7 — complete
+
+Task 7 verified the clean setup path, ran a fresh official-SDK Enemy Targeting build, created and reopened the real GPT-5.6 **Gravity Tap Arena** project, reviewed 48 automated Edge captures, and fixed concrete Windows harness, visible Godot, and visible File Explorer blockers. The creator then visibly observed `IDLE → CHASING → IDLE`, entered the exact success confirmation, and Forge persisted final `PASS` through a host reload before cancel-safe and confirmed reset checks restored the clean fixture.
+
+All required gates pass. `npm run forge` now launches v0.2, `npm run forge:v0.1` preserves direct compatibility, the default-route regression passes, and the release checkpoint is eligible for the planned v0.2 tag.
+
 ## Rollback strategy
 
 - Never move, replace, or delete `v0.1.0`.
 - Treat `4d27612` as the refined working fallback and `v0.1.0` as the immutable release recovery point.
 - Keep each roadmap task in a bounded commit; do not mix sample-runner changes with new-game creation changes.
-- Keep legacy sample mode runnable throughout development. Do not switch the default launch to v0.2 until Task 7 passes.
+- Keep legacy sample mode runnable through `npm run forge:v0.1` and its protected compatibility suite.
 - Do not migrate existing sample `.forge` artifacts. New contracts must be additive and new-game-only unless the sample already accepts them.
 - Store new projects outside the sample workspace so cleanup and failure cannot affect the golden demo.
 - On a v0.2 regression, disable the v0.2 entry flag and launch legacy mode; if the working tree itself is damaged, recover from `4d27612` or the `v0.1.0` tag without rewriting history.

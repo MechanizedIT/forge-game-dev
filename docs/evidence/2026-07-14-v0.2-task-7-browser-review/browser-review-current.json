@@ -1,0 +1,51 @@
+{
+  "date": "2026-07-14",
+  "mode": "current",
+  "baseUrl": "http://127.0.0.1:4173",
+  "environment": {
+    "node": "v22.17.1",
+    "npm": "10.9.2",
+    "playwright": "1.61.1",
+    "browser": "Microsoft Edge",
+    "browserVersion": "150.0.4078.65",
+    "channel": "msedge"
+  },
+  "host": "started",
+  "realStates": [
+    "real-launchpad-desktop",
+    "real-quest-complete-desktop",
+    "real-project-world-reloaded-desktop",
+    "real-proof-completed-desktop"
+  ],
+  "visualStateFixtures": [],
+  "screenshots": [
+    "real-launchpad-desktop.png",
+    "real-quest-complete-desktop.png",
+    "real-project-world-reloaded-desktop.png",
+    "real-proof-completed-desktop.png"
+  ],
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "reducedMotion": {
+    "checked": false,
+    "animationDurations": []
+  },
+  "ignoredExpectedNoise": [],
+  "issues": [],
+  "result": "PASS"
+}

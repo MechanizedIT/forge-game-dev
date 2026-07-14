@@ -7,12 +7,9 @@ import { chromium, type Browser, type BrowserContext, type Page } from "@playwri
 import { repositoryRoot } from "../demo/paths.js";
 
 const baseUrl = process.env.FORGE_REVIEW_URL ?? "http://127.0.0.1:4173";
-const evidenceRoot = path.join(
-  repositoryRoot,
-  "docs",
-  "evidence",
-  "2026-07-14-v0.2-browser-review",
-);
+const evidenceRoot = process.env.FORGE_REVIEW_EVIDENCE_ROOT
+  ? path.resolve(process.env.FORGE_REVIEW_EVIDENCE_ROOT)
+  : path.join(repositoryRoot, "docs", "evidence", "2026-07-14-v0.2-browser-review");
 const resetRequested = process.argv.includes("--reset") || process.argv.includes("reset");
 const liveRequested = process.argv.includes("--live") || process.argv.includes("live");
 const mode = liveRequested ? "live" : resetRequested ? "reset" : "current";
@@ -87,8 +84,8 @@ async function reachable(): Promise<boolean> {
 
 async function ensureHost(): Promise<void> {
   if (await reachable()) return;
-  const npmExecutable = process.platform === "win32" ? "npm.cmd" : "npm";
-  ownedHost = spawn(npmExecutable, ["run", "dashboard:host", "--", "--v0.2"], {
+  const tsxCli = path.join(repositoryRoot, "node_modules", "tsx", "dist", "cli.mjs");
+  ownedHost = spawn(process.execPath, [tsxCli, "src/dashboard-host/cli.ts", "--v0.2"], {
     cwd: repositoryRoot,
     env: { ...process.env, FORGE_NO_OPEN: "1" },
     stdio: ["ignore", "pipe", "pipe"],
@@ -161,7 +158,7 @@ function observe(page: Page): void {
   page.on("requestfailed", (request) => {
     if (!sameOrigin(request.url())) return;
     const message = `${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "failed"}`;
-    if (message.includes("ERR_ABORTED") && request.url().endsWith("/api/events")) {
+    if (message.includes("ERR_ABORTED") && request.url().endsWith("/events")) {
       report.ignoredExpectedNoise.push(`SSE closed with page: ${message}`);
       return;
     }
