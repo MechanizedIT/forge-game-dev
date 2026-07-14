@@ -297,3 +297,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Reframe the real prepared Enemy Targeting journey inside the Living Game Workshop shell without beginning the new-game planning path.
+
+---
+
+## 2026-07-13 — Refine v0.2 visual hierarchy and roadmap semantics
+
+- **Actor/model surface:** Codex implementation with high design-reasoning focus and in-app browser review
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 2.1 before backend integration; selected restrained industrial sci-fi workshop language; required a single semantic progression, meaningful Launchpad previews, game-like snapshot, compact Companion, distinct idea port, visible desktop actions, and no Task 3, GPT, persistence, project creation, or sample-Godot art work.
+- **AI contribution:** Replaced the absolute-position graph and crossing paths with a four-module responsive sequence; moved Review into Enemy Targeting; anchored the Companion and idea port beneath the active module; rebuilt the sample snapshot as an arena; added explanatory Launchpad miniatures and selective gunmetal/machined material treatment; extended focused semantic tests and captured desktop/mobile evidence.
+- **Files changed:** `src/dashboard-v2/App.tsx`, `src/dashboard-v2/styles.css`, `tests/dashboard-v2.test.ts`, three Task 2.1 screenshots, `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, Task 2.1 handoff/review/closeout, and this log.
+- **Verification:** `npm run check` passed 52/52 tests; `npm run check:v0.1` passed the production build and 37/37 protected compatibility tests; browser review at 1440×900, 768×900, and 390×844 found no horizontal overflow, node/Companion overlap, or console warnings/errors; the exact mobile order and local-only idea focus interaction were exercised; the production reduced-motion rule was present and neutralized animated duration.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 3 may connect the real sample workflow later without reopening visual graph semantics.

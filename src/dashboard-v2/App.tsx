@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import {
   sampleWorldFixture,
@@ -20,7 +20,7 @@ const stateLabels: Record<WorkshopQuestState, string> = {
   available: "Available",
   planned: "Planned",
   future: "Future",
-  idea: "New idea",
+  idea: "Uncommitted idea",
 };
 
 function Icon({ name }: { name: IconName }) {
@@ -62,37 +62,67 @@ function ForgeBrand({ state = "ready" }: { state?: CompanionState }) {
   );
 }
 
+function SamplePathPreview() {
+  return (
+    <div className="launch-miniature sample-miniature" aria-hidden="true">
+      <div className="mini-toolbar"><span /> SAMPLE_GAME.EXE <strong>VERIFIED</strong></div>
+      <div className="mini-game-stage">
+        <span className="mini-arena-ring" />
+        <span className="mini-player"><i />PLAYER</span>
+        <span className="mini-enemy"><i />IDLE</span>
+      </div>
+      <div className="mini-quest-rail">
+        <span className="mini-node mini-done"><Icon name="check" /></span>
+        <span className="mini-line mini-line-done" />
+        <span className="mini-node mini-active"><i /></span>
+        <span className="mini-line mini-line-future" />
+        <span className="mini-node mini-future"><i /></span>
+        <em>Movement</em><strong>Enemy Targeting</strong><em>Game Feel</em>
+      </div>
+    </div>
+  );
+}
+
+function CreatePathPreview() {
+  return (
+    <div className="launch-miniature create-miniature" aria-hidden="true">
+      <div className="idea-source">
+        <span><Icon name="idea" /> YOUR IDEA</span>
+        <strong>“A quick arena game where movement feels great.”</strong>
+      </div>
+      <span className="idea-transform"><Icon name="arrow" /></span>
+      <div className="blueprint-roadmap">
+        <span><i>01</i> Move</span>
+        <b />
+        <span><i>02</i> Encounter</span>
+        <b />
+        <span><i>03</i> Playable</span>
+      </div>
+      <div className="blueprint-status"><span /> IDEA → PLAYABLE ROADMAP</div>
+    </div>
+  );
+}
+
 function LaunchChoiceCard({
   accent,
   description,
-  details,
-  icon,
   label,
   onChoose,
   title,
 }: {
   accent: "ember" | "violet";
   description: string;
-  details: string[];
-  icon: IconName;
   label: string;
   onChoose: () => void;
   title: string;
 }) {
   return (
     <article className={`launch-choice launch-${accent}`}>
-      <div className="choice-visual" aria-hidden="true">
-        <span className="choice-glyph"><Icon name={icon} /></span>
-        <span className="choice-path path-a" />
-        <span className="choice-path path-b" />
-        <span className="choice-dot dot-a" />
-        <span className="choice-dot dot-b" />
-      </div>
+      {accent === "ember" ? <SamplePathPreview /> : <CreatePathPreview />}
       <div className="choice-content">
         <span className="choice-kicker">{accent === "ember" ? "Verified path" : "Creative path"}</span>
         <h2>{title}</h2>
         <p>{description}</p>
-        <ul>{details.map((detail) => <li key={detail}>{detail}</li>)}</ul>
         <button className={`v2-button button-${accent}`} onClick={onChoose} type="button">
           {label}<Icon name="arrow" />
         </button>
@@ -110,29 +140,28 @@ function Launchpad({ onChoose }: { onChoose: (choice: LaunchChoice) => void }) {
       </header>
 
       <section className="launch-hero" aria-labelledby="launch-title">
-        <p className="v2-eyebrow">Your game starts with direction</p>
-        <h1 id="launch-title">What would you like to build?</h1>
-        <p className="launch-summary">
-          Forge helps turn a game idea into a playable roadmap, keeps Codex focused on one quest at a
-          time, verifies the result, and remembers what changed.
-        </p>
+        <div className="launch-hero-core"><CompanionCore state="ready" /></div>
+        <div>
+          <p className="v2-eyebrow">Your game starts with direction</p>
+          <h1 id="launch-title">What would you like to build?</h1>
+          <p className="launch-summary">
+            Forge turns an idea into a playable roadmap, keeps Codex focused on one quest, verifies
+            the result, and remembers what changed.
+          </p>
+        </div>
       </section>
 
       <section className="launch-choices" aria-label="Choose a Forge experience">
         <LaunchChoiceCard
           accent="ember"
-          description="Open a verified playable demonstration and see how one bounded quest moves from plan to proof."
-          details={["Review a prepared quest", "Let Codex implement it", "Verify and play the result"]}
-          icon="play"
+          description="Enter a verified game, review its next quest, and follow the path from movement to a real encounter."
           label="Explore sample world"
           onChoose={() => onChoose("explore_sample")}
           title="Explore the sample game"
         />
         <LaunchChoiceCard
           accent="violet"
-          description="Describe a small 2D idea and let Forge shape the first playable direction for a Godot project."
-          details={["Start from plain language", "Shape a focused game vision", "Build a quest roadmap"]}
-          icon="idea"
+          description="Describe a small 2D idea and see Forge shape it into a focused Godot project and quest roadmap."
           label="Start a new game"
           onChoose={() => onChoose("create_game")}
           title="Create a new game"
@@ -147,56 +176,70 @@ function Launchpad({ onChoose }: { onChoose: (choice: LaunchChoice) => void }) {
   );
 }
 
-function QuestNode({ node }: { node: WorkshopQuestNode }) {
+function QuestModule({ node, active = false, children }: { node: WorkshopQuestNode; active?: boolean; children?: ReactNode }) {
   return (
     <article
-      aria-current={node.recommended ? "step" : undefined}
-      className={`world-node node-${node.id} node-${node.state}`}
+      aria-current={active ? "step" : undefined}
+      className={`quest-module module-${node.state}${active ? " module-active" : ""}`}
       data-state={node.state}
     >
-      <div className="world-node-marker">
-        {node.state === "completed" ? <Icon name="check" /> : node.state === "idea" ? <Icon name="idea" /> : <span />}
+      <div className="module-region">{node.region}</div>
+      <div className="module-status">
+        <span className="module-status-light" />
+        {active ? "Recommended · Available" : stateLabels[node.state]}
       </div>
-      <div className="world-node-copy">
-        <div className="world-node-meta">
-          <span>{node.region}</span>
-          <span>{node.recommended ? "Recommended" : stateLabels[node.state]}</span>
-        </div>
-        <h3>{node.title}</h3>
-        <p>{node.summary}</p>
+      <div className="module-marker">
+        {node.state === "completed" ? <Icon name="check" /> : <span />}
       </div>
-      {node.state === "completed" && <CompanionCore compact state="complete" />}
+      <h3>{node.title}</h3>
+      <p>{node.summary}</p>
+      {children}
     </article>
+  );
+}
+
+function RoadmapConnector({ kind, label }: { kind: "current" | "planned"; label: string }) {
+  return (
+    <div className={`roadmap-connector connector-${kind}`} aria-label={label}>
+      {kind === "current" && <><span className="online-segment" /><span className="available-segment" /></>}
+      {kind === "planned" && <span className="planned-segment" />}
+      <i />
+    </div>
   );
 }
 
 function GamePreview() {
   return (
     <div className="game-preview" aria-label="Stylized preview of the current Sample Game state">
-      <div className="preview-sky"><span>LIVE FIXTURE</span></div>
-      <div className="preview-arena">
-        <span className="preview-player"><i />PLAYER</span>
-        <span className="preview-enemy"><i />IDLE ENEMY</span>
-        <span className="preview-distance" />
+      <div className="preview-window-bar">
+        <span><i /> LIVE FIXTURE</span>
+        <strong>SAMPLE GAME · ARENA 01</strong>
       </div>
-      <div className="preview-caption"><span className="preview-live" /> Playable baseline</div>
+      <div className="preview-stage">
+        <span className="stage-horizon" />
+        <span className="stage-boundary boundary-one" />
+        <span className="stage-boundary boundary-two" />
+        <span className="stage-light" />
+        <span className="stage-player"><i /><b />PLAYER</span>
+        <span className="stage-enemy"><em>ENEMY · IDLE</em><i /><b /></span>
+        <span className="stage-scan"><i /> NO TARGET</span>
+      </div>
+      <div className="preview-caption">
+        <span><i /> Playable baseline online</span>
+        <strong>Move with WASD or arrow keys</strong>
+      </div>
     </div>
   );
 }
 
 function WorldCompanion() {
   return (
-    <aside className="world-companion" aria-labelledby="world-companion-title">
-      <CompanionCore state="focused" />
-      <div>
-        <span className="v2-eyebrow">Forge Companion · Focused</span>
-        <h2 id="world-companion-title">The first encounter is ready.</h2>
-        <p>
-          Your player can move, but the enemy does not react yet. Enemy Targeting would create the
-          game’s first real encounter.
-        </p>
-      </div>
-      <span className="companion-link" aria-hidden="true" />
+    <aside className="world-companion" aria-label="Forge Companion focused guidance">
+      <CompanionCore compact state="focused" />
+      <p>
+        Your player can move, but the enemy does not react yet. This quest creates the first real
+        encounter.
+      </p>
     </aside>
   );
 }
@@ -204,6 +247,11 @@ function WorldCompanion() {
 function SampleWorld({ onBack }: { onBack: () => void }) {
   const [idea, setIdea] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const ideaInputRef = useRef<HTMLInputElement>(null);
+  const movement = sampleWorldFixture.quests.find((quest) => quest.id === "player-movement")!;
+  const targeting = sampleWorldFixture.quests.find((quest) => quest.id === "enemy-targeting")!;
+  const gameFeel = sampleWorldFixture.quests.find((quest) => quest.id === "game-feel")!;
+  const polish = sampleWorldFixture.quests.find((quest) => quest.id === "polish")!;
 
   return (
     <main className="project-world">
@@ -218,55 +266,68 @@ function SampleWorld({ onBack }: { onBack: () => void }) {
       </header>
 
       <section className="world-intro">
-        <div>
-          <p className="v2-eyebrow">World 01 · Workshop District</p>
-          <h2>Your game is taking shape.</h2>
-          <p>Follow the active path, prove each change, and keep the playable world moving forward.</p>
-        </div>
-        <div className="world-key" aria-label="Roadmap state legend">
-          <span className="key-complete">Completed</span>
-          <span className="key-active">Available</span>
-          <span className="key-idea">New idea</span>
-        </div>
+        <p className="v2-eyebrow">World 01 · Assembly Bay</p>
+        <h2>Your game is taking shape.</h2>
+        <p>One playable system is online. The first real encounter is ready to build.</p>
       </section>
 
-      <div className="world-layout">
-        <aside className="playable-panel">
+      <section className="world-workbench" aria-label="Sample Game project world">
+        <aside className="project-snapshot">
           <GamePreview />
           <div className="playable-copy">
             <span className="v2-eyebrow">Current playable state</span>
-            <h2>Movement works. The world is waiting to react.</h2>
+            <h2>Movement works. The enemy is waiting.</h2>
             <p>{sampleWorldFixture.currentPlayableState}</p>
-            <div className="playable-tags"><span>Arrow keys + WASD</span><span>Enemy idle</span></div>
+            <div className="playable-tags"><span>Movement verified</span><span>Enemy idle</span></div>
           </div>
         </aside>
 
         <section className="roadmap-world" aria-labelledby="roadmap-title">
           <div className="roadmap-heading">
-            <div><span className="v2-eyebrow">Visual roadmap</span><h2 id="roadmap-title">From movement to a real encounter</h2></div>
-            <span className="roadmap-progress"><strong>1</strong> foundation complete</span>
+            <div>
+              <span className="v2-eyebrow">Game assembly roadmap</span>
+              <h2 id="roadmap-title">From foundation to playable polish</h2>
+            </div>
+            <span className="roadmap-progress"><strong>1</strong> of 4 systems online</span>
           </div>
 
-          <div className="roadmap-canvas">
-            <span className="world-region region-foundation">Foundation</span>
-            <span className="world-region region-encounter">Encounter</span>
-            <span className="world-region region-future">Future region</span>
-            <span className="world-path path-complete" aria-hidden="true" />
-            <span className="world-path path-active" aria-hidden="true" />
-            <span className="world-path path-future" aria-hidden="true" />
-            <span className="world-path path-branch" aria-hidden="true" />
-            {sampleWorldFixture.quests.map((node) => <QuestNode key={node.id} node={node} />)}
-            <WorldCompanion />
+          <div className="roadmap-sequence">
+            <QuestModule node={movement} />
+            <RoadmapConnector kind="current" label="Completed foundation leading to current available quest" />
+            <div className="active-quest-stack">
+              <QuestModule active node={targeting}>
+                <button
+                  className="v2-button button-ember module-action"
+                  onClick={() => setNotice("Quest review connects in Task 3. Use npm run forge for the protected working flow.")}
+                  type="button"
+                >Review Enemy Targeting<Icon name="arrow" /></button>
+                {notice && <p className="fixture-notice" role="status">{notice}</p>}
+              </QuestModule>
+              <WorldCompanion />
+              <button className="idea-port" onClick={() => ideaInputRef.current?.focus()} type="button">
+                <span><Icon name="idea" /></span>
+                <strong>+ Add an idea</strong>
+                <em>Uncommitted possibility</em>
+              </button>
+            </div>
+            <RoadmapConnector kind="planned" label="Planned future dependency" />
+            <QuestModule node={gameFeel} />
+            <RoadmapConnector kind="planned" label="Planned future dependency" />
+            <QuestModule node={polish} />
           </div>
         </section>
-      </div>
+      </section>
 
       <section className="idea-dock" aria-labelledby="idea-title">
         <span className="idea-dock-icon"><Icon name="idea" /></span>
-        <div className="idea-dock-label"><span className="v2-eyebrow">Idea seed · visual preview</span><h2 id="idea-title">What would you like to add to your game?</h2></div>
+        <div className="idea-dock-label">
+          <span className="v2-eyebrow">Creator input · fixture preview</span>
+          <h2 id="idea-title">What would you like to add to your game?</h2>
+        </div>
         <label className="idea-input">
           <span className="sr-only">Describe a future game idea</span>
           <input
+            ref={ideaInputRef}
             onChange={(event) => setIdea(event.target.value)}
             placeholder="Maybe the enemy drops something useful…"
             type="text"
@@ -279,16 +340,6 @@ function SampleWorld({ onBack }: { onBack: () => void }) {
             type="button"
           ><Icon name="arrow" /></button>
         </label>
-      </section>
-
-      <section className="world-action-dock" aria-label="Recommended next action">
-        <div><span className="v2-eyebrow">Recommended next quest</span><strong>Enemy Targeting creates the game’s first real encounter.</strong></div>
-        {notice && <p className="fixture-notice" role="status">{notice}</p>}
-        <button
-          className="v2-button button-ember"
-          onClick={() => setNotice("Quest review connects in Task 3. Use npm run forge for the protected working flow.")}
-          type="button"
-        >Review Enemy Targeting<Icon name="arrow" /></button>
       </section>
     </main>
   );

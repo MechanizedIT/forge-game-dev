@@ -245,7 +245,7 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
-**Current checkpoint:** Tasks 1 and 2 are complete. The Living Game Workshop shell is available only through `npm run forge:v0.2`; `npm run forge` and `npm run forge:v0.1` remain on the protected sample experience. Task 2 uses explicit fixture data and does not claim GPT planning, generated-project creation, new-project persistence, or integrated quest execution.
+**Current checkpoint:** Tasks 1, 2, and the approved Task 2.1 visual-hierarchy refinement are complete. The Living Game Workshop shell is available only through `npm run forge:v0.2`; `npm run forge` and `npm run forge:v0.1` remain on the protected sample experience. The v0.2 shell still uses explicit fixture data and does not claim GPT planning, generated-project creation, new-project persistence, or integrated quest execution.
 
 ## Task 1 — exact acceptance criteria
 
@@ -277,6 +277,12 @@ Task 1 ends after this protection layer. It does not begin Launchpad, visual-sys
 Task 2 adds an isolated Living Game Workshop preview with the two-choice Launchpad and a fixture-backed sample Project World. The Project World establishes the roadmap-dominant hierarchy, preview and playable-state anchor, five required roadmap states, companion placement, persistent idea-field placement, and responsive visual language. The Create path stops at an honest unavailable-state explanation, the idea field is local-only, and the prepared Enemy Targeting action does not invoke the runner from this shell yet.
 
 Evidence: `npm run check` passes 52 tests; `npm run check:v0.1` passes its production build and all 37 protected compatibility tests; desktop, tablet, and mobile browser reviews show no horizontal overflow or console warnings/errors. Review screenshots and the exact real-versus-fixture boundary are recorded in the dated Task 2 review and closeout artifacts.
+
+## Task 2.1 — completed visual-hierarchy refinement
+
+Task 2.1 replaces the free-form, crossing graph with one semantic sequence: **Foundation → First Encounter → Game Feel → Polish**. The first transition visibly combines the online mint foundation with the ember current step; future dependencies use one neutral dashed treatment. **Add an idea** is a short violet port beneath Enemy Targeting rather than a quest node. The primary review action lives inside the active quest, and the compact Companion guidance is anchored beneath it without covering the sequence.
+
+The Launchpad now previews the experience behind each path: the sample choice contains a miniature game stage and verified quest rail; the create choice shows plain-language input becoming a three-node roadmap. Both desktop actions remain above the 1440×900 fold. The Project World uses one industrial sci-fi workbench, a larger game-like arena snapshot, open roadmap space, restrained machined structure, and a vertical semantic sequence at narrow widths. All behavior remains fixture-only.
 
 ## Rollback strategy
 

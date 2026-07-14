@@ -126,6 +126,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 #### Required v0.2 path
 
 - [x] Build the Launchpad and Project World shell with fixture data.
+- [x] Refine Task 2 visual hierarchy, roadmap semantics, game preview, Companion placement, and responsive progression.
 - [ ] Reframe the real sample flow inside the Living Game Workshop without changing backend semantics.
 - [ ] Add focused GPT-5.6 idea intake and Top-down arena blueprint generation.
 - [ ] Create and verify one real Top-down arena starter project.
@@ -174,4 +175,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Task 3 from [`PLAN.md`](PLAN.md): reframe the real sample Enemy Targeting journey inside the Living Game Workshop shell without changing backend semantics. Connect the prepared roadmap, Quest Forge, Active Build, Playtest Gate, completion, Proof, Chronicle, and reset states; keep `npm run forge` and `npm run forge:v0.1` available throughout the task. Do not begin GPT planning, blueprint contracts, starter creation, or new-project persistence.
+Task 3 from [`PLAN.md`](PLAN.md), after explicit approval: reframe the real sample Enemy Targeting journey inside the Living Game Workshop shell without changing backend semantics. Connect the prepared roadmap, Quest Forge, Active Build, Playtest Gate, completion, Proof, Chronicle, and reset states; keep `npm run forge` and `npm run forge:v0.1` available throughout the task. Do not begin GPT planning, blueprint contracts, starter creation, or new-project persistence.
