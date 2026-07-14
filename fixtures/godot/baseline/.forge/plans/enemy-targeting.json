@@ -26,7 +26,7 @@
     },
     {
       "id": "STEP-3",
-      "description": "Extend the existing headless verifier with deterministic outside-radius, inside-radius, chase-distance, and player-input checks and the prepared success token.",
+      "description": "Extend the existing headless verifier with deterministic outside-radius, inside-radius, chase-distance, and preserved arrow-key plus WASD player-input checks and the prepared success token.",
       "files": ["scripts/verify_fixture.gd"],
       "criteria": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-5"]
     },

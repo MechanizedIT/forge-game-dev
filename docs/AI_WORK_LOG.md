@@ -230,6 +230,20 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 
 ---
 
+## 2026-07-13 — Refine v0.1.0 from first-time judge feedback
+
+- **Actor/model surface:** Codex repository work, in-app browser review, official `@openai/codex-sdk` live runs, and Godot 4.7
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Limited the work to first-launch orientation, honest persisted state and navigation, stronger waiting feedback, and clearer controls; preserved the real workflow and prohibited new capabilities.
+- **AI contribution:** Added the World introduction and dominant start action; delegated dashboard reset to the existing safe reset; classified preserved workspaces; disabled unavailable navigation; strengthened live progress; added arrow/WASD controls and verification; and corrected a live-discovered Godot verifier typing issue without weakening any gate.
+- **Files changed:** Focused dashboard, host, demo setup, bounded context, fixture, tests, status, roadmap, changelog, and usability plan/handoff/review/closeout/evidence.
+- **Verification:** Typechecking and 48 focused tests passed; dashboard production build passed; fresh Godot 4.7 verification emitted `FORGE_FIXTURE_VERIFY_OK ... controls=arrows+wasd`; preserved setup reported `available` and `in progress` correctly; completed-state dashboard reset cancellation and confirmation passed; the corrected real SDK run changed exactly three approved files, emitted the full Enemy Targeting success token, launched Godot, and remained incomplete after creator confirmation was cancelled. Desktop browser review passed; a manual narrow-window pass remains because the controlled browser exposed no viewport resize.
+- **Commit:** Included in the milestone commit; exact SHA reported in the task response
+- **Session ID:** Corrected live Codex thread `019f5e54-2982-7272-9135-742800bd32b1`; primary `/feedback` ID pending
+- **Next step:** Perform the manual narrow-window check, then finish submission packaging.
+
+---
+
 ## 2026-07-13 — Rehearse judge readiness from a clean Windows checkout
 
 - **Actor/model surface:** Codex repository review, isolated remote checkout, official `@openai/codex-sdk` live run, Godot 4.7, in-app browser, and visible creator confirmation

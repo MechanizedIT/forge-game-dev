@@ -151,6 +151,15 @@ export function createForgeDashboardServer(
         sendJson(response, 200, await service.getSnapshot());
         return;
       }
+      if (request.method === "POST" && url.pathname === "/api/demo/reset") {
+        const body = await readJsonBody(request);
+        if (body.action !== "CONFIRM RESET" && body.action !== "CANCEL") {
+          throw new Error("Demo reset action must be CONFIRM RESET or CANCEL.");
+        }
+        await service.resetDemo(body.action);
+        sendJson(response, 200, await service.getSnapshot());
+        return;
+      }
       if (request.method === "GET" || request.method === "HEAD") {
         await serveDashboardAsset(url.pathname, response, resolvedStaticRoot);
         return;

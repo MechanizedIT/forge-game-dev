@@ -1,5 +1,6 @@
 import type {
   CreatorConfirmation,
+  DemoResetAction,
   DashboardEvent,
   DashboardSnapshot,
 } from "./shared.js";
@@ -39,6 +40,14 @@ export function confirmCreatorResult(
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ response }),
+  });
+}
+
+export function resetDemo(action: DemoResetAction): Promise<DashboardSnapshot> {
+  return request<DashboardSnapshot>("/api/demo/reset", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action }),
   });
 }
 

@@ -7,7 +7,12 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { dashboardProgressStages, type CreatorConfirmation } from "../src/dashboard/shared.js";
+import {
+  dashboardNavigationAvailability,
+  dashboardProgressStages,
+  formatElapsedTime,
+  type CreatorConfirmation,
+} from "../src/dashboard/shared.js";
 import {
   DashboardConflictError,
   ForgeDashboardService,
@@ -123,7 +128,18 @@ test("dashboard loads the real prepared roadmap, quest, and plan", async () => {
     assert.equal(snapshot.roadmap.quests[0]?.questId, snapshot.quest.questId);
     assert.equal(snapshot.roadmap.quests[0]?.state, "available");
     assert.equal(snapshot.review, null);
+    assert.equal(snapshot.project.workspaceStatus, "created");
+    assert.deepEqual(dashboardNavigationAvailability(snapshot), {
+      Proof: false,
+      Chronicle: false,
+    });
   });
+});
+
+test("elapsed-time presentation is deterministic and never shows negative time", () => {
+  assert.equal(formatElapsedTime(-5), "00:00");
+  assert.equal(formatElapsedTime(65.9), "01:05");
+  assert.equal(formatElapsedTime(3_661), "61:01");
 });
 
 test("approval starts one real runner execution and rejects a duplicate", async () => {
@@ -134,7 +150,9 @@ test("approval starts one real runner execution and rejects a duplicate", async 
     const service = createService(forgeHome, {
       codexExecutor: fakeExecutor({ beforeEvents: async () => gate, onStart: () => { starts += 1; } }),
     });
+    await service.getSnapshot();
     service.beginRun("APPROVE");
+    assert.equal((await service.getSnapshot()).runStartedAt, completedAt);
     assert.throws(() => service.beginRun("APPROVE"), DashboardConflictError);
     assert.throws(() => service.beginRun("CANCEL"), DashboardConflictError);
     release();
@@ -238,6 +256,34 @@ test("successful confirmation persists completion and a fresh dashboard reloads 
     assert.equal(reloaded.phase, "quest_complete");
     assert.equal(reloaded.roadmap.quests[0]?.state, "completed");
     assert.equal(reloaded.completion?.completedAt, completedAt);
+    assert.equal(reloaded.project.workspaceStatus, "preserved");
+    assert.deepEqual(dashboardNavigationAvailability(reloaded), {
+      Proof: true,
+      Chronicle: true,
+    });
+  });
+});
+
+test("dashboard reset cancellation preserves completion and confirmation restores a fresh quest", async () => {
+  await withForgeHome(async (forgeHome) => {
+    const service = createService(forgeHome);
+    await runToConfirmation(service);
+    await service.confirmCreatorResult("I SAW IT WORK");
+
+    await service.resetDemo("CANCEL");
+    const cancelled = await service.getSnapshot();
+    assert.equal(cancelled.phase, "quest_complete");
+    assert.equal(cancelled.roadmap.quests[0]?.state, "completed");
+    assert.match(cancelled.notice ?? "", /progress was preserved/);
+
+    await service.resetDemo("CONFIRM RESET");
+    const reset = await service.getSnapshot();
+    assert.equal(reset.phase, "world_ready");
+    assert.equal(reset.project.workspaceStatus, "reset");
+    assert.equal(reset.roadmap.quests[0]?.state, "available");
+    assert.equal(reset.completion, null);
+    assert.equal(reset.review, null);
+    assert.equal(reset.runStartedAt, null);
   });
 });
 
@@ -256,6 +302,21 @@ test("the local HTTP host serves the dashboard and validated state API", async (
       assert.equal(state.status, 200);
       assert.equal(snapshot.quest.questId, "enemy-targeting");
       assert.match(await (await fetch(base)).text(), /Forge host test/);
+
+      const invalidReset = await fetch(`${base}/api/demo/reset`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "RESET" }),
+      });
+      assert.equal(invalidReset.status, 400);
+
+      const cancelledReset = await fetch(`${base}/api/demo/reset`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "CANCEL" }),
+      });
+      assert.equal(cancelledReset.status, 200);
+      assert.match(JSON.stringify(await cancelledReset.json()), /progress was preserved/);
     } finally {
       await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     }

@@ -5,7 +5,7 @@
   "summary": "Make the idle enemy notice and chase the nearby player while preserving the calm state outside its range.",
   "playerOutcome": "The player can approach the red enemy, see it switch from idle to chasing, and retreat beyond its range to make it stop again.",
   "whyItMatters": "This is the sample world's first visible reaction to the player, turning a static scene into a responsive gameplay encounter.",
-  "baselineBehavior": "The blue player moves with the arrow keys. The red enemy is visible but always sets its velocity to zero and never detects or follows the player.",
+  "baselineBehavior": "The blue player moves with the arrow keys or WASD. The red enemy is visible but always sets its velocity to zero and never detects or follows the player.",
   "expectedBehavior": "The enemy remains idle beyond a 220-pixel detection radius, reports detection within that radius, moves directly toward the player while detected, and visibly returns to idle when the player leaves the radius.",
   "scope": {
     "included": [
@@ -45,7 +45,7 @@
     },
     {
       "id": "AC-4",
-      "text": "Simulating the existing ui_right input for 10 physics frames moves the player right by at least 1 pixel, proving player movement still works."
+      "text": "Arrow-key and WASD input both move the player, and simulating the existing ui_right input for 10 physics frames moves the player right by at least 1 pixel after Enemy Targeting is added."
     },
     {
       "id": "AC-5",
@@ -70,7 +70,7 @@
     {
       "id": "VERIFY-3",
       "kind": "play",
-      "instruction": "Run npm run demo:play. Move the blue player toward the red enemy until its label changes to CHASING and it moves toward the player; retreat until the label returns to IDLE and the enemy stops."
+      "instruction": "Run npm run demo:play. Move with the arrow keys or WASD, approach the red enemy until its label changes from IDLE to CHASING, retreat until it returns to IDLE, then close the game."
     }
   ],
   "preparedPlan": ".forge/plans/enemy-targeting.json"

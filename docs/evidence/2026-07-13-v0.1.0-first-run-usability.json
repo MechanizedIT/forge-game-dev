@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "sanitized-first-run-usability-review",
+  "baselineCommit": "a5321ed1406c599de70a9ba951552d81aee82e7a",
+  "firstTimeFeedback": [
+    "Forge purpose and starting action were unclear.",
+    "Preserved completed progress was not explained.",
+    "Unavailable Proof and Chronicle appeared interactive.",
+    "Long-running Codex work needed stronger reassurance.",
+    "Gameplay instructions omitted arrow-key guidance."
+  ],
+  "workspaceReview": {
+    "completedStateLoaded": true,
+    "resetCancellationPreservedCompletion": true,
+    "confirmedResetRestoredAvailableQuest": true,
+    "preservedSetupStatesVerified": ["available", "in progress", "completed"]
+  },
+  "firstLiveRun": {
+    "runId": "enemy-targeting-1783993736325",
+    "result": "FAIL",
+    "scope": "passed",
+    "cause": "Godot 4.7 rejected numeric and vector inference derived from untyped scene nodes in the generated verifier."
+  },
+  "correctedLiveRun": {
+    "runId": "enemy-targeting-1783994001046",
+    "codexThreadId": "019f5e54-2982-7272-9135-742800bd32b1",
+    "changedFiles": ["main.tscn", "scripts/enemy.gd", "scripts/verify_fixture.gd"],
+    "scope": "passed",
+    "verificationToken": "FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass",
+    "automatedVerdict": "CONDITIONAL PASS",
+    "gameLaunch": "passed",
+    "creatorConfirmation": "CANCEL",
+    "completionPersisted": false
+  },
+  "browserReview": {
+    "desktop": "passed",
+    "narrow": "manual follow-up required; the controlled in-app browser did not expose viewport resizing"
+  }
+}

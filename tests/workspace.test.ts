@@ -5,7 +5,17 @@ import path from "node:path";
 import test from "node:test";
 
 import { baselineFixturePath } from "../src/demo/paths.js";
-import { prepareDemoWorkspace, resetDemoWorkspace } from "../src/demo/workspace.js";
+import {
+  classifyDemoQuestState,
+  prepareDemoWorkspace,
+  resetDemoWorkspace,
+} from "../src/demo/workspace.js";
+
+test("preserved workspace status distinguishes available, in-progress, and completed quests", () => {
+  assert.equal(classifyDemoQuestState("available", false), "available");
+  assert.equal(classifyDemoQuestState("available", true), "in progress");
+  assert.equal(classifyDemoQuestState("completed", true), "completed");
+});
 
 async function withTemporaryForgeHome(
   run: (forgeHome: string) => Promise<void>,
@@ -26,6 +36,14 @@ test("prepare creates the demo workspace from the immutable fixture", async () =
 
     assert.equal(result.status, "created");
     assert.equal(copiedProject, sourceProject);
+    const playerScript = await readFile(path.join(result.workspacePath, "scripts", "player.gd"), "utf8");
+    const mainScene = await readFile(path.join(result.workspacePath, "main.tscn"), "utf8");
+    assert.match(playerScript, /ui_left.*ui_right.*ui_up.*ui_down/);
+    assert.match(playerScript, /KEY_W/);
+    assert.match(playerScript, /KEY_A/);
+    assert.match(playerScript, /KEY_S/);
+    assert.match(playerScript, /KEY_D/);
+    assert.match(mainScene, /arrow keys or WASD/);
   });
 });
 

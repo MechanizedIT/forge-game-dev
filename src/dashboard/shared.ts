@@ -32,9 +32,10 @@ export interface DashboardSnapshot {
     projectId: string;
     name: string;
     engine: string;
-    workspaceStatus: "created" | "preserved";
+    workspaceStatus: "created" | "preserved" | "reset";
   };
   phase: DashboardPhase;
+  runStartedAt: string | null;
   roadmap: Roadmap;
   quest: Quest;
   plan: ImplementationPlan;
@@ -52,3 +53,21 @@ export type DashboardEvent =
   | { type: "refresh" };
 
 export type CreatorConfirmation = "I SAW IT WORK" | "IT DID NOT WORK" | "CANCEL";
+
+export type DemoResetAction = "CONFIRM RESET" | "CANCEL";
+
+export function dashboardNavigationAvailability(
+  snapshot: Pick<DashboardSnapshot, "review" | "completion">,
+): { Proof: boolean; Chronicle: boolean } {
+  return {
+    Proof: snapshot.review !== null,
+    Chronicle: snapshot.completion !== null,
+  };
+}
+
+export function formatElapsedTime(totalSeconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}

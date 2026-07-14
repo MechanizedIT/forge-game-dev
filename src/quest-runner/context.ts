@@ -45,6 +45,7 @@ export async function buildBoundedQuestContext(
     `You may modify only these files: ${allowedChangeFiles.join(", ")}.`,
     "Do not modify .forge metadata, create commits, use the network, add dependencies, or touch files outside this workspace.",
     "For the Enemy-to-Player scene reference, use an exported NodePath and resolve it after the scene enters the tree (for example with get_node_or_null). Do not assign a NodePath value to a directly exported CharacterBody2D or Node field.",
+    "In the GDScript verifier, cast loaded Player and Enemy nodes to CharacterBody2D before deriving typed positions or distances; Godot 4.7 must not infer numeric or vector variables from Variant values.",
     "Forge will run the approved verification commands after your turn. Finish with a concise implementation summary.",
     "",
     "QUEST JSON",

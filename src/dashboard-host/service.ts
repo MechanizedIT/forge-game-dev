@@ -10,12 +10,13 @@ import {
 import {
   dashboardProgressStages,
   type CreatorConfirmation,
+  type DemoResetAction,
   type DashboardEvent,
   type DashboardPhase,
   type DashboardProgressStage,
   type DashboardSnapshot,
 } from "../dashboard/shared.js";
-import { prepareDemoWorkspace } from "../demo/workspace.js";
+import { prepareDemoWorkspace, resetDemoWorkspace } from "../demo/workspace.js";
 import type { GameLauncher, GameLaunchEvidence } from "../quest-runner/completion.js";
 import {
   finalizeQuestAfterPlay,
@@ -80,6 +81,8 @@ export class ForgeDashboardService {
   private activeLaunch: Promise<void> | null = null;
   private notice: string | null = null;
   private error: string | null = null;
+  private runStartedAt: string | null = null;
+  private workspaceStatusOverride: "reset" | null = null;
   private readonly subscribers = new Set<Subscriber>();
 
   constructor(private readonly options: ForgeDashboardServiceOptions) {}
@@ -105,14 +108,17 @@ export class ForgeDashboardService {
     this.emit({ type: "progress", progress: this.progress });
   }
 
-  private async workspace(): Promise<{ workspacePath: string; workspaceStatus: "created" | "preserved" }> {
+  private async workspace(): Promise<{ workspacePath: string; workspaceStatus: "created" | "preserved" | "reset" }> {
     const result = await prepareDemoWorkspace(
       this.options.forgeHome === undefined ? {} : { forgeHome: this.options.forgeHome },
     );
     if (result.status !== "created" && result.status !== "preserved") {
       throw new Error(`Unexpected dashboard workspace status: ${result.status}`);
     }
-    return { workspacePath: result.workspacePath, workspaceStatus: result.status };
+    return {
+      workspacePath: result.workspacePath,
+      workspaceStatus: this.workspaceStatusOverride ?? result.status,
+    };
   }
 
   async getSnapshot(): Promise<DashboardSnapshot> {
@@ -150,6 +156,7 @@ export class ForgeDashboardService {
         workspaceStatus: workspace.workspaceStatus,
       },
       phase: completion ? "quest_complete" : this.phase,
+      runStartedAt: this.runStartedAt,
       roadmap: bundle.roadmap,
       quest: bundle.quest,
       plan: bundle.plan,
@@ -178,6 +185,7 @@ export class ForgeDashboardService {
     }
 
     this.phase = "implementation_running";
+    this.runStartedAt = (this.options.now?.() ?? new Date()).toISOString();
     this.progress = [];
     this.notice = null;
     this.error = null;
@@ -299,6 +307,35 @@ export class ForgeDashboardService {
       this.phase = "blocked";
       this.error = finalized.reason;
     }
+    this.emitRefresh();
+  }
+
+  async resetDemo(action: DemoResetAction): Promise<void> {
+    if (this.activeRun || this.activeLaunch) {
+      throw new DashboardConflictError("The demo cannot reset while Forge is working or the game is open.");
+    }
+    if (action === "CANCEL") {
+      this.notice = "Fresh demo reset cancelled. Existing progress was preserved.";
+      this.error = null;
+      this.emitRefresh();
+      return;
+    }
+
+    const result = await resetDemoWorkspace(true, {
+      ...(this.options.forgeHome === undefined ? {} : { forgeHome: this.options.forgeHome }),
+    });
+    if (result.status !== "reset") {
+      throw new Error(`Unexpected dashboard reset status: ${result.status}`);
+    }
+    this.phase = "world_ready";
+    this.progress = [];
+    this.prepared = null;
+    this.result = null;
+    this.launchEvidence = null;
+    this.runStartedAt = null;
+    this.workspaceStatusOverride = "reset";
+    this.notice = "Fresh demo ready. Enemy Targeting is available to review.";
+    this.error = null;
     this.emitRefresh();
   }
 }

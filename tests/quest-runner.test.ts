@@ -149,6 +149,7 @@ test("bounded context includes only declared files and approved instructions", a
     assert.match(context.prompt, /scripts\/player\.gd/);
     assert.match(context.prompt, /exported NodePath/);
     assert.match(context.prompt, /Do not assign a NodePath value to a directly exported CharacterBody2D/);
+    assert.match(context.prompt, /cast loaded Player and Enemy nodes to CharacterBody2D/);
     assert.doesNotMatch(context.prompt, /DO-NOT-INCLUDE/);
   });
 });

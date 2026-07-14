@@ -96,6 +96,19 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Checkpoint:** The working judge path is frozen at `v0.1.0`. Further work begins from this known-good baseline and must not weaken its proof or replay guarantees.
 
+### v0.1.0 — First-time judge usability refinement
+
+- [x] Explain Forge and the review → approve → build → verify → play path on first launch.
+- [x] Make **Review Enemy Targeting** the unmistakable start action.
+- [x] Explain preserved available, in-progress, and completed demo workspaces plus the exact reset command.
+- [x] Add confirmed **Start fresh demo** through the existing safe reset behavior.
+- [x] Disable Proof and Chronicle until real evidence exists.
+- [x] Make current/completed progress, elapsed time, and several-minute reassurance dominant during Codex work.
+- [x] Support and verify arrow-key plus WASD movement and show exact play instructions.
+- [ ] Perform one manual narrow-window visual pass; desktop browser review is complete.
+
+**Checkpoint:** The focused usability work is implemented without a new workflow, state owner, or product capability. Review evidence records the one remaining narrow-window presentation check.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -130,4 +143,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The command-line loop, dashboard integration, development-machine run, and isolated clean-Windows judge rehearsal are `COMPLETE` and preserved as `v0.1.0`. The clean rehearsal is recorded in its [plan](docs/plans/2026-07-13-judge-readiness-rehearsal.md), [review](docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md), and [closeout](docs/closeouts/2026-07-13-judge-readiness-rehearsal-closeout.md). The next bounded milestone is manual submission packaging: video, final links and metadata, `/feedback` ID, license decision, and an offline-fallback decision.
+The command-line loop, dashboard integration, clean-Windows rehearsal, and first-time usability refinement are preserved as `v0.1.0`. The usability work is recorded in its [plan](docs/plans/2026-07-13-v0.1.0-first-run-usability.md), [review](docs/reviews/2026-07-13-v0.1.0-first-run-usability-review.md), and [closeout](docs/closeouts/2026-07-13-v0.1.0-first-run-usability-closeout.md). The next bounded work is the manual narrow-window check followed by submission packaging: video, final links and metadata, `/feedback` ID, license decision, and an offline-fallback decision.

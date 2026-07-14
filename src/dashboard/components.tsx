@@ -14,12 +14,24 @@ export function Icon({ name }: { name: "arrow" | "check" | "code" | "file" | "pl
   return <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export function ProjectHeader({ active, engine, projectName, onNavigate }: {
+export function ProjectHeader({ active, engine, projectName, onNavigate, proofAvailable, chronicleAvailable }: {
   active: "World" | "Proof" | "Chronicle";
   engine: string;
   projectName: string;
   onNavigate: (destination: "World" | "Proof" | "Chronicle") => void;
+  proofAvailable: boolean;
+  chronicleAvailable: boolean;
 }) {
+  const availability = {
+    World: true,
+    Proof: proofAvailable,
+    Chronicle: chronicleAvailable,
+  } as const;
+  const labels = {
+    World: "World",
+    Proof: availability.Proof ? "Proof" : "Proof · after build",
+    Chronicle: availability.Chronicle ? "Chronicle" : "Chronicle · after completion",
+  } as const;
   return (
     <header className="project-header">
       <div className="brand-block">
@@ -31,10 +43,17 @@ export function ProjectHeader({ active, engine, projectName, onNavigate }: {
       </div>
       <nav aria-label="Primary navigation" className="primary-nav">
         {(["World", "Proof", "Chronicle"] as const).map((item) => (
-          <button className={active === item ? "nav-button active" : "nav-button"} key={item} onClick={() => onNavigate(item)} type="button">{item}</button>
+          <button
+            aria-label={labels[item]}
+            className={active === item ? "nav-button active" : "nav-button"}
+            disabled={!availability[item]}
+            key={item}
+            onClick={() => onNavigate(item)}
+            type="button"
+          >{labels[item]}</button>
         ))}
       </nav>
-      <div className="header-meta"><span>{engine}</span><button className="icon-button" aria-label="Open Forge information" type="button">i</button></div>
+      <div className="header-meta"><span>{engine}</span></div>
     </header>
   );
 }

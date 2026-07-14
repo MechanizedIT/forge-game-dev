@@ -32,3 +32,16 @@ Automated proof and creator confirmation remain separate gates: passing checks p
 - The bundled Godot sample and prepared Enemy Targeting quest are the supported golden path.
 - Live implementation requires internet access and Codex authentication.
 - Plan refinement, contextual questions, generalized project scanning, additional engines, and broader Chronicle features are not part of this checkpoint.
+
+### First-time judge usability refinement
+
+Direct observations from a real first-time run drove this focused update:
+
+- The World screen now introduces Forge, states the review → approve → build → verify → play path, explains the three-file boundary and proof model, and makes **Review Enemy Targeting** the obvious starting action.
+- Preserved setup now reports whether Enemy Targeting is available, in progress, or completed and prints the exact fresh-reset command.
+- Completed dashboards offer **Start fresh demo** behind explicit confirmation using the existing safe reset implementation.
+- Proof and Chronicle are disabled with honest availability labels until they contain real evidence.
+- The Codex working state now emphasizes the current and completed stages, plain-language activity, elapsed time, and the expectation that implementation may take several minutes; technical events remain optional.
+- The baseline player supports arrow keys and WASD, both are checked by real Godot verification, and the ready-to-play screen gives four exact play instructions.
+
+A real SDK rehearsal exposed and corrected one Godot 4.7 verifier typing issue, then passed every automated criterion within the approved three-file boundary and launched the game. No creator success was inferred during this refinement run; cancellation correctly left the quest incomplete.

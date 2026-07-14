@@ -14,6 +14,16 @@ export interface WorkspaceResult {
   workspacePath: string;
 }
 
+export type DemoQuestState = "available" | "in progress" | "completed";
+
+export function classifyDemoQuestState(
+  roadmapState: string | undefined,
+  workspaceHasChanges: boolean,
+): DemoQuestState {
+  if (roadmapState === "completed") return "completed";
+  return workspaceHasChanges ? "in progress" : "available";
+}
+
 async function pathExists(target: string): Promise<boolean> {
   try {
     await access(target);
