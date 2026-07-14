@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-13
 
-**Current milestone:** Forge Workshop dashboard connected to the real Enemy Targeting workflow
+**Current milestone:** Real dashboard judge path proven end to end
 
-**Overall state:** The dashboard is now a thin live interface over the proven command-line workflow; a successful human-confirmed dashboard rehearsal is still required
+**Overall state:** The golden path has succeeded on the development Windows machine; clean-machine repetition and submission packaging remain
 
 ## What works now
 
@@ -20,6 +20,8 @@ Forge completes the quest only after all of these succeed:
 Completion persists the workflow as `COMPLETE`, changes the roadmap node to `completed`, records the confirmation time, and writes final review and closeout evidence. Failure, cancellation, missing interactive input, or launch failure leaves the quest incomplete. Rerunning a completed quest explains its state instead of rebuilding it.
 
 The Forge Workshop dashboard now reads the real prepared quest, plan, roadmap, review, verification, and completion artifacts. Its approval action starts the existing official Codex SDK runner, the five existing friendly stages stream into the UI, Godot launch returns to an explicit confirmation dialog, and completion appears only after the existing atomic persistence succeeds.
+
+A fresh dashboard rehearsal now proves that full path. The official SDK changed exactly the three approved Godot files, all deterministic checks passed, the creator played the game and entered `I SAW IT WORK`, and a fresh dashboard read showed a `PASS` review plus the completed roadmap. The earlier failed rehearsal was traced to an unreliable generated node-reference form; the bounded work packet now requires the proven exported-`NodePath` resolution pattern.
 
 ## Try the dashboard
 
@@ -39,13 +41,12 @@ The immutable fixture remains the idle reset baseline. `npm run demo:reset -- co
 
 ## Still incomplete
 
-- One successful real dashboard run through creator visual confirmation. The development live run reached the real failure screen after Godot rejected the generated detection behavior; Forge correctly left the quest incomplete and no human confirmation was claimed.
 - Restart recovery for an in-progress host process; live run ownership is intentionally in memory, while durable outcomes remain in existing artifacts.
 - Plan refinement, contextual questions, and a multi-entry Chronicle index
 - Clean-machine judge rehearsal and replay fallback
 
 ## Next milestone
 
-Run the exact dashboard judge path on a clean Windows environment until one live implementation passes automated verification and a human confirms the visible mechanic. Fix only verified reliability defects; do not weaken the gates.
+Repeat the successful dashboard path on a clean Windows environment, then finish the labeled replay fallback and submission packaging.
 
 Operational details: [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md). Dashboard specification: [`docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md`](docs/BUILD_WEEK_DASHBOARD_CAPABILITY_AND_SCREEN_MAP.md).

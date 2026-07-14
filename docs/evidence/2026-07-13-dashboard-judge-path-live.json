@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "evidenceType": "sanitized-live-dashboard-golden-path",
+  "questId": "enemy-targeting",
+  "baselineCommit": "b89814922bd41923dbe214c89947aa46b28002ba",
+  "failedRun": {
+    "result": "FAIL",
+    "failedCriterion": "AC-2",
+    "evidence": "Enemy did not detect the player at 180 pixels.",
+    "rootCause": "A directly exported CharacterBody2D field was assigned a serialized NodePath and did not resolve to the player node."
+  },
+  "fix": {
+    "layer": "bounded implementation prompt",
+    "summary": "Require an exported NodePath resolved after scene initialization and forbid assigning a NodePath to a directly exported node field."
+  },
+  "successfulRun": {
+    "runId": "enemy-targeting-1783988386542",
+    "codexThreadId": "019f5dfe-7e18-78c2-a858-e4a6bdd7384a",
+    "changedFiles": [
+      "main.tscn",
+      "scripts/enemy.gd",
+      "scripts/verify_fixture.gd"
+    ],
+    "scopeResult": "passed",
+    "verification": [
+      {
+        "id": "VERIFY-1",
+        "exitCode": 0,
+        "result": "passed"
+      },
+      {
+        "id": "VERIFY-2",
+        "exitCode": 0,
+        "result": "passed",
+        "token": "FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass"
+      }
+    ],
+    "automatedVerdict": "CONDITIONAL PASS",
+    "godotVersion": "4.7.stable.official.5b4e0cb0f",
+    "creatorConfirmation": {
+      "response": "I SAW IT WORK",
+      "confirmedAt": "2026-07-14T00:26:08.165Z"
+    },
+    "finalVerdict": "PASS",
+    "workflowState": "COMPLETE",
+    "roadmapState": "completed"
+  }
+}

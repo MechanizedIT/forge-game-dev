@@ -213,3 +213,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Included in the milestone commit; exact SHA reported in the final response
 - **Session ID:** Current Codex task; live nested Codex thread ID preserved only in the isolated temporary run evidence and not committed
 - **Next step:** Perform a clean-machine dashboard judge rehearsal that reaches real automated success and explicit human visual confirmation.
+
+---
+
+## 2026-07-13 — Make the real dashboard judge path reliable
+
+- **Actor/model surface:** Codex repository work, official `@openai/codex-sdk` dashboard run, Godot 4.7, and creator visual confirmation
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Required the smallest evidence-backed reliability fix, preserved all verification gates and the three-file gameplay boundary, and explicitly entered `I SAW IT WORK` only after observing the mechanic.
+- **AI contribution:** Recovered the failed run's sanitized diff, compared it with the successful CLI run, identified the mismatched direct-node export and `NodePath` assignment, added one precise binding instruction to the bounded work packet, and completed the real dashboard run through persisted completion.
+- **Files changed:** Bounded quest context and focused test; project status and roadmap; reliability plan, handoff, review, closeout, and sanitized run evidence; this log.
+- **Verification:** `npm run check` passed 45/45 tests; `npm run dashboard:build` passed; the fresh official SDK run changed only `main.tscn`, `scripts/enemy.gd`, and `scripts/verify_fixture.gd`; Godot emitted `FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass`; automated review returned `CONDITIONAL PASS`; Godot 4.7 launched; the creator confirmed `I SAW IT WORK`; final review returned `PASS`; a fresh state read showed workflow `COMPLETE` and roadmap `completed`.
+- **Commit:** Included in the milestone commit; exact SHA reported in the task response
+- **Session ID:** Live Codex thread `019f5dfe-7e18-78c2-a858-e4a6bdd7384a`; primary `/feedback` ID pending
+- **Next step:** Repeat the exact judge path on a clean Windows environment and finish packaging.

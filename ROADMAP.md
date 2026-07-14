@@ -61,6 +61,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 - [x] Launch the changed game with the pinned Godot binary.
 - [x] Demonstrate enemy idle, detection, and chase behavior.
 - [x] Persist quest and roadmap state across restart.
+- [x] Complete one real dashboard run with genuine creator confirmation.
 - [ ] Add a roadmap pulse, companion state change, completion sound, and concise **Quest Complete** card.
 - [ ] Unlock or recommend the next quest.
 
@@ -78,6 +79,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 ### Milestone 6 — Package for judging
 
 - [ ] Verify the single-command launch path on a clean Windows environment.
+- [x] Complete one end-to-end dashboard rehearsal on the development Windows machine.
 - [x] Pin and checksum the portable Godot download.
 - [ ] Provide an offline or replay fallback for the core demonstration.
 - [ ] Replace README mockups and placeholder links.
@@ -89,7 +91,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 ## Prepared quests
 
-1. **Enemy Targeting** — required golden path; the CLI can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
+1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
 2. **Player Dash** — roadmap choice; implementation is optional until the golden path is complete.
 3. **Damage Feedback** — roadmap choice and candidate for the new-quest planning demonstration.
 
@@ -121,4 +123,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The command-line loop and dashboard integration are `COMPLETE`. The dashboard integration is recorded in its [plan](docs/plans/2026-07-13-dashboard-workflow-integration.md), [review](docs/reviews/2026-07-13-dashboard-workflow-integration-review.md), and [closeout](docs/closeouts/2026-07-13-dashboard-workflow-integration-closeout.md). The next bounded milestone is a clean-machine dashboard judge rehearsal ending in real human visual confirmation.
+The command-line loop, dashboard integration, and one real human-confirmed dashboard rehearsal are `COMPLETE`. The reliability rehearsal is recorded in its [plan](docs/plans/2026-07-13-dashboard-judge-path-reliability.md), [review](docs/reviews/2026-07-13-dashboard-judge-path-reliability-review.md), and [closeout](docs/closeouts/2026-07-13-dashboard-judge-path-reliability-closeout.md). The next bounded milestone is repeating the path on a clean Windows environment.
