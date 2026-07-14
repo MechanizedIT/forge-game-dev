@@ -245,7 +245,7 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
-**Current checkpoint:** Tasks 1, 2, and Task 2.1 are complete. Task 3 product integration and its real official-SDK, Godot, creator-confirmation, persistence, restart, and reset rehearsal pass. Task 3 remains in `REVIEW` because the installed supported Browser plugin failed before tab creation, so the required screenshots and responsive/console review are not complete. `npm run forge:v0.2` contains the real sample workflow; `npm run forge` and `npm run forge:v0.1` remain protected. GPT planning, generated-project creation, and new-project persistence have not begun.
+**Current checkpoint:** Tasks 1 through 4A are complete. `npm run forge:v0.2` contains both the real protected sample workflow and the session-scoped GPT-5.6 intake-to-blueprint path; `npm run forge` and `npm run forge:v0.1` remain protected. The real rehearsal produced the validated five-quest **Last-Moment Pulse** blueprint in one GPT-5.6 high-reasoning response. No Godot project, generated-project artifacts, project commands, or persistent new-project state exist yet; Task 5 owns those changes.
 
 ## Task 1 — exact acceptance criteria
 
@@ -290,7 +290,17 @@ The sample choice now loads the authoritative dashboard snapshot and reuses the 
 
 Live runs changed exactly the three approved files, rejected duplicate starts, passed repository and Godot checks, launched Godot 4.7, remained incomplete after game exit, received explicit creator confirmation, persisted final `PASS`, and reloaded completed roadmap and Chronicle state. The accepted fallback-review run is `enemy-targeting-1784009287800`.
 
-The installed Browser plugin remained unavailable, so a pinned project-local Playwright `1.61.1` harness reviewed the real host in Edge at `1440×900`, `768×900`, and `390×844`. Launchpad, fresh World, Quest Forge, Active Build, Playtest Gate, desktop/mobile confirmation, Quest Complete, completed proof, reloaded World, and reduced-motion evidence pass without console warnings/errors, page exceptions, failed same-origin requests, horizontal overflow, missing primary actions, or broken navigation. Task 3’s verdict is `PASS`; Task 4 still requires separate approval.
+The installed Browser plugin remained unavailable, so a pinned project-local Playwright `1.61.1` harness reviewed the real host in Edge at `1440×900`, `768×900`, and `390×844`. Launchpad, fresh World, Quest Forge, Active Build, Playtest Gate, desktop/mobile confirmation, Quest Complete, completed proof, reloaded World, and reduced-motion evidence pass without console warnings/errors, page exceptions, failed same-origin requests, horizontal overflow, missing primary actions, or broken navigation. Task 3’s verdict is `PASS`.
+
+## Task 4A — complete
+
+**Create a new game** now opens one focused composer with examples and the fixed Godot 4, 2D, GDScript, Top-down arena, code-native, first-playable boundary. GPT-5.6 may either return a complete blueprint or one screen of at most three questions drawn from the five approved topics. Once answers are submitted, no second clarification loop is accepted.
+
+The planning service uses the official SDK with `gpt-5.6`, high reasoning, a read-only sandbox, disabled network and web search, structured output, session-scoped state, and abortable cancellation. Forge validates the literal foundation, three-to-five quest count, unique and acyclic temporary references, criteria-to-verification links, safe project name, and absence of paths, commands, packages, source files, and workflow claims. One invalid response receives one same-thread repair containing only the original intake, answers, and validation problems; a second failure stops safely.
+
+Blueprint Review leads with the game, first playable result, and ordered roadmap. Criteria, proof, scope, documentation, and Chronicle copy remain behind **Blueprint details**. Approval changes only the in-memory phase to **Blueprint Ready**, which explicitly reports no project files and no commands. The real rehearsal produced **Last-Moment Pulse**, five ordered quests, no clarification, one valid response, a sanitized thread ID, and approximately 29.5 seconds of latency. The deterministic Edge harness passed all requested desktop, tablet, mobile, and reduced-motion states.
+
+Task 4A does not create a starter, project directory, Git repository, Godot process, `.forge` artifact, persistent registry entry, or generated Project World. API-key-backed Codex auth was used for the required GPT-5.6 rehearsal; the current ChatGPT-authenticated Codex surface rejected that model and the runtime correctly did not substitute another model.
 
 ## Rollback strategy
 

@@ -58,3 +58,20 @@ Direct observations from a real first-time run drove this focused update:
 - The baseline player supports arrow keys and WASD, both are checked by real Godot verification, and the ready-to-play screen gives four exact play instructions.
 
 A real SDK rehearsal exposed and corrected one Godot 4.7 verifier typing issue, then passed every automated criterion within the approved three-file boundary and launched the game. No creator success was inferred during this refinement run; cancellation correctly left the quest incomplete.
+
+## v0.2 Task 4A — New Game Intake and GPT-5.6 Blueprint Planning
+
+**Date:** 2026-07-14
+**Status:** Complete — real GPT planning, strict validation, responsive review, and protected regressions passed
+
+- **Create a new game** now opens a focused composer with three useful examples and the fixed Godot 4, 2D, GDScript, Top-down arena, code-native, first-playable boundary.
+- The installed official Codex SDK runs GPT-5.6 with high reasoning, read-only sandboxing, network and web search disabled, structured output, and session-scoped state.
+- GPT may ask at most three questions from five allowed topics on one screen. Forge rejects repeated answered topics and never allows a second clarification loop.
+- The strict blueprint validates a safe name, the required foundation, three to five unique acyclic quest references, criterion/proof links, and absence of paths, commands, packages, arbitrary source files, and workflow claims.
+- One invalid response receives one same-thread structure repair; a second invalid response ends in a safe, plain-language failure without a blueprint.
+- Blueprint Review leads with the vision, first playable result, and roadmap. Approval produces only the honest **Blueprint Ready** session state.
+- The real rehearsal generated the five-quest **Last-Moment Pulse** blueprint in one valid GPT-5.6 response in about 29.5 seconds. It created no project directory and recorded zero project files, commands, and Godot processes.
+- Edge visual review passed all requested desktop, tablet, mobile, and reduced-motion states with no console/network errors, horizontal overflow, missing primary actions, or roadmap-order problems.
+- `npm run forge` and `npm run forge:v0.1` remain protected; `npm run forge:v0.2` owns this preview path.
+
+Task 5 still owns controlled starter copying, project-directory creation, Git initialization, Godot smoke verification, generated-project persistence, and registration. GPT-5.6 used API-key-backed Codex auth for the live rehearsal; ChatGPT Codex auth rejected the requested model and Forge did not silently substitute another.

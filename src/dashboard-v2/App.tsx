@@ -23,10 +23,11 @@ import {
   type SampleRoadmapNode,
 } from "./sample-workflow.js";
 import { viewForLaunchChoice, type LaunchChoice } from "./state.js";
+import { NewGameFlow } from "./NewGameFlow.js";
 
 type CompanionState = "ready" | "focused" | "thinking" | "complete";
 type IconName = "arrow" | "back" | "check" | "code" | "file" | "idea" | "play" | "spark";
-type AppView = "launchpad" | "sample" | "create_placeholder";
+type AppView = "launchpad" | "sample" | "new_game";
 type SampleView = "world" | "quest" | "build" | "playtest" | "proof" | "complete";
 
 function Icon({ name }: { name: IconName }) {
@@ -159,10 +160,6 @@ function ResetDialog({ busy, onReset }: { busy: boolean; onReset: (action: DemoR
   return <div className="v2-modal-backdrop"><section aria-labelledby="reset-title" aria-modal="true" className="v2-modal reset-modal" role="dialog"><p className="v2-eyebrow">Explicit reset · generated demo workspace only</p><h2 id="reset-title">Start a fresh Sample Game demo?</h2><p>This removes saved quest progress and gameplay changes from Forge’s generated demo workspace. The repository, immutable fixture, and verified Godot cache remain untouched.</p><code>npm run demo:reset -- confirm-reset</code><div className="confirmation-actions"><button className="v2-button button-quiet" disabled={busy} onClick={() => onReset("CANCEL")} type="button">Cancel and preserve progress</button><button className="v2-button button-ember" disabled={busy} onClick={() => onReset("CONFIRM RESET")} type="button">Reset and start fresh</button></div></section></div>;
 }
 
-function CreatePlaceholder({ onBack }: { onBack: () => void }) {
-  return <main className="placeholder-screen"><header className="placeholder-header"><button className="back-button" onClick={onBack} type="button"><Icon name="back" /> Launchpad</button><ForgeBrand state="thinking" /></header><section className="placeholder-content"><CompanionCore state="thinking" /><p className="v2-eyebrow">Upcoming v0.2 capability</p><h1>Guided project creation is next.</h1><p>Soon, you’ll describe a small 2D game and Forge will shape it into a Top-down arena project, first playable milestone, and bounded quest roadmap.</p><div className="placeholder-boundary"><Icon name="spark" /><div><strong>Honest preview boundary</strong><span>No GPT call, project generation, or artifact creation is active in this shell.</span></div></div><button className="v2-button button-violet" onClick={onBack} type="button">Return to Launchpad<Icon name="back" /></button></section></main>;
-}
-
 export default function App() {
   const [view, setView] = useState<AppView>("launchpad");
   const [sampleView, setSampleView] = useState<SampleView>("world");
@@ -173,12 +170,12 @@ export default function App() {
   const selectedRef = useRef(false);
 
   const refresh = useCallback(async () => { try { setSnapshot(await loadDashboard()); setError(null); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } }, []);
-  useEffect(() => { return subscribeToDashboard((event) => { if (event.type === "progress") setSnapshot((current) => current ? { ...current, phase: "implementation_running", progress: event.progress } : current); else void refresh(); }, () => {}); }, [refresh]);
+  useEffect(() => { if (view !== "sample") return; return subscribeToDashboard((event) => { if (event.type === "progress") setSnapshot((current) => current ? { ...current, phase: "implementation_running", progress: event.progress } : current); else void refresh(); }, () => {}); }, [refresh, view]);
   useEffect(() => { if (view === "sample" && !selectedRef.current) { selectedRef.current = true; void refresh(); } }, [refresh, view]);
   useEffect(() => { if (!snapshot || view !== "sample") return; if (snapshot.phase === "implementation_running") setSampleView("build"); else if (["ready_to_play", "launching_game", "awaiting_confirmation"].includes(snapshot.phase)) setSampleView("playtest"); else if (snapshot.phase === "quest_complete") setSampleView("complete"); }, [snapshot?.phase, view]);
   useEffect(() => { document.title = view === "sample" ? `${snapshot?.quest.title ?? "Sample Game"} · Forge Project World` : "Forge · Living Game Workshop"; window.setTimeout(() => window.scrollTo({ left: 0, top: 0 }), 50); }, [sampleView, snapshot?.quest.title, view]);
 
-  const choose = (choice: LaunchChoice) => { const selected = viewForLaunchChoice(choice); setView(selected === "sample_world" ? "sample" : "create_placeholder"); setSampleView("world"); };
+  const choose = (choice: LaunchChoice) => { const selected = viewForLaunchChoice(choice); setView(selected === "sample_world" ? "sample" : "new_game"); setSampleView("world"); };
   const run = async () => { if (busy) return; setBusy(true); try { await approveQuest(); await refresh(); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } finally { setBusy(false); } };
   const cancelApproval = async () => { if (busy) return; setBusy(true); try { await cancelQuestApproval(); await refresh(); setSampleView("world"); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } finally { setBusy(false); } };
   const play = async () => { if (busy || !snapshot) return; setBusy(true); setSnapshot({ ...snapshot, phase: "launching_game", notice: "Godot is running. Return after the game closes." }); try { setSnapshot(await launchGame()); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); await refresh(); } finally { setBusy(false); } };
@@ -186,7 +183,7 @@ export default function App() {
   const performReset = async (action: DemoResetAction) => { if (busy) return; setBusy(true); try { setSnapshot(await resetDemo(action)); setShowReset(false); setSampleView("world"); } catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); } finally { setBusy(false); } };
 
   if (view === "launchpad") return <Launchpad onChoose={choose} />;
-  if (view === "create_placeholder") return <CreatePlaceholder onBack={() => setView("launchpad")} />;
+  if (view === "new_game") return <NewGameFlow onBack={() => setView("launchpad")} />;
   if (!snapshot) return <main className="v2-loading"><CompanionCore state="thinking" /><h1>Opening the real Sample Game workspace</h1><p>{error ?? "Loading validated quest, roadmap, and completion artifacts…"}</p></main>;
 
   const activeNav = sampleView === "proof" || sampleView === "playtest" ? "Proof" : sampleView === "complete" ? "Chronicle" : "World";

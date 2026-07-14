@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 
+import { OfficialBlueprintModelExecutor } from "../blueprint-planner/sdk.js";
+import { BlueprintPlanningService } from "../blueprint-planner/service.js";
 import { repositoryRoot } from "../demo/paths.js";
 import { launchPreparedGame } from "../godot/run-fixture.js";
 import { OfficialCodexExecutor } from "../quest-runner/sdk.js";
@@ -42,9 +44,13 @@ const service = new ForgeDashboardService({
     return { version: result.version };
   },
 });
+const planningService = new BlueprintPlanningService(
+  new OfficialBlueprintModelExecutor(repositoryRoot),
+);
 const server = createForgeDashboardServer(
   service,
   path.join(repositoryRoot, "dist", "dashboard"),
+  planningService,
 );
 
 server.once("error", (error: NodeJS.ErrnoException) => {

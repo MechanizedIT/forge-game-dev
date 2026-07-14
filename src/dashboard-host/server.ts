@@ -3,6 +3,11 @@ import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import path from "node:path";
 
+import type { ClarificationTopic } from "../contracts/index.js";
+import {
+  BlueprintPlanningConflictError,
+  BlueprintPlanningService,
+} from "../blueprint-planner/service.js";
 import type { CreatorConfirmation, DashboardEvent } from "../dashboard/shared.js";
 import { DashboardConflictError, ForgeDashboardService } from "./service.js";
 
@@ -96,9 +101,31 @@ function openEventStream(
   });
 }
 
+function openPlanningEventStream(
+  request: IncomingMessage,
+  response: ServerResponse,
+  planningService: BlueprintPlanningService,
+): void {
+  response.writeHead(200, {
+    "content-type": "text/event-stream",
+    "cache-control": "no-cache, no-transform",
+    connection: "keep-alive",
+  });
+  response.write(`data: ${JSON.stringify({ type: "refresh" })}\n\n`);
+  const unsubscribe = planningService.subscribe((event) => {
+    response.write(`data: ${JSON.stringify(event)}\n\n`);
+  });
+  const heartbeat = setInterval(() => response.write(": keep-alive\n\n"), 15_000);
+  request.on("close", () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  });
+}
+
 export function createForgeDashboardServer(
   service: ForgeDashboardService,
   staticRoot: string,
+  planningService?: BlueprintPlanningService,
 ): Server {
   const resolvedStaticRoot = path.resolve(staticRoot);
   return createServer(async (request, response) => {
@@ -110,6 +137,45 @@ export function createForgeDashboardServer(
       }
       if (request.method === "GET" && url.pathname === "/api/events") {
         openEventStream(request, response, service);
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/planning/state" && planningService) {
+        sendJson(response, 200, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "GET" && url.pathname === "/api/planning/events" && planningService) {
+        openPlanningEventStream(request, response, planningService);
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/start" && planningService) {
+        const body = await readJsonBody(request);
+        if (typeof body.idea !== "string") throw new Error("A game idea is required.");
+        planningService.beginIdea(body.idea);
+        sendJson(response, 202, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/answers" && planningService) {
+        const body = await readJsonBody(request);
+        if (!body.answers || typeof body.answers !== "object" || Array.isArray(body.answers)) {
+          throw new Error("Clarification answers must be a JSON object.");
+        }
+        planningService.submitAnswers(body.answers as Partial<Record<ClarificationTopic, string>>);
+        sendJson(response, 202, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/revise" && planningService) {
+        planningService.reviseIdea();
+        sendJson(response, 200, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/cancel" && planningService) {
+        planningService.cancel();
+        sendJson(response, 200, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/approve" && planningService) {
+        planningService.approveBlueprint();
+        sendJson(response, 200, planningService.getSnapshot());
         return;
       }
       if (
@@ -166,7 +232,7 @@ export function createForgeDashboardServer(
       }
       sendJson(response, 404, { error: "Not found" });
     } catch (error) {
-      const status = error instanceof DashboardConflictError ? 409 : 400;
+      const status = error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError ? 409 : 400;
       sendJson(response, status, {
         error: error instanceof Error ? error.message : String(error),
       });

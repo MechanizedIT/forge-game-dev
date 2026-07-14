@@ -341,3 +341,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after final checks; exact SHA reported in the task response
 - **Session ID:** Live run `enemy-targeting-1784009287800`; primary submission `/feedback` ID remains pending
 - **Next step:** Stop for approval. Task 4 may add focused GPT-5.6 intake and a reviewable Top-down arena blueprint, without project creation.
+
+---
+
+## 2026-07-14 — Add New Game Intake and real GPT-5.6 blueprint planning
+
+- **Actor/model surface:** Codex repository implementation; official `@openai/codex-sdk` `0.144.3`; GPT-5.6 high-reasoning live planning; pinned Playwright `1.61.1`; Microsoft Edge
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 4A only; fixed the required foundation to Top-down arena; limited clarification to five topics and three questions; required one repair attempt; prohibited project creation, starter copying, Git initialization, Godot verification, generated-project persistence, generated Project World work, generated-quest implementation, and sample art changes.
+- **AI contribution:** Added the strict creator-facing blueprint contract and cross-reference/safety validator; isolated session planning state and host routes from the sample workflow; configured GPT-5.6 high with structured output, read-only sandboxing, disabled network/search, and abortable cancellation; added Intake, Clarification, Planning, Blueprint Review, Ready, and failure states; added deterministic tests, a real rehearsal command, and responsive Edge evidence.
+- **Files changed:** Blueprint contracts, planner runtime/prompts/service/rehearsal, v0.2 planning UI and styles, additive host/API routes, focused tests and visual harness, Task 4A plan/handoff/review/closeout/evidence, `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog, and this log.
+- **Verification:** `npm run check` passed 65/65; `npm run check:v0.1` passed the production build and 37/37 protected tests; deterministic Edge review passed ten requested state/viewport captures plus reduced motion with no console/network/layout/action issues; the real GPT-5.6 run produced **Last-Moment Pulse**, five quests, no clarification, one valid response, sanitized thread `019f5f61-62a…`, approximately 29.5 seconds latency, and recorded usage; the project-directory list remained unchanged with zero project files, commands, or Godot processes.
+- **Known limitation:** The current ChatGPT-authenticated Codex surface rejected `gpt-5.6`; the successful rehearsal used the available OpenAI API key through the same official SDK. Forge stopped safely on the rejected surface and never switched models.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Sanitized live planning thread `019f5f61-62a…`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 5 may create and verify the real controlled Top-down arena project, without beginning generated Project World integration or generated-quest Codex implementation.

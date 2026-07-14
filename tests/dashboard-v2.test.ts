@@ -44,9 +44,9 @@ async function sampleSnapshot(): Promise<DashboardSnapshot> {
   };
 }
 
-test("v0.2 launch choices route to the real sample path and honest creation placeholder", () => {
+test("v0.2 launch choices route to the real sample path and New Game Intake", () => {
   assert.equal(viewForLaunchChoice("explore_sample"), "sample_world");
-  assert.equal(viewForLaunchChoice("create_game"), "create_placeholder");
+  assert.equal(viewForLaunchChoice("create_game"), "new_game_intake");
   assert.equal(returnToLaunchpad(), "launchpad");
 });
 
@@ -99,14 +99,20 @@ test("real sample adapter distinguishes fresh, preserved, active, and completed 
   assert.equal(completed.runLabel, completion.runId);
 });
 
-test("v0.2 source connects the protected API while keeping creation and ideas honest", async () => {
-  const [app, adapter, styles, html, packageJsonText, visualReview] = await Promise.all([
+test("v0.2 source connects the protected sample API and real blueprint planning", async () => {
+  const [app, newGame, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, planningSdk, planningService, server] = await Promise.all([
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "App.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "NewGameFlow.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "blueprint-planner", "shared.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "sample-workflow.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "styles.css"), "utf8"),
     readFile(path.join(repositoryRoot, "v0.2.html"), "utf8"),
     readFile(path.join(repositoryRoot, "package.json"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2.ts"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2-blueprint.ts"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "blueprint-planner", "sdk.ts"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "blueprint-planner", "service.ts"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-host", "server.ts"), "utf8"),
   ]);
 
   assert.match(app, /loadDashboard/);
@@ -131,7 +137,25 @@ test("v0.2 source connects the protected API while keeping creation and ideas ho
   assert.match(app, /Cancel \/ not ready/);
   assert.match(app, /What should we build next\?/);
   assert.match(app, /preview only/i);
-  assert.match(app, /No GPT call, project generation, or artifact creation is active/);
+  assert.match(app, /NewGameFlow/);
+  assert.match(newGame, /What kind of game would you like to make\?/);
+  assert.match(newGame, /Shape my game/);
+  assert.match(newGame, /Continue with these answers/);
+  assert.match(newGame, /blueprintPlanningStages/);
+  assert.match(planningShared, /Understanding your idea/);
+  assert.match(newGame, /Blueprint Review/);
+  assert.match(newGame, /Approve blueprint/);
+  assert.match(newGame, /Your game blueprint is ready\./);
+  assert.match(newGame, /Create the Godot project — next task/);
+  assert.match(newGame, /Project files written/);
+  assert.match(newGame, /Commands run/);
+  assert.match(planningSdk, /model: "gpt-5\.6"/);
+  assert.match(planningSdk, /modelReasoningEffort: "high"/);
+  assert.match(planningSdk, /sandboxMode: "read-only"/);
+  assert.match(planningSdk, /networkAccessEnabled: false/);
+  assert.match(planningSdk, /webSearchMode: "disabled"/);
+  assert.match(planningService, /buildRepairPrompt/);
+  assert.match(server, /\/api\/planning\/approve/);
   assert.match(styles, /\.complete-segment \{ width: 100%; background: var\(--mint\)/);
   assert.match(styles, /\.available-segment \{ background: var\(--ember\)/);
   assert.match(styles, /\.planned-segment \{ width: 100%; border-top: 2px dashed/);
@@ -146,6 +170,11 @@ test("v0.2 source connects the protected API while keeping creation and ideas ho
   assert.match(visualReview, /prefers-reduced-motion|reducedMotion/);
   assert.match(visualReview, /pageerror/);
   assert.match(visualReview, /requestfailed/);
+  assert.match(blueprintVisualReview, /intake-desktop/);
+  assert.match(blueprintVisualReview, /clarification-desktop/);
+  assert.match(blueprintVisualReview, /planning-desktop/);
+  assert.match(blueprintVisualReview, /blueprint-review-mobile/);
+  assert.match(blueprintVisualReview, /blueprint-ready-desktop/);
 
   const packageJson = JSON.parse(packageJsonText) as {
     scripts: Record<string, string>;
@@ -155,5 +184,6 @@ test("v0.2 source connects the protected API while keeping creation and ideas ho
   assert.equal(packageJson.scripts["forge:v0.1"], "npm run dashboard:build && npm run dashboard:host -- --legacy");
   assert.equal(packageJson.scripts["forge:v0.2"], "npm run dashboard:build && npm run dashboard:host -- --v0.2");
   assert.equal(packageJson.scripts["visual:review:v0.2"], "tsx src/visual-review/v0.2.ts");
+  assert.equal(packageJson.scripts["visual:review:v0.2:blueprint"], "tsx src/visual-review/v0.2-blueprint.ts");
   assert.equal(packageJson.devDependencies["@playwright/test"], "1.61.1");
 });

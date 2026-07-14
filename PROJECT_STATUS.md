@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-14
 
-**Current milestone:** `v0.2 Task 3 — Real sample integration`
+**Current milestone:** `v0.2 Task 4A — New Game Intake and GPT-5.6 Blueprint Planning`
 
-**Overall state:** `COMPLETE` — the protected Enemy Targeting workflow is fully integrated and browser-reviewed inside the Living Game Workshop. Task 4 has not begun.
+**Overall state:** `COMPLETE` — both the protected sample path and the new idea-to-blueprint planning path work in the Living Game Workshop. Real Godot project creation remains Task 5.
 
 ## What works now
 
@@ -18,22 +18,23 @@
 - Playtest Gate renders real diff and verification evidence, launches pinned Godot, and requires one of the exact creator outcomes after exit.
 - Final `PASS`, mint roadmap completion, Chronicle, and completion state appear only after creator-confirmed success is persisted.
 - Cancelled and confirmed reset retain their protected behavior.
-- **Create a new game** and the idea composer remain honestly preview-only.
+- **Create a new game** opens the focused composer, fixed v0.2 scope, and three useful examples.
+- GPT-5.6 high reasoning either prepares the strict blueprint immediately or asks at most three permitted questions on one screen.
+- Forge validates the Top-down arena foundation, three-to-five acyclic roadmap, criterion/proof links, safe creator content, and one-repair boundary.
+- Blueprint Review leads with the vision, first playable result, and roadmap; Blueprint Ready explicitly writes no project files and runs no commands.
 
-## Task 3 evidence
+## Task 4A evidence
 
-- Full and protected regression suites, production builds, and the local Playwright browser review pass.
-- Official-SDK review run `enemy-targeting-1784009287800` changed exactly the three approved Godot files with zero unexpected files.
-- Repository and Godot verification passed; all five progress stages arrived in order.
-- The creator explicitly reported `I SAW IT WORK`; only then did the final review become `PASS` and completion persist.
-- Edge `150.0.4078.65` review passed at `1440×900`, `768×900`, and `390×844` with no console warnings/errors, uncaught exceptions, failed same-origin requests, React warnings, horizontal overflow, missing primary actions, or broken navigation.
-- Reduced-motion review passed. Completion, Chronicle, completed proof, and the completed World reloaded without regeneration.
+- `npm run check` passes 65/65 tests; `npm run check:v0.1` passes the production build and all 37 protected compatibility tests.
+- The real GPT-5.6 rehearsal produced **Last-Moment Pulse** with five ordered quests in one valid response, no clarification, a sanitized thread ID, about 29.5 seconds latency, and recorded token usage.
+- The project-directory list remained unchanged; planning recorded zero project files, commands, and Godot processes.
+- Edge visual review passed Intake, Clarification, Planning, Blueprint Review, Blueprint Ready, all required widths, mobile roadmap order, reduced motion, console/network checks, and horizontal-overflow checks.
+- GPT-5.6 required the available OpenAI API key in this environment. ChatGPT Codex auth rejected the model; Forge stopped safely and did not switch models.
 
 The installed in-app Browser plugin still fails before tab creation with `Cannot redefine property: process`. The repeatable fallback is the pinned project-local `@playwright/test` `1.61.1` harness; reports and screenshots are under [`docs/evidence/2026-07-14-v0.2-browser-review`](docs/evidence/2026-07-14-v0.2-browser-review/README.md).
 
-## Approved v0.2 scope still ahead
+## Required v0.2 scope still ahead
 
-- GPT-5.6 focused new-game intake and Top-down arena blueprint generation
 - One controlled Top-down arena starter, verification, and project creation
 - Persistent generated-project World, roadmap, documentation, project state, and Chronicle
 - Required end-to-end hardening after both paths exist
@@ -42,6 +43,6 @@ Optional only afterward: generated-quest implementation, Side-scrolling platform
 
 ## Next bounded task
 
-Stop for approval. Task 4 should add only GPT-5.6 idea intake and the reviewable Top-down arena blueprint contract. Godot project creation belongs to the following separately approved task.
+Stop for approval. Task 5 should create and verify the real Godot project from the controlled Top-down arena starter. It must preserve the Task 4A blueprint boundary and must not begin generated-quest Codex implementation.
 
-See the [Task 3 handoff](docs/handoffs/2026-07-14-v0.2-task-3-sample-integration.md), [review](docs/reviews/2026-07-14-v0.2-task-3-sample-integration-review.md), [closeout](docs/closeouts/2026-07-14-v0.2-task-3-sample-integration-closeout.md), and [browser evidence](docs/evidence/2026-07-14-v0.2-browser-review/README.md).
+See the [Task 4A handoff](docs/handoffs/2026-07-14-v0.2-task-4a-blueprint-planning.md), [review](docs/reviews/2026-07-14-v0.2-task-4a-blueprint-planning-review.md), [closeout](docs/closeouts/2026-07-14-v0.2-task-4a-blueprint-planning-closeout.md), [real GPT evidence](docs/evidence/2026-07-14-v0.2-task-4a-gpt-planning.json), and [browser evidence](docs/evidence/2026-07-14-v0.2-task-4a-browser-review/README.md).
