@@ -1,0 +1,57 @@
+{
+  "date": "2026-07-14",
+  "mode": "live",
+  "baseUrl": "http://127.0.0.1:4173",
+  "environment": {
+    "node": "v22.17.1",
+    "npm": "10.9.2",
+    "playwright": "1.61.1",
+    "browser": "Microsoft Edge",
+    "browserVersion": "150.0.4078.65",
+    "channel": "msedge"
+  },
+  "host": "connected",
+  "realStates": [
+    "real-launchpad-desktop",
+    "real-active-build-desktop",
+    "real-playtest-gate-desktop",
+    "real-creator-confirmation-desktop",
+    "real-creator-confirmation-mobile"
+  ],
+  "visualStateFixtures": [],
+  "screenshots": [
+    "real-launchpad-desktop.png",
+    "real-active-build-desktop.png",
+    "real-playtest-gate-desktop.png",
+    "real-creator-confirmation-desktop.png",
+    "real-creator-confirmation-mobile.png"
+  ],
+  "resumedAcrossAttempts": true,
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "reducedMotion": {
+    "checked": false,
+    "animationDurations": []
+  },
+  "ignoredExpectedNoise": [
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED",
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED"
+  ],
+  "issues": [],
+  "result": "PASS"
+}

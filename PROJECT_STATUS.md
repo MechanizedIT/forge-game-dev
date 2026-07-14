@@ -1,54 +1,33 @@
 # Forge Project Status
 
-**Last updated:** 2026-07-13
+**Last updated:** 2026-07-14
 
-**Current milestone:** `v0.1.0 — First-time judge usability refinement`
+**Current milestone:** `v0.2 Task 7 — End-to-End Hardening`
 
-**Overall state:** `READY` for the real desktop judge path; one manual narrow-window review and submission packaging remain
-
-This refinement responds directly to confusion observed during a real first-time run. It changes presentation and baseline controls without adding product capabilities or replacing the proven workflow. Release notes: [`BUILD_WEEK_CHANGELOG.md`](BUILD_WEEK_CHANGELOG.md).
+**Overall state:** `COMPLETE / PASS` — both real journeys, creator play confirmation, setup, responsive, accessibility, compatibility, reset, and final clean-clone gates pass.
 
 ## What works now
 
-A clean 64-bit Windows 11 checkout at `a5321ed1406c599de70a9ba951552d81aee82e7a` completed the README path with Node 22.17.1 and Git 2.41:
+- `npm run forge` opens the v0.2 Living Game Workshop. `npm run forge:v0.1` remains the protected direct compatibility launch, and `npm run forge:v0.2` remains an explicit alias.
+- The sample journey reviews an exact three-file plan, requires approval, runs the official Codex SDK once, shows truthful stages, verifies scope and Godot behavior, launches the game, requires exact creator confirmation, persists completion, reloads, and resets safely.
+- The new-game journey uses real GPT-5.6 high reasoning, bounded clarification, strict blueprint validation, separate approvals, one controlled Top-down Arena starter, pinned Godot verification, a clean no-remote Git baseline, registry-last persistence, and a restart-safe Project World.
+- Generated Project World restores roadmap selection, quest briefs, documents, Chronicle, and idea seeds. Idea saves do not mutate roadmap or authoritative Chronicle. Generated-quest implementation is clearly unavailable.
+- Task 7 corrected visible Windows launching for generated Godot and File Explorer actions.
+- Edge `150.0.4078.65` and Playwright `1.61.1` pass 48 automated captures across six suites at desktop, tablet, and mobile sizes, including focus, reduced motion, failures, and recovery. One additional real creator-confirmed completion capture records the final gate.
+- A clean temporary checkout passed `npm ci`, Codex login status, first-time pinned Godot download, and demo preparation.
 
-- Locked npm installation completed with zero reported vulnerabilities.
-- Explicit first-run consent downloaded, checksummed, and extracted pinned Godot 4.7; a later prepare reused the verified cache.
-- The dashboard launched at its printed local URL and loaded the available Enemy Targeting quest.
-- The official Codex SDK changed exactly the three approved Godot files.
-- Project checks and deterministic Godot verification passed.
-- The game visibly moved from `IDLE` to `CHASING` and back to `IDLE` after retreat.
-- Forge requested creator confirmation only after play, persisted final `PASS`, and reloaded a 1-of-1 completed roadmap.
-- An explicit reset restored the immutable fixture and a restarted host showed Enemy Targeting available at 0 of 1 complete.
+## Task 7 evidence
 
-The README now gives exact supported Node ranges, bundled Codex login checks, first-download behavior, the dashboard URL, reset/replay steps, and common recovery commands. Real dashboard screenshots replace the prior missing mockups. Port conflicts now produce a short actionable message instead of an unhandled Node stack.
+- Real sample run `enemy-targeting-1784056119542` changed only the approved files, passed automated review, received exact creator confirmation after visible `IDLE → CHASING → IDLE`, persisted final `PASS` after a host reload, and reset safely to the clean fixture.
+- Real **Gravity Tap Arena** project `gravity-tap-arena-6cbe7b2a54` used GPT-5.6, passed Godot, created clean Git commit `7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8`, restored state/idea after restart, opened visibly in Godot and File Explorer, and left the sample hash unchanged.
+- Browser evidence: 48 automated screenshots plus one real creator-confirmed completion capture, zero reported issues.
+- `npm run context:check`, all 89 full-suite tests, the production build, all 37 protected v0.1 tests, the live default-launch probe, clean-clone gate, and diff/cleanliness checks pass.
 
-The first World screen now explains Forge, the five-step demo, the three-file Codex boundary, and the proof model before asking the judge to **Review Enemy Targeting**. Proof and Chronicle stay disabled until they contain real evidence. Preserved setup reports whether the quest is available, in progress, or completed and prints the exact reset command; a completed dashboard offers **Start fresh demo** through the existing confirmed reset path.
+## Remaining submission work
 
-During a real multi-minute SDK run, the dashboard now makes the current stage dominant, keeps completed stages visible, shows elapsed time, explains that Codex may take several minutes, and keeps technical events optional. Before play, Forge gives four exact instructions. The baseline player and real Godot verifier now support both arrow keys and WASD.
+1. Select a license, record/publish the under-three-minute video, add public submission URLs, and preserve the primary `/feedback` ID.
+2. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-## Try the dashboard
+Generated-quest implementation, additional starters, import, generalized scanning, Graphify, Godot MCP, general chat, and sample art remain deferred.
 
-```powershell
-npm ci
-npx codex login status
-npm run demo:prepare -- confirm-download
-npm run forge
-```
-
-Review Enemy Targeting, choose **Build with Codex**, wait for automated proof, choose **Play the result**, and confirm only what you observe. To replay, stop Forge with `Ctrl+C`, run `npm run demo:reset -- confirm-reset`, then run `npm run forge` again.
-
-## Still incomplete
-
-- Public demo video and Devpost URLs
-- Primary Codex `/feedback` ID and final submission metadata
-- Offline/replay fallback if live Codex or network access is unavailable
-- License selection
-- Plan refinement, contextual questions, and the multi-entry Chronicle remain honestly deferred product work
-- One manual narrow-window visual pass; the controlled browser review covered the real desktop flow but could not resize its viewport
-
-## Next milestone
-
-Perform the manual narrow-window pass, then record the under-three-minute video, add final submission links and metadata, preserve the `/feedback` ID, choose the license, and decide whether an honestly labeled offline fallback is required.
-
-Usability review: [`docs/reviews/2026-07-13-v0.1.0-first-run-usability-review.md`](docs/reviews/2026-07-13-v0.1.0-first-run-usability-review.md). Rehearsal evidence: [`docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md`](docs/reviews/2026-07-13-judge-readiness-rehearsal-review.md). Operational details: [`README.md`](README.md) and [`docs/QUEST_CLI.md`](docs/QUEST_CLI.md).
+See the [judge guide](docs/JUDGE_GUIDE.md), [Task 7 review](docs/reviews/2026-07-14-v0.2-task-7-hardening-review.md), [closeout](docs/closeouts/2026-07-14-v0.2-task-7-hardening-closeout.md), [rehearsal evidence](docs/evidence/2026-07-14-v0.2-task-7-rehearsal.json), [real new-game evidence](docs/evidence/2026-07-14-v0.2-task-7-real-new-game.json), and [browser evidence](docs/evidence/2026-07-14-v0.2-task-7-browser-review/README.md).

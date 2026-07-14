@@ -1,0 +1,73 @@
+{
+  "date": "2026-07-14",
+  "objective": "Real Last-Moment Pulse generated Project World integration rehearsal",
+  "projectId": "last-moment-pulse-6631032087",
+  "readOnlyLoad": {
+    "displayName": "Last-Moment Pulse",
+    "questCount": 4,
+    "stateFileUnchanged": true,
+    "registryUnchangedBeforeExplicitOpen": true,
+    "playableLabel": "Verified starter layout",
+    "previewLabel": "Playable-state preview"
+  },
+  "explicitOpen": {
+    "usedProjectIdOnly": true,
+    "lastOpenedAt": "2026-07-14T18:22:21.165Z",
+    "registryRecencyChanged": true
+  },
+  "questBriefs": {
+    "openedQuestIds": [
+      "q1-build-the-bounded-arena",
+      "q2-add-responsive-player-moveme",
+      "q3-create-the-approaching-enemy",
+      "q4-implement-the-push-pulse"
+    ],
+    "implementationStates": [
+      "not_enabled",
+      "not_enabled",
+      "not_enabled",
+      "not_enabled"
+    ],
+    "selectedQuestAfterRehearsal": "q4-implement-the-push-pulse",
+    "currentViewAfterRehearsal": "quest_brief"
+  },
+  "ideaPersistence": {
+    "ideaSeedId": "idea-4934de38bc3b",
+    "idea": "Leave a fading ring after each pulse.",
+    "activityNote": "Idea saved for future planning: Leave a fading ring after each pulse.",
+    "derivedActivityVisible": true,
+    "roadmapHashBefore": "406f0ee89a738a39e143cfde021cc8ab2aef0ac6cf09f9853198c51e650af49b",
+    "roadmapHashAfter": "406f0ee89a738a39e143cfde021cc8ab2aef0ac6cf09f9853198c51e650af49b",
+    "chronicleHashBefore": "842db1f971e821efe5d4d5964e4287c9c21eb8e87c3c2404d55041dad78b3c28",
+    "chronicleHashAfter": "842db1f971e821efe5d4d5964e4287c9c21eb8e87c3c2404d55041dad78b3c28",
+    "authoritativeFilesByteIdentical": true
+  },
+  "restart": {
+    "restoredProjectId": "last-moment-pulse-6631032087",
+    "restoredQuestId": "q4-implement-the-push-pulse",
+    "authoritativeChronicleEntries": 1,
+    "ideaSeedCount": 1,
+    "registryRecencyUnchangedByGet": true,
+    "duplicatePortableFilesCreated": []
+  },
+  "controlledActions": {
+    "folderPathWasCanonical": true,
+    "launchExecutable": "C:\\Users\\cwood\\AppData\\Local\\Forge\\tools\\godot\\4.7-stable\\windows-x86_64\\Godot_v4.7-stable_win64.exe",
+    "launchArguments": [
+      "--path",
+      "C:\\Users\\cwood\\AppData\\Local\\Forge\\projects\\last-moment-pulse-6631032087"
+    ],
+    "launchWorkingDirectory": "C:\\Users\\cwood\\AppData\\Local\\Forge\\projects\\last-moment-pulse-6631032087",
+    "visibleGodotLaunchFrames": 120,
+    "exitCode": 0,
+    "outputTail": "Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org\r\nOpenGL API 3.3.0 NVIDIA 595.79 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 3070 Laptop GPU\r\n\r\n"
+  },
+  "isolation": {
+    "sampleWorkspaceHashBefore": "4ba967d30ee4039f93e109fa9d3d09b3396fe442c57c3944f398d349747fa9be",
+    "sampleWorkspaceHashAfter": "4ba967d30ee4039f93e109fa9d3d09b3396fe442c57c3944f398d349747fa9be",
+    "sampleWorkspaceUntouched": true,
+    "generatedProjectGitClean": true,
+    "baselineCommit": "9f73f5040bac9b67e806a56129170a150c139637"
+  },
+  "result": "PASS"
+}

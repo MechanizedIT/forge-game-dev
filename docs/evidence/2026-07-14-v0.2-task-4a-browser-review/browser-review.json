@@ -1,0 +1,41 @@
+{
+  "date": "2026-07-14",
+  "browser": "Microsoft Edge",
+  "browserVersion": "150.0.4078.65",
+  "channel": "msedge",
+  "states": [
+    "intake-desktop",
+    "intake-tablet",
+    "intake-mobile",
+    "planning-desktop",
+    "clarification-desktop",
+    "blueprint-review-desktop",
+    "blueprint-review-tablet",
+    "blueprint-review-mobile",
+    "blueprint-review-mobile-reduced-motion",
+    "blueprint-ready-desktop"
+  ],
+  "screenshots": [
+    "intake-desktop.png",
+    "intake-tablet.png",
+    "intake-mobile.png",
+    "planning-desktop.png",
+    "clarification-desktop.png",
+    "blueprint-review-desktop.png",
+    "blueprint-review-tablet.png",
+    "blueprint-review-mobile.png",
+    "blueprint-review-mobile-reduced-motion.png",
+    "blueprint-ready-desktop.png"
+  ],
+  "reducedMotionDurations": [
+    "0s",
+    "0s",
+    "0s",
+    "0s",
+    "0s",
+    "0s"
+  ],
+  "visualStateSource": "deterministic mocked official-SDK boundary",
+  "issues": [],
+  "result": "PASS"
+}

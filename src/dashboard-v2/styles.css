@@ -1,0 +1,973 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  --ink: #090d12;
+  --shell: #10161c;
+  --gunmetal: #151c23;
+  --plate: #1a232c;
+  --recess: #0d141b;
+  --line: #34414d;
+  --line-soft: rgba(133, 153, 171, .18);
+  --text: #f3f5f7;
+  --secondary: #aab5bf;
+  --muted: #73818e;
+  --ember: #ec8732;
+  --ember-hot: #ffb25f;
+  --cyan: #58c4ed;
+  --violet: #9b7af1;
+  --mint: #68cda0;
+  background: var(--ink);
+  color: var(--text);
+}
+
+* { box-sizing: border-box; }
+html { min-width: 320px; min-height: 100%; overflow-anchor: none; background: var(--ink); }
+body { min-width: 320px; min-height: 100vh; margin: 0; background: radial-gradient(circle at 50% -20%, #19232d 0, var(--ink) 48rem); }
+button, input { font: inherit; }
+textarea { font: inherit; }
+button { color: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--ember-hot); outline-offset: 4px; }
+button:disabled { cursor: not-allowed; opacity: .48; transform: none !important; }
+h1, h2, h3, p { margin-top: 0; }
+h1, h2, h3 { letter-spacing: -.045em; }
+p { color: var(--secondary); line-height: 1.55; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.v2-icon { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.v2-eyebrow { display: block; margin-bottom: .42rem; color: var(--muted); font: 800 .63rem/1.2 "Cascadia Code", ui-monospace, monospace; letter-spacing: .15em; text-transform: uppercase; }
+
+.forge-brand { display: flex; align-items: center; gap: .72rem; }
+.forge-brand > div { display: grid; gap: .08rem; }
+.forge-brand strong { font-size: 1rem; letter-spacing: -.02em; }
+.forge-brand > div > span { color: var(--muted); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; }
+
+.companion-core { --core-color: var(--ember); width: 62px; height: 62px; display: inline-grid; place-items: center; flex: 0 0 auto; position: relative; transform: rotate(45deg); border: 1px solid color-mix(in srgb, var(--core-color) 55%, var(--line)); background: linear-gradient(135deg, #202a33, #0d1319); box-shadow: inset 0 0 0 5px rgba(0,0,0,.2); }
+.companion-core::before { content: ""; position: absolute; inset: 9px; border: 1px solid color-mix(in srgb, var(--core-color) 35%, transparent); }
+.companion-orbit { position: absolute; inset: 16px; border: 1px solid color-mix(in srgb, var(--core-color) 45%, transparent); }
+.orbit-a { transform: rotate(28deg); }
+.orbit-b { transform: rotate(62deg); }
+.companion-center { width: 9px; height: 9px; background: var(--core-color); box-shadow: 0 0 13px color-mix(in srgb, var(--core-color) 68%, transparent); }
+.companion-compact { width: 36px; height: 36px; }
+.companion-compact::before { inset: 6px; }
+.companion-compact .companion-orbit { inset: 10px; }
+.companion-compact .companion-center { width: 6px; height: 6px; }
+.companion-focused { --core-color: var(--cyan); animation: focused-breathe 2.8s ease-in-out infinite; }
+.companion-thinking { --core-color: var(--violet); }
+.companion-thinking .orbit-a { animation: think-a 3.2s linear infinite; }
+.companion-thinking .orbit-b { animation: think-b 2.4s linear infinite reverse; }
+.companion-complete { --core-color: var(--mint); }
+.companion-ready { animation: ready-drift 3.8s ease-in-out infinite; }
+
+.v2-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .62rem; padding: 0 1.1rem; border-radius: 6px; cursor: pointer; font-size: .82rem; font-weight: 850; transition: transform .18s ease, background .18s ease, border-color .18s ease; }
+.v2-button:hover { transform: translateY(-2px); }
+.button-ember { border: 1px solid var(--ember-hot); background: var(--ember); color: #1c1108; box-shadow: inset 0 1px rgba(255,255,255,.24); }
+.button-ember:hover { background: var(--ember-hot); }
+.button-violet { border: 1px solid color-mix(in srgb, var(--violet) 75%, white); background: var(--violet); color: #120d20; }
+.button-violet:hover { background: #b095f5; }
+
+/* Launchpad */
+.launchpad { min-height: 100vh; width: min(1320px, calc(100% - 48px)); margin: 0 auto; position: relative; }
+.launchpad::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(88,196,237,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(88,196,237,.025) 1px, transparent 1px); background-size: 80px 80px; mask-image: linear-gradient(to bottom, black, transparent 76%); }
+.launch-header { min-height: 70px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line-soft); }
+.preview-chip, .verified-chip, .engine-chip { display: inline-flex; align-items: center; gap: .38rem; border-radius: 999px; white-space: nowrap; font-size: .67rem; font-weight: 780; }
+.preview-chip { padding: .4rem .65rem; border: 1px solid rgba(88,196,237,.26); color: #98def7; background: rgba(88,196,237,.06); text-transform: uppercase; letter-spacing: .08em; }
+.preview-chip > span { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px rgba(88,196,237,.72); }
+.launch-hero { max-width: 1040px; display: grid; grid-template-columns: 72px 1fr; gap: 1.35rem; align-items: center; padding: 1.7rem 0 1.45rem; }
+.launch-hero-core { display: grid; place-items: center; }
+.launch-hero h1 { max-width: 900px; margin-bottom: .65rem; font-size: clamp(3rem, 5.2vw, 4.8rem); line-height: .94; }
+.launch-summary { max-width: 760px; margin-bottom: 0; font-size: clamp(.94rem, 1.25vw, 1.08rem); }
+.launch-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.launch-choice { min-height: 390px; display: grid; grid-template-rows: 190px 1fr; overflow: hidden; position: relative; border: 1px solid #3b4854; border-radius: 10px; background-color: var(--gunmetal); background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px); box-shadow: inset 0 1px rgba(255,255,255,.035), 0 20px 48px rgba(0,0,0,.18); }
+.launch-choice::before { content: ""; width: 76px; height: 3px; position: absolute; z-index: 3; top: -1px; left: 22px; background: var(--choice-color); }
+.launch-choice:hover { border-color: #586673; }
+.launch-ember { --choice-color: var(--ember); }
+.launch-violet { --choice-color: var(--violet); }
+.launch-miniature { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--recess); }
+.launch-miniature::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(88,196,237,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(88,196,237,.035) 1px, transparent 1px); background-size: 28px 28px; }
+.mini-toolbar { height: 30px; display: flex; align-items: center; gap: .45rem; position: relative; z-index: 2; padding: 0 .75rem; border-bottom: 1px solid rgba(88,196,237,.12); color: #78909f; font: 700 .52rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.mini-toolbar > span { width: 5px; height: 5px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 7px rgba(104,205,160,.6); }
+.mini-toolbar strong { margin-left: auto; color: var(--mint); }
+.mini-game-stage { height: 94px; position: relative; overflow: hidden; background: linear-gradient(#17232d 0 47%, #111820 47%); }
+.mini-game-stage::after { content: ""; height: 42px; position: absolute; inset: auto 0 0; background: repeating-linear-gradient(90deg, rgba(88,196,237,.04) 0 1px, transparent 1px 31px), linear-gradient(rgba(88,196,237,.05), transparent); transform: perspective(80px) rotateX(18deg); transform-origin: bottom; }
+.mini-arena-ring { width: 190px; height: 62px; position: absolute; left: 50%; bottom: -25px; transform: translateX(-50%); border: 1px solid rgba(88,196,237,.14); border-radius: 50%; }
+.mini-player, .mini-enemy { display: grid; gap: .2rem; justify-items: center; position: absolute; z-index: 2; bottom: 22px; font: 800 .46rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.mini-player { left: 26%; color: var(--cyan); }
+.mini-enemy { right: 26%; color: #ee8f78; }
+.mini-player i { width: 19px; height: 24px; display: block; border: 2px solid currentColor; border-radius: 9px 9px 5px 5px; background: #101820; }
+.mini-enemy i { width: 24px; height: 24px; display: block; transform: rotate(45deg); border: 2px solid currentColor; background: #171820; }
+.mini-quest-rail { height: 66px; display: grid; grid-template-columns: 24px 1fr 24px 1fr 24px; grid-template-rows: 28px 18px; align-items: center; position: relative; z-index: 2; padding: 4px 9%; }
+.mini-node { width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid currentColor; transform: rotate(45deg); background: #111820; }
+.mini-node > * { transform: rotate(-45deg); }
+.mini-node .v2-icon { width: 12px; }
+.mini-node i { width: 5px; height: 5px; display: block; background: currentColor; }
+.mini-done { color: var(--mint); }
+.mini-active { color: var(--ember); box-shadow: 0 0 12px rgba(236,135,50,.16); }
+.mini-future { color: #56636f; }
+.mini-line { height: 1px; display: block; }
+.mini-line-done { background: linear-gradient(90deg, var(--mint), var(--ember)); }
+.mini-line-future { border-top: 1px dashed #56636f; }
+.mini-quest-rail em, .mini-quest-rail strong { align-self: start; color: #667480; font: 650 .45rem "Cascadia Code", monospace; text-align: center; }
+.mini-quest-rail em:first-of-type { grid-column: 1; }
+.mini-quest-rail strong { grid-column: 3; color: var(--ember-hot); }
+.mini-quest-rail em:last-of-type { grid-column: 5; }
+.idea-source { width: 48%; position: absolute; z-index: 2; left: 7%; top: 36px; padding: .72rem; border-left: 2px solid var(--violet); background: rgba(24,20,39,.9); }
+.idea-source span { display: flex; align-items: center; gap: .35rem; margin-bottom: .45rem; color: #bba8f7; font: 750 .5rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.idea-source strong { display: block; font-size: .72rem; line-height: 1.35; }
+.idea-transform { display: grid; place-items: center; position: absolute; z-index: 2; left: 54%; top: 78px; color: var(--violet); }
+.blueprint-roadmap { width: 36%; display: grid; grid-template-columns: 1fr; gap: 5px; position: absolute; z-index: 2; right: 6%; top: 27px; }
+.blueprint-roadmap span { min-height: 34px; display: flex; align-items: center; gap: .55rem; padding: .35rem .55rem; border: 1px solid #51456e; background: #161422; font-size: .58rem; font-weight: 750; }
+.blueprint-roadmap i { color: #a68df0; font: 750 .48rem "Cascadia Code", monospace; }
+.blueprint-roadmap b { width: 1px; height: 5px; margin: -5px 0 -5px 13px; background: var(--violet); opacity: .55; }
+.blueprint-status { height: 28px; display: flex; align-items: center; gap: .4rem; position: absolute; z-index: 2; right: 6%; bottom: 4px; color: #a68df0; font: 700 .48rem "Cascadia Code", monospace; letter-spacing: .06em; }
+.blueprint-status span { width: 5px; height: 5px; border-radius: 50%; background: var(--violet); }
+.choice-content { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto 1fr; column-gap: 1rem; padding: 1.15rem 1.25rem 1.25rem; }
+.choice-kicker { align-self: start; color: var(--choice-color); font: 800 .56rem "Cascadia Code", monospace; letter-spacing: .14em; text-transform: uppercase; }
+.choice-content h2 { grid-column: 1; grid-row: 2; margin: .35rem 0 .35rem; font-size: clamp(1.65rem, 2.2vw, 2.15rem); }
+.choice-content p { grid-column: 1; grid-row: 3; max-width: 520px; margin: 0; font-size: .78rem; line-height: 1.45; }
+.choice-content .v2-button { grid-column: 2; grid-row: 2 / 4; align-self: end; min-width: 176px; }
+.launch-footer { min-height: 52px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .68rem; }
+.launch-footer span { display: inline-flex; align-items: center; gap: .4rem; }
+
+/* Project World */
+.project-world { min-height: 100vh; padding: 0 28px 32px; background: linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px), var(--ink); background-size: 96px 100%; }
+.world-header { width: min(1540px, 100%); min-height: 66px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin: 0 auto; border-bottom: 1px solid var(--line-soft); }
+.back-button { display: inline-flex; align-items: center; gap: .42rem; justify-self: start; padding: .5rem .65rem; border: 0; background: transparent; color: var(--secondary); cursor: pointer; font-size: .72rem; }
+.back-button:hover { color: var(--text); }
+.world-project-title { justify-self: end; display: flex; align-items: center; gap: .65rem; }
+.world-project-title > div { display: grid; justify-items: end; }
+.world-project-title h1 { margin: 0; font-size: .96rem; }
+.world-project-title .v2-eyebrow { margin-bottom: .12rem; }
+.verified-chip { padding: .38rem .6rem; border: 1px solid rgba(104,205,160,.35); color: var(--mint); background: rgba(104,205,160,.06); }
+.engine-chip { padding: .38rem .6rem; border: 1px solid var(--line); color: var(--muted); }
+.world-intro { width: min(1540px, 100%); margin: 0 auto; padding: 1.35rem 0 1.15rem; }
+.world-intro h2 { margin-bottom: .3rem; font-size: clamp(2.5rem, 4vw, 3.65rem); line-height: .95; }
+.world-intro p:last-child { margin: 0; font-size: .9rem; }
+.world-workbench { width: min(1540px, 100%); display: grid; grid-template-columns: minmax(300px, 30%) minmax(0, 70%); margin: 0 auto; overflow: hidden; position: relative; border: 1px solid #3a4651; border-radius: 10px; background-color: var(--gunmetal); background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.01) 0 1px, transparent 1px 4px); box-shadow: inset 0 1px rgba(255,255,255,.035), 0 24px 58px rgba(0,0,0,.22); }
+.world-workbench::before, .world-workbench::after { content: ""; width: 42px; height: 4px; position: absolute; z-index: 5; top: -1px; background: #65727e; }
+.world-workbench::before { left: 22px; }
+.world-workbench::after { right: 22px; }
+.project-snapshot { min-width: 0; border-right: 1px solid var(--line); background: rgba(12,18,24,.34); }
+.game-preview { min-height: 322px; display: grid; grid-template-rows: 34px 1fr 38px; border-bottom: 1px solid var(--line); background: #0d141b; }
+.preview-window-bar { display: flex; align-items: center; justify-content: space-between; padding: 0 .75rem; border-bottom: 1px solid rgba(88,196,237,.13); color: #6f8290; font: 700 .51rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.preview-window-bar span, .preview-caption span { display: inline-flex; align-items: center; gap: .38rem; }
+.preview-window-bar i, .preview-caption i { width: 5px; height: 5px; display: block; border-radius: 50%; background: var(--mint); box-shadow: 0 0 7px rgba(104,205,160,.55); }
+.preview-window-bar strong { color: #8293a0; font-size: .49rem; }
+.preview-stage { min-height: 248px; position: relative; overflow: hidden; background: linear-gradient(#17232e 0 43%, #111921 43% 100%); }
+.preview-stage::before { content: ""; height: 57%; position: absolute; inset: auto -12% -15%; background-image: linear-gradient(rgba(88,196,237,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(88,196,237,.05) 1px, transparent 1px); background-size: 32px 25px; transform: perspective(190px) rotateX(24deg); transform-origin: bottom; }
+.stage-horizon { height: 2px; position: absolute; left: 0; right: 0; top: 43%; background: linear-gradient(90deg, transparent, rgba(88,196,237,.2), transparent); }
+.stage-boundary { position: absolute; z-index: 1; border: 1px solid rgba(88,196,237,.13); border-radius: 50%; }
+.boundary-one { width: 330px; height: 118px; left: 50%; bottom: -28px; transform: translateX(-50%); }
+.boundary-two { width: 230px; height: 82px; left: 50%; bottom: -10px; transform: translateX(-50%); }
+.stage-light { width: 190px; height: 100px; position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); background: radial-gradient(ellipse, rgba(88,196,237,.08), transparent 68%); }
+.stage-player, .stage-enemy { display: grid; justify-items: center; position: absolute; z-index: 3; color: var(--cyan); font: 800 .48rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.stage-player { left: 21%; bottom: 27%; }
+.stage-player i { width: 28px; height: 38px; display: block; border: 2px solid currentColor; border-radius: 14px 14px 7px 7px; background: linear-gradient(90deg, #12212b 48%, rgba(88,196,237,.24) 50%); box-shadow: 0 10px 18px rgba(0,0,0,.35); }
+.stage-player b { width: 14px; height: 3px; margin: 5px 0; background: currentColor; }
+.stage-enemy { right: 18%; top: 25%; color: #f08d76; }
+.stage-enemy em { margin-bottom: .55rem; padding: .28rem .42rem; border: 1px solid rgba(240,141,118,.34); border-radius: 3px; background: rgba(30,18,18,.75); color: #f0a08e; font-style: normal; }
+.stage-enemy i { width: 42px; height: 42px; display: block; transform: rotate(45deg); border: 2px solid currentColor; background: #1b171a; box-shadow: 0 10px 20px rgba(0,0,0,.32); }
+.stage-enemy i::before, .stage-enemy i::after { content: ""; width: 5px; height: 5px; position: absolute; top: 12px; background: var(--ember-hot); }
+.stage-enemy i::before { left: 9px; }
+.stage-enemy i::after { right: 9px; }
+.stage-enemy b { width: 31px; height: 3px; margin-top: 13px; background: #653b35; }
+.stage-scan { display: flex; align-items: center; gap: .38rem; position: absolute; z-index: 3; right: 9%; bottom: 14%; color: #8d6763; font: 700 .48rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.stage-scan i { width: 24px; border-top: 1px dashed #7a5651; }
+.preview-caption { display: flex; align-items: center; justify-content: space-between; padding: 0 .75rem; color: var(--secondary); font-size: .59rem; }
+.preview-caption strong { color: #71808c; font-size: .56rem; }
+.playable-copy { padding: 1.05rem 1.15rem 1.2rem; }
+.playable-copy h2 { margin-bottom: .55rem; font-size: 1.4rem; line-height: 1.05; }
+.playable-copy p { margin-bottom: .8rem; font-size: .77rem; }
+.playable-tags { display: flex; flex-wrap: wrap; gap: .42rem; }
+.playable-tags span { padding: .31rem .45rem; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font: 650 .58rem "Cascadia Code", monospace; }
+.playable-tags span:first-child { border-color: rgba(104,205,160,.28); color: var(--mint); }
+
+.roadmap-world { min-width: 0; padding: 1rem 1.1rem 1.15rem; background: rgba(13,20,27,.45); }
+.roadmap-heading { min-height: 58px; display: flex; align-items: start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line-soft); }
+.roadmap-heading h2 { margin: 0; font-size: 1.4rem; }
+.roadmap-progress { color: var(--muted); font: 650 .62rem "Cascadia Code", monospace; }
+.roadmap-progress strong { color: var(--mint); font-size: .92rem; }
+.roadmap-sequence { min-height: 410px; display: grid; grid-template-columns: minmax(135px, .9fr) 48px minmax(185px, 1.18fr) 48px minmax(135px, .9fr) 48px minmax(135px, .9fr); align-items: start; padding: 1.15rem .15rem .2rem; position: relative; }
+.quest-module { min-width: 0; min-height: 176px; padding: .72rem .72rem .78rem; position: relative; border: 1px solid #34414d; border-radius: 6px; background: #182129; box-shadow: inset 0 1px rgba(255,255,255,.03); }
+.module-region { margin-bottom: .65rem; color: #697784; font: 750 .51rem "Cascadia Code", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.module-status { display: flex; align-items: center; gap: .35rem; position: absolute; top: .68rem; right: .65rem; color: var(--muted); font: 760 .47rem "Cascadia Code", monospace; letter-spacing: .07em; text-transform: uppercase; }
+.module-status-light { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.module-marker { width: 32px; height: 32px; display: grid; place-items: center; margin-bottom: .72rem; border: 1px solid currentColor; transform: rotate(45deg); color: #687581; background: #10171d; }
+.module-marker > * { transform: rotate(-45deg); }
+.module-marker > span { width: 6px; height: 6px; display: block; background: currentColor; }
+.quest-module h3 { margin-bottom: .3rem; font-size: 1rem; }
+.quest-module p { margin: 0; color: #8996a1; font-size: .65rem; line-height: 1.4; }
+.module-completed { border-color: rgba(104,205,160,.42); background: linear-gradient(145deg, rgba(104,205,160,.09), #172129 58%); }
+.module-completed .module-status, .module-completed .module-marker { color: var(--mint); }
+.active-quest-stack { min-width: 0; }
+.module-active { min-height: 232px; border-color: var(--ember); background: linear-gradient(145deg, rgba(236,135,50,.14), #1b232b 50%); box-shadow: inset 0 1px rgba(255,255,255,.06), 0 16px 32px rgba(0,0,0,.28); }
+.module-active::before { content: "POWERED MODULE"; position: absolute; top: -8px; left: 12px; padding: 2px 5px; background: var(--ember); color: #1a1008; font: 850 .43rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.module-active .module-status, .module-active .module-marker { color: var(--ember-hot); }
+.module-active h3 { font-size: 1.12rem; }
+.module-active p { color: var(--secondary); }
+.module-action { width: 100%; margin-top: .85rem; padding: 0 .65rem; font-size: .72rem; }
+.fixture-notice { margin: .55rem 0 0 !important; color: #b6c4ce !important; font-size: .58rem !important; line-height: 1.35 !important; }
+.module-planned { border-color: rgba(88,196,237,.27); background: rgba(20,29,37,.82); }
+.module-planned .module-status, .module-planned .module-marker { color: var(--cyan); opacity: .72; }
+.module-future { border-style: dashed; opacity: .52; background: rgba(17,24,31,.7); }
+.roadmap-connector { height: 8px; display: flex; align-items: center; position: relative; margin-top: 98px; }
+.roadmap-connector > span { height: 2px; display: block; }
+.online-segment, .available-segment { width: 50%; }
+.online-segment { background: var(--mint); }
+.available-segment { background: var(--ember); }
+.planned-segment { width: 100%; border-top: 2px dashed #53606c; }
+.roadmap-connector i { width: 7px; height: 7px; position: absolute; right: -1px; top: 1px; transform: rotate(45deg); border-top: 2px solid; border-right: 2px solid; color: inherit; }
+.connector-current { color: var(--ember); }
+.connector-planned { color: #53606c; }
+.world-companion { display: grid; grid-template-columns: 36px 1fr; gap: .7rem; align-items: center; margin: .7rem 0 0 .25rem; }
+.world-companion p { margin: 0; padding: .55rem .65rem; position: relative; border-left: 2px solid var(--cyan); background: rgba(15,27,35,.78); color: #a7bac6; font-size: .6rem; line-height: 1.45; }
+.world-companion p::before { content: ""; width: 7px; height: 7px; position: absolute; left: -5px; top: 50%; transform: translateY(-50%) rotate(45deg); border-left: 1px solid var(--cyan); border-bottom: 1px solid var(--cyan); background: #101c24; }
+.idea-port { width: calc(100% - 20px); min-height: 48px; display: grid; grid-template-columns: 30px 1fr; grid-template-rows: 1fr 1fr; column-gap: .55rem; align-items: center; position: relative; margin: 1.2rem 0 0 20px; padding: .4rem .5rem; border: 1px solid rgba(155,122,241,.4); border-radius: 5px; background: rgba(29,23,45,.65); cursor: pointer; text-align: left; }
+.idea-port::before { content: ""; width: 1px; height: 20px; position: absolute; left: 19px; bottom: 100%; background: var(--violet); opacity: .65; }
+.idea-port > span { width: 27px; height: 27px; display: grid; grid-row: 1 / 3; place-items: center; border: 1px solid var(--violet); color: #beaaf8; }
+.idea-port strong { align-self: end; font-size: .65rem; }
+.idea-port em { align-self: start; color: #8677a9; font: 650 .48rem "Cascadia Code", monospace; font-style: normal; }
+.idea-port:hover { border-color: var(--violet); background: rgba(43,32,67,.72); }
+
+.idea-dock { width: min(1540px, 100%); min-height: 88px; display: grid; grid-template-columns: auto minmax(260px, .62fr) minmax(320px, 1fr); gap: .9rem; align-items: center; margin: 16px auto 0; padding: .85rem 1rem; border: 1px solid rgba(155,122,241,.32); border-radius: 8px; background: linear-gradient(90deg, rgba(155,122,241,.08), rgba(20,19,31,.88) 34%); }
+.idea-dock-icon { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--violet); border-radius: 5px; color: #c0acf8; background: rgba(155,122,241,.08); }
+.idea-dock-label h2 { margin: 0; font-size: 1.02rem; }
+.idea-input { display: flex; min-width: 0; }
+.idea-input input { width: 100%; min-width: 0; height: 44px; padding: 0 .9rem; border: 1px solid #4f4668; border-right: 0; border-radius: 6px 0 0 6px; background: #0d1017; color: var(--text); }
+.idea-input input::placeholder { color: #6e687e; }
+.idea-input button { width: 46px; flex: 0 0 auto; border: 1px solid #6c59a4; border-radius: 0 6px 6px 0; background: rgba(155,122,241,.14); color: #c7b7f8; cursor: pointer; }
+.idea-input button:disabled { cursor: not-allowed; color: #554d66; }
+
+/* Honest placeholder */
+.placeholder-screen { min-height: 100vh; width: min(1180px, calc(100% - 64px)); margin: 0 auto; }
+.placeholder-header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line-soft); }
+.placeholder-content { max-width: 720px; margin: 0 auto; padding: clamp(4rem, 12vh, 8rem) 0; text-align: center; }
+.placeholder-content > .companion-core { margin-bottom: 2rem; }
+.placeholder-content h1 { margin-bottom: 1rem; font-size: clamp(2.8rem, 6vw, 5rem); line-height: .98; }
+.placeholder-content > p:not(.v2-eyebrow) { max-width: 620px; margin: 0 auto 1.5rem; font-size: 1.05rem; }
+.placeholder-boundary { display: flex; align-items: center; gap: .8rem; max-width: 580px; margin: 0 auto 1.7rem; padding: 1rem; border-left: 2px solid var(--violet); background: rgba(155,122,241,.06); text-align: left; }
+.placeholder-boundary > .v2-icon { flex: 0 0 auto; color: #bba7f7; }
+.placeholder-boundary div { display: grid; gap: .25rem; }
+.placeholder-boundary strong { font-size: .8rem; }
+.placeholder-boundary span { color: var(--secondary); font-size: .75rem; }
+
+@keyframes ready-drift { 0%, 100% { transform: rotate(45deg) translate(0); } 50% { transform: rotate(45deg) translate(-2px, -2px); } }
+@keyframes focused-breathe { 0%, 100% { box-shadow: inset 0 0 0 5px rgba(0,0,0,.2), 0 0 0 rgba(88,196,237,0); } 50% { box-shadow: inset 0 0 0 5px rgba(0,0,0,.2), 0 0 18px rgba(88,196,237,.13); } }
+@keyframes think-a { to { transform: rotate(388deg); } }
+@keyframes think-b { to { transform: rotate(422deg); } }
+
+@media (max-width: 1180px) {
+  .launch-choice { grid-template-rows: 178px 1fr; }
+  .choice-content { grid-template-columns: 1fr; }
+  .choice-content .v2-button { grid-column: 1; grid-row: auto; width: 100%; margin-top: .85rem; }
+  .world-workbench { grid-template-columns: minmax(270px, 29%) minmax(0, 71%); }
+  .roadmap-sequence { grid-template-columns: minmax(118px, .9fr) 36px minmax(165px, 1.15fr) 36px minmax(118px, .9fr) 36px minmax(118px, .9fr); }
+  .module-status { position: static; margin: -.2rem 0 .65rem; }
+  .module-region { margin-bottom: .5rem; }
+}
+
+@media (max-width: 900px) {
+  .launchpad, .placeholder-screen { width: min(100% - 36px, 760px); }
+  .launch-choices { grid-template-columns: 1fr; }
+  .launch-choice { grid-template-columns: 44% 56%; grid-template-rows: 1fr; min-height: 300px; }
+  .launch-miniature { border-right: 1px solid var(--line); border-bottom: 0; }
+  .mini-game-stage { height: 152px; }
+  .mini-quest-rail { height: 90px; }
+  .choice-content { align-content: center; }
+  .project-world { padding: 0 18px 28px; }
+  .world-header { grid-template-columns: 1fr auto; }
+  .world-header > .forge-brand { display: none; }
+  .world-project-title > div, .engine-chip { display: none; }
+  .world-workbench { grid-template-columns: 1fr; }
+  .project-snapshot { display: grid; grid-template-columns: minmax(300px, .95fr) 1fr; border-right: 0; border-bottom: 1px solid var(--line); }
+  .game-preview { border-right: 1px solid var(--line); border-bottom: 0; }
+  .roadmap-sequence { min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 1rem 0 .2rem; }
+  .quest-module { min-height: 152px; }
+  .module-active { min-height: 0; }
+  .roadmap-connector { width: 8px; height: 42px; flex-direction: column; margin: 0 0 0 27px; }
+  .roadmap-connector > span { width: 2px; height: auto; display: block; }
+  .online-segment, .available-segment { flex: 1; }
+  .planned-segment { height: 100% !important; border-top: 0; border-left: 2px dashed #53606c; }
+  .roadmap-connector i { right: 0; top: auto; bottom: 0; transform: rotate(135deg); }
+  .active-quest-stack { width: 100%; }
+  .world-companion { max-width: 520px; }
+  .idea-port { max-width: 320px; }
+  .idea-dock { grid-template-columns: auto 1fr; }
+  .idea-input { grid-column: 1 / -1; }
+}
+
+@media (max-width: 600px) {
+  .launch-header { min-height: 64px; }
+  .forge-brand > div > span { display: none; }
+  .launch-hero { grid-template-columns: 1fr; gap: .7rem; padding-top: 1.3rem; }
+  .launch-hero-core { display: none; }
+  .launch-hero h1 { font-size: 2.9rem; }
+  .launch-choice { grid-template-columns: 1fr; grid-template-rows: 165px 1fr; min-height: 0; }
+  .launch-miniature { border-right: 0; border-bottom: 1px solid var(--line); }
+  .mini-game-stage { height: 78px; }
+  .mini-quest-rail { height: 57px; }
+  .idea-source { top: 31px; }
+  .blueprint-roadmap { top: 22px; }
+  .choice-content { padding: 1rem; }
+  .choice-content h2 { font-size: 1.75rem; }
+  .launch-footer { align-items: flex-start; flex-direction: column; justify-content: center; gap: .3rem; padding: .7rem 0; }
+  .world-intro h2 { font-size: 2.45rem; }
+  .project-snapshot { display: block; }
+  .game-preview { min-height: 280px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .preview-stage { min-height: 208px; }
+  .roadmap-world { padding: .85rem; }
+  .roadmap-heading { display: block; padding-bottom: .7rem; }
+  .roadmap-progress { display: block; margin-top: .45rem; }
+}
+
+@media (max-width: 420px) {
+  .launchpad, .placeholder-screen { width: calc(100% - 24px); }
+  .preview-chip { padding: .34rem .5rem; font-size: .57rem; }
+  .launch-hero h1 { font-size: 2.65rem; }
+  .launch-summary { font-size: .88rem; }
+  .launch-choice { grid-template-rows: 158px 1fr; }
+  .mini-toolbar { font-size: .44rem; }
+  .idea-source { width: 52%; left: 4%; padding: .55rem; }
+  .idea-source strong { font-size: .6rem; }
+  .blueprint-roadmap { width: 38%; right: 3%; }
+  .blueprint-roadmap span { min-height: 29px; font-size: .48rem; }
+  .blueprint-status { right: 3%; font-size: .41rem; }
+  .choice-content p { font-size: .73rem; }
+  .project-world { padding: 0 12px 24px; }
+  .world-header { min-height: 62px; }
+  .back-button { padding-left: 0; }
+  .verified-chip { font-size: .6rem; }
+  .world-intro { padding: 1.1rem 0 .9rem; }
+  .world-intro h2 { font-size: 2.12rem; }
+  .world-intro p:last-child { font-size: .78rem; }
+  .preview-caption strong { display: none; }
+  .stage-enemy { right: 14%; }
+  .roadmap-heading h2 { font-size: 1.25rem; }
+  .quest-module { min-height: 0; padding: .7rem; }
+  .module-action { font-size: .69rem; }
+  .world-companion { grid-template-columns: 34px 1fr; }
+  .world-companion p { font-size: .58rem; }
+  .idea-port { width: calc(100% - 14px); margin-left: 14px; }
+  .idea-dock { grid-template-columns: auto 1fr; gap: .65rem; padding: .75rem; }
+  .idea-dock-label h2 { font-size: .86rem; }
+  .idea-input { grid-column: 1 / -1; }
+  .placeholder-content { padding-top: 4rem; }
+  .placeholder-content h1 { font-size: 2.7rem; }
+  .placeholder-content > p:not(.v2-eyebrow) { font-size: .9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .v2-button:hover { transform: none; }
+}
+
+/* Generated Project World · Task 6 */
+.generated-project-world { min-height: 100vh; padding-bottom: 1rem; background: radial-gradient(circle at 45% 8%, rgba(155,122,241,.08), transparent 32%), var(--bg); }
+.generated-world-header nav { display: flex; justify-content: center; gap: .3rem; }
+.generated-world-header nav button { min-height: 44px; padding: .6rem .8rem; border: 0; border-bottom: 2px solid transparent; color: var(--muted); background: transparent; cursor: pointer; }
+.generated-world-header nav button[aria-current="page"] { border-color: var(--violet); color: var(--text); }
+.generated-project-world .back-button { min-height: 44px; }
+.generated-world-main, .generated-reading-view, .generated-quest-brief { width: min(1540px, 100%); margin: 0 auto; }
+.generated-identity { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, .75fr); gap: 1rem; align-items: end; padding: 1.6rem 0 1rem; }
+.generated-identity h1 { margin-bottom: .45rem; font-size: clamp(2.6rem, 5vw, 5.2rem); }
+.generated-identity > div > p:last-child { max-width: 850px; color: #c4ccd3; font-size: 1.02rem; }
+.generated-identity aside { display: grid; gap: .35rem; padding: 1rem; border: 1px solid rgba(155,122,241,.42); border-radius: 8px; background: rgba(155,122,241,.07); }
+.generated-identity aside span { color: #b9a7eb; font: 700 .67rem/1.2 var(--mono); letter-spacing: .11em; text-transform: uppercase; }
+.generated-identity aside strong { line-height: 1.45; }
+.generated-starter { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(330px, .82fr); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #10171e; }
+.generated-preview-frame { min-height: 390px; border-right: 1px solid var(--line); background: #080e13; }
+.generated-arena { min-height: 344px; position: relative; overflow: hidden; background: radial-gradient(circle at 50% 50%, rgba(78,195,214,.1), transparent 25%), linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px), #0b141a; background-size: auto, 28px 28px, 28px 28px, auto; }
+.generated-boundary { position: absolute; inset: 12%; border: 5px solid #2a4b55; box-shadow: inset 0 0 30px rgba(78,195,214,.08); }
+.generated-player, .generated-objective { position: absolute; display: grid; place-items: center; color: #d7f8fc; font: 700 .62rem var(--mono); letter-spacing: .08em; }
+.generated-player { width: 58px; height: 58px; left: 45%; top: 48%; border: 2px solid var(--cyan); border-radius: 50%; background: rgba(78,195,214,.18); box-shadow: 0 0 22px rgba(78,195,214,.2); }
+.generated-objective { width: 74px; height: 34px; right: 18%; top: 20%; border: 1px dashed var(--mint); color: var(--mint); background: rgba(99,213,165,.08); }
+.generated-control { position: absolute; left: 15%; bottom: 15%; padding: .35rem .5rem; color: #92a4af; border: 1px solid #2b3b45; font: .58rem var(--mono); }
+.generated-playable-copy { display: grid; align-content: center; gap: .65rem; padding: 1.4rem; }
+.generated-playable-copy h2 { font-size: clamp(1.4rem, 2.6vw, 2.35rem); line-height: 1.08; }
+.generated-playable-copy ul { display: grid; gap: .35rem; padding: 0; list-style: none; color: #b9c8cf; }
+.generated-playable-copy li { line-height: 1.4; }
+.planned-warning { display: grid; gap: .25rem; padding: .75rem; border-left: 3px solid var(--violet); background: rgba(155,122,241,.07); }
+.planned-warning strong { color: #c9b9f8; }
+.planned-warning span { color: #aab5bd; font-size: .82rem; }
+.generated-roadmap { margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 10px; background: rgba(14,20,26,.9); }
+.generated-roadmap > header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+.generated-roadmap > header h2 { margin: 0; font-size: clamp(1.5rem, 2.5vw, 2.35rem); }
+.generated-roadmap > header > span { color: var(--muted); font: .65rem var(--mono); }
+.generated-roadmap-rail { display: grid; grid-template-columns: repeat(4, minmax(190px, 1fr)); gap: 2rem; align-items: start; padding: 1.2rem 0 .4rem; overflow-x: auto; }
+.generated-roadmap-step { min-width: 0; position: relative; }
+.generated-dependency { position: absolute; width: 2rem; left: -2rem; top: 72px; color: #697984; text-align: center; }
+.generated-quest-node { width: 100%; min-height: 230px; display: grid; align-content: start; gap: .55rem; padding: 1rem; border: 1px solid #35434c; border-radius: 8px; color: var(--text); text-align: left; background: #111a21; cursor: pointer; }
+.generated-quest-node:hover, .generated-quest-node:focus-visible, .generated-quest-node[aria-current="step"] { border-color: var(--violet); box-shadow: 0 0 0 1px rgba(155,122,241,.24), 0 12px 35px rgba(0,0,0,.24); }
+.generated-quest-node small { color: #a995df; font: 700 .6rem var(--mono); letter-spacing: .07em; text-transform: uppercase; }
+.generated-quest-node strong { font-size: 1.14rem; }
+.generated-quest-node p { color: #aebbc3; font-size: .8rem; line-height: 1.45; }
+.generated-quest-node em { color: #81919b; font: normal .6rem var(--mono); overflow-wrap: anywhere; }
+.generated-quest-node > span { align-self: end; color: #c7b7f4; font-size: .74rem; font-weight: 700; }
+.generated-companion-note { display: flex; gap: .6rem; align-items: center; margin-top: .65rem; padding: .65rem; border: 1px solid rgba(155,122,241,.28); border-radius: 7px; background: rgba(155,122,241,.055); }
+.generated-companion-note p { margin: 0; color: #b9c1ca; font-size: .7rem; line-height: 1.4; }
+.generated-world-lower { display: grid; grid-template-columns: 1fr 1fr .8fr; gap: .75rem; margin-top: .9rem; }
+.generated-world-lower > article { display: grid; align-content: start; gap: .55rem; padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: #10171e; }
+.generated-world-lower h2 { margin: 0; font-size: 1.35rem; }
+.generated-world-lower p { color: #aeb9c1; font-size: .78rem; line-height: 1.45; }
+.generated-world-lower .v2-button { justify-self: start; }
+.generated-actions .v2-button { width: 100%; }
+.generated-actions small { color: var(--muted); line-height: 1.35; }
+.generated-live-status { width: min(1540px, 100%); margin: .65rem auto; }
+.generated-reading-view { min-height: calc(100vh - 190px); padding: 2rem 0; }
+.generated-reading-view > header { max-width: 850px; margin-bottom: 1.2rem; }
+.generated-reading-view h1, .generated-quest-brief h1 { margin-bottom: .55rem; font-size: clamp(2.7rem, 5vw, 5rem); }
+.generated-reading-view header > p:last-child { color: #b7c2c9; line-height: 1.55; }
+.generated-activity-feed { display: grid; gap: .7rem; padding: 0; list-style: none; }
+.generated-activity-feed li { display: grid; grid-template-columns: 180px 260px 1fr; gap: .8rem; align-items: center; padding: 1rem; border: 1px solid var(--line); border-left: 4px solid var(--mint); border-radius: 7px; background: #10171e; }
+.generated-activity-feed li.derived_idea_activity { border-left-color: var(--violet); }
+.generated-activity-feed time, .generated-activity-feed span { color: var(--muted); font: .62rem var(--mono); }
+.generated-activity-feed li.derived_idea_activity span { color: #bca8f2; }
+.generated-activity-feed p { margin: 0; }
+.generated-document-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
+.generated-document-list article { display: grid; gap: .4rem; min-height: 145px; padding: 1rem; border: 1px solid var(--line); border-radius: 7px; background: #10171e; }
+.generated-document-list span { color: #c8b8f6; font: .62rem var(--mono); text-transform: uppercase; }
+.generated-document-list code { align-self: end; overflow-wrap: anywhere; color: var(--muted); font-size: .67rem; }
+.generated-quest-brief { padding: 1.5rem 0 3rem; }
+.generated-quest-brief > header { display: grid; justify-items: start; max-width: 1050px; }
+.planned-only-label { display: inline-flex; min-height: 34px; align-items: center; padding: .35rem .6rem; border: 1px solid rgba(155,122,241,.44); border-radius: 999px; color: #c7b6f7; background: rgba(155,122,241,.08); font: .66rem var(--mono); }
+.quest-brief-promises { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; margin-top: 1rem; }
+.quest-brief-promises article, .quest-brief-details article { padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: #10171e; }
+.quest-brief-promises h2 { margin: 0; font-size: 1.2rem; line-height: 1.4; }
+.quest-brief-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin-top: .7rem; }
+.quest-brief-details h2 { font-size: 1.3rem; }
+.quest-brief-details h3 { margin-top: .8rem; }
+.quest-brief-details li, .quest-brief-details p { color: #b2bec5; font-size: .8rem; line-height: 1.45; }
+.quest-brief-details article > div { padding: .55rem 0; border-top: 1px solid var(--line-soft); }
+.quest-brief-details small { color: var(--muted); }
+.implementation-boundary { display: flex; gap: .8rem; align-items: center; margin-top: .8rem; padding: 1rem; border: 1px solid rgba(155,122,241,.4); border-radius: 8px; background: rgba(155,122,241,.07); }
+.implementation-boundary p { margin: .2rem 0 0; color: #b7c0c8; }
+.generated-idea-dock { position: static; }
+.generated-world-failure { width: min(820px, calc(100% - 2rem)); min-height: 100vh; display: grid; align-content: center; justify-items: start; gap: .8rem; margin: 0 auto; }
+.generated-world-failure h1 { max-width: 760px; font-size: clamp(2.7rem, 6vw, 5.5rem); }
+.generated-world-failure > p:not(.v2-eyebrow) { max-width: 720px; color: #b8c2c9; line-height: 1.5; }
+.generated-world-failure > div { display: flex; flex-wrap: wrap; gap: .6rem; }
+
+@media (max-width: 900px) {
+  .generated-world-header { grid-template-columns: 1fr auto; }
+  .generated-world-header > .forge-brand { display: none; }
+  .generated-world-header .world-project-title { grid-column: 1 / -1; }
+  .generated-identity, .generated-starter { grid-template-columns: 1fr; }
+  .generated-preview-frame { border-right: 0; border-bottom: 1px solid var(--line); }
+  .generated-roadmap-rail { grid-template-columns: repeat(4, minmax(230px, 1fr)); }
+  .generated-world-lower { grid-template-columns: 1fr 1fr; }
+  .generated-actions { grid-column: 1 / -1; }
+  .generated-document-list { grid-template-columns: 1fr 1fr; }
+  .quest-brief-promises { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .generated-world-header nav { grid-column: 1 / -1; order: 3; width: 100%; justify-content: stretch; }
+  .generated-world-header nav button { flex: 1; }
+  .generated-identity { padding-top: 1rem; }
+  .generated-identity h1 { font-size: 2.65rem; }
+  .generated-preview-frame, .generated-arena { min-height: 280px; }
+  .generated-roadmap > header { align-items: start; flex-direction: column; }
+  .generated-roadmap-rail { grid-template-columns: 1fr; gap: .7rem; overflow: visible; }
+  .generated-roadmap-step { padding-top: 1.2rem; }
+  .generated-roadmap-step:first-child { padding-top: 0; }
+  .generated-dependency { width: auto; left: 1rem; top: -.25rem; transform: rotate(90deg); }
+  .generated-quest-node { min-height: 0; }
+  .generated-world-lower, .generated-document-list, .quest-brief-details { grid-template-columns: 1fr; }
+  .generated-actions { grid-column: auto; }
+  .generated-activity-feed li { grid-template-columns: 1fr; gap: .4rem; }
+  .generated-idea-dock { grid-template-columns: auto 1fr; }
+  .generated-idea-dock .idea-input { grid-column: 1 / -1; }
+  .generated-quest-brief { padding-top: 1rem; }
+  .implementation-boundary { align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generated-project-world *, .generated-project-world *::before, .generated-project-world *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Task 3: real sample workflow composition */
+.button-mint { border: 1px solid #8fe0ba; background: var(--mint); color: #07140e; }
+.button-mint:hover { background: #8fe0ba; }
+.button-quiet { border: 1px solid #4b5864; background: #182129; color: var(--secondary); }
+.button-quiet:hover { border-color: #74828e; background: #202b34; }
+.v2-button:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+
+.workflow-header { grid-template-columns: auto auto minmax(260px, 1fr) auto; }
+.workshop-nav { display: flex; justify-content: center; gap: .22rem; }
+.workshop-nav button { min-height: 34px; padding: 0 .7rem; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: .67rem; font-weight: 760; }
+.workshop-nav button[aria-current="page"] { border-color: var(--ember); color: var(--text); }
+.workshop-nav button:disabled { cursor: not-allowed; opacity: .38; }
+.workshop-nav button span { display: block; font: 600 .43rem "Cascadia Code", monospace; text-transform: uppercase; }
+.workspace-chip { display: inline-flex; align-items: center; min-height: 25px; padding: 0 .55rem; border: 1px solid var(--line); border-radius: 999px; color: var(--secondary); font: 700 .53rem "Cascadia Code", monospace; white-space: nowrap; }
+.workspace-fresh { border-color: rgba(236,135,50,.42); color: var(--ember-hot); }
+.workspace-preserved { border-color: rgba(88,196,237,.35); color: #9cdef5; }
+.workspace-in_progress { border-color: rgba(88,196,237,.55); color: var(--cyan); }
+.workspace-completed { border-color: rgba(104,205,160,.48); color: var(--mint); }
+.workflow-notice, .workflow-error { width: min(1540px, 100%); margin: 0 auto 14px; padding: .65rem .8rem; border-left: 2px solid var(--cyan); background: rgba(88,196,237,.06); color: #b9cbd5; font-size: .72rem; }
+.workflow-error { border-color: #ef6b62; background: rgba(239,107,98,.07); color: #ffc2bd; }
+.dismissible { display: flex; justify-content: space-between; cursor: pointer; text-align: left; }
+.dismissible span { color: var(--muted); }
+.world-actions { width: min(1540px, 100%); min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 12px auto 0; padding: .45rem .75rem; border-left: 2px solid var(--line); color: var(--muted); font-size: .68rem; }
+.preview-complete .stage-enemy em, .preview-complete .stage-scan { color: var(--mint); }
+.preview-complete .stage-scan i, .preview-complete .stage-enemy b { background: var(--mint); }
+.module-active.module-active { animation: powered-module 2.8s ease-in-out infinite; }
+.module-active[data-authoritative="true"]::before { content: "POWERED MODULE"; }
+.module-completed[data-authoritative="true"] { border-color: var(--mint); box-shadow: inset 0 0 0 1px rgba(104,205,160,.14); }
+.complete-segment { width: 100%; background: var(--mint); }
+.connector-complete { color: var(--mint); }
+.idea-dock-label small { display: block; margin-top: .2rem; color: #b5a2eb; font-size: .58rem; }
+
+.workflow-page { width: min(1280px, 100%); margin: 0 auto; padding: 2rem 0 7rem; }
+.workflow-title { max-width: 950px; margin-bottom: 1.6rem; }
+.workflow-title .back-button { margin-bottom: 1.2rem; padding-left: 0; }
+.workflow-title h1 { margin-bottom: .65rem; font-size: clamp(2.8rem, 5vw, 4.9rem); line-height: .94; }
+.workflow-title > p:last-child { max-width: 760px; margin-bottom: 0; font-size: .95rem; }
+.quest-three { display: grid; grid-template-columns: 1.08fr .9fr .95fr; overflow: hidden; border: 1px solid #3a4651; border-radius: 9px; background: var(--gunmetal); box-shadow: 0 22px 52px rgba(0,0,0,.24); }
+.quest-three article { min-width: 0; padding: 1.2rem; position: relative; border-right: 1px solid var(--line); }
+.quest-three article:last-child { border-right: 0; }
+.quest-three article > span:first-child { position: absolute; top: .85rem; right: .9rem; color: #4b5965; font: 700 .58rem "Cascadia Code", monospace; }
+.quest-three h2 { margin-bottom: .65rem; font-size: 1.42rem; line-height: 1.05; }
+.quest-three p { font-size: .74rem; }
+.quest-three ul { margin: .75rem 0; padding: 0; list-style: none; }
+.quest-three li { display: flex; align-items: center; gap: .45rem; margin: .35rem 0; color: #c0cad2; font-size: .64rem; }
+.quest-three li code { overflow-wrap: anywhere; }
+.change-arrow { display: flex; align-items: flex-start; gap: .5rem; padding: .7rem; border-left: 2px solid var(--ember); background: rgba(236,135,50,.07); color: #e7c09d; font-size: .69rem; line-height: 1.45; }
+.scope-lock { display: inline-flex; align-items: center; gap: .4rem; color: var(--ember-hot); font-size: .64rem; }
+.forge-callout { display: grid; grid-template-columns: auto 1fr; gap: .8rem; align-items: center; max-width: 700px; margin: 1rem 0; padding: .75rem .85rem; border-left: 2px solid var(--cyan); background: rgba(88,196,237,.055); }
+.forge-callout strong { font-size: .8rem; }
+.forge-callout p { margin: .2rem 0 0; font-size: .69rem; }
+.v2-details { margin: 1rem 0; border: 1px solid var(--line); border-radius: 7px; background: rgba(19,27,34,.82); }
+.v2-details summary { display: flex; align-items: center; gap: .5rem; padding: .8rem .9rem; color: #a9bac5; cursor: pointer; font-size: .7rem; font-weight: 750; }
+.v2-details > div { padding: 0 .9rem .9rem; border-top: 1px solid var(--line-soft); }
+.technical-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding-top: .9rem; }
+.technical-grid section { min-width: 0; padding: .8rem; background: #10171d; }
+.technical-grid h3 { font-size: .82rem; }
+.technical-grid p, .technical-grid li { color: #9eabb5; font-size: .67rem; line-height: 1.5; }
+.technical-grid code, .technical-files code { overflow-wrap: anywhere; color: #a8def1; font: 600 .6rem "Cascadia Code", monospace; }
+.command-line { display: block; margin: .35rem 0; padding: .45rem; background: #080d11; }
+.technical-grid pre { overflow: auto; padding: .5rem; background: #080d11; color: #90a8b6; font-size: .57rem; }
+.workflow-dock { min-height: 72px; display: flex; align-items: center; justify-content: flex-end; gap: .7rem; position: sticky; z-index: 8; bottom: 10px; margin-top: 1.2rem; padding: .75rem; border: 1px solid #46535e; border-radius: 8px; background: rgba(16,22,28,.96); box-shadow: 0 16px 42px rgba(0,0,0,.4); backdrop-filter: blur(14px); }
+.workflow-dock > div { display: grid; gap: .15rem; margin-right: auto; }
+.workflow-dock > div span { color: var(--muted); font: 700 .5rem "Cascadia Code", monospace; text-transform: uppercase; }
+.workflow-dock > div strong { font-size: .72rem; }
+.dock-status { display: inline-flex; align-items: center; gap: .45rem; color: #9bdcf4; font-size: .7rem; font-weight: 760; }
+.dock-status i, .live-connection i { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 9px rgba(88,196,237,.62); }
+
+.build-title { padding-left: 1rem; border-left: 2px solid var(--cyan); }
+.live-connection { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: 1rem; padding: .4rem .6rem; border: 1px solid rgba(88,196,237,.3); border-radius: 999px; color: #9adef6; background: rgba(88,196,237,.06); font: 750 .57rem "Cascadia Code", monospace; text-transform: uppercase; }
+.build-console { overflow: hidden; border: 1px solid #3d4b56; border-radius: 9px; background: linear-gradient(145deg, rgba(88,196,237,.05), #121a20 38%); box-shadow: 0 24px 60px rgba(0,0,0,.28); }
+.build-module { min-height: 92px; display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); }
+.build-module > div { display: grid; gap: .28rem; }
+.build-module > div span { color: var(--cyan); font: 750 .56rem "Cascadia Code", monospace; letter-spacing: .08em; }
+.build-module > div strong { overflow-wrap: anywhere; color: #c6d4dd; font: 650 .67rem "Cascadia Code", monospace; }
+.build-module time { color: var(--text); font: 800 1.7rem "Cascadia Code", monospace; }
+.build-stages { display: grid; grid-template-columns: repeat(5, 1fr); margin: 0; padding: 1.2rem; list-style: none; }
+.build-stages li { min-width: 0; display: grid; grid-template-columns: 30px 1fr; gap: .55rem; position: relative; padding-right: .7rem; opacity: .4; }
+.build-stages li::after { content: ""; height: 1px; position: absolute; top: 15px; left: 30px; right: 0; background: var(--line); }
+.build-stages li:last-child::after { display: none; }
+.build-stages li > span { width: 30px; height: 30px; display: grid; z-index: 1; place-items: center; border: 1px solid currentColor; transform: rotate(45deg); background: #10171d; font-size: .65rem; }
+.build-stages li > span > * { transform: rotate(-45deg); }
+.build-stages li div { min-width: 0; padding-top: 38px; margin-left: -36px; }
+.build-stages small { color: var(--muted); font: 700 .48rem "Cascadia Code", monospace; text-transform: uppercase; }
+.build-stages h2 { margin: .25rem 0; font-size: .78rem; }
+.build-stages p { margin: 0; font-size: .6rem; }
+.build-stages .complete { color: var(--mint); opacity: 1; }
+.build-stages .complete::after { background: var(--mint); }
+.build-stages .current { color: var(--cyan); opacity: 1; }
+.build-stages .current > span { animation: stage-pulse 1.7s ease-in-out infinite; }
+.build-reassurance { margin: 0 1.2rem 1.2rem; padding: .85rem; border-left: 2px solid var(--cyan); background: rgba(88,196,237,.045); }
+.build-reassurance strong { font-size: .78rem; }
+.build-reassurance p { margin: .25rem 0 0; font-size: .68rem; }
+
+.playtest-hero, .complete-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 1.2rem; align-items: center; margin-bottom: 1.2rem; padding: 1.25rem; border: 1px solid #40505c; border-radius: 9px; background: linear-gradient(100deg, rgba(88,196,237,.08), #161f27 50%); }
+.playtest-hero h1, .complete-hero h1 { margin-bottom: .5rem; font-size: clamp(2.5rem, 4.4vw, 4.5rem); line-height: .96; }
+.playtest-hero p:last-child, .complete-hero p:last-child { margin: 0; }
+.proof-strip { display: grid; grid-template-columns: repeat(4, 1fr); overflow: hidden; margin-bottom: 1rem; border: 1px solid var(--line); border-radius: 7px; background: var(--gunmetal); }
+.proof-strip article { display: grid; grid-template-columns: auto 1fr; gap: .2rem .6rem; align-items: center; padding: .85rem; border-right: 1px solid var(--line); }
+.proof-strip article:last-child { border-right: 0; }
+.proof-strip article > span { width: 30px; height: 30px; display: grid; grid-row: 1 / 3; place-items: center; border: 1px solid var(--cyan); color: var(--cyan); }
+.proof-strip small { color: var(--muted); font-size: .54rem; text-transform: uppercase; }
+.proof-strip strong { font-size: .8rem; }
+.proof-strip .pending > span, .proof-strip .pending strong { color: var(--ember-hot); border-color: var(--ember); }
+.playtest-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .5fr); gap: 1rem; align-items: start; }
+.play-instructions { padding: 1.2rem; border: 1px solid #46535e; border-radius: 8px; background: #161f27; }
+.play-instructions h2 { font-size: 1.65rem; }
+.play-instructions ol { margin: 1rem 0; padding: 0; list-style: none; }
+.play-instructions li { display: flex; align-items: center; gap: .7rem; margin: .5rem 0; color: #b2bec7; font-size: .74rem; }
+.play-instructions li span { width: 24px; height: 24px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); color: var(--ember-hot); font: 700 .56rem "Cascadia Code", monospace; }
+.play-action { width: 100%; min-height: 54px; font-size: .95rem; }
+.play-callout { margin: 0; }
+.v2-modal-backdrop { display: grid; place-items: center; position: fixed; z-index: 50; inset: 0; padding: 1rem; background: rgba(5,8,11,.84); backdrop-filter: blur(8px); }
+.v2-modal { width: min(720px, 100%); max-height: calc(100vh - 2rem); overflow: auto; padding: 1.5rem; border: 1px solid #5b6873; border-radius: 9px; background: #171f26; box-shadow: 0 30px 90px rgba(0,0,0,.62); text-align: center; }
+.v2-modal > .companion-core { margin: .5rem 0 1.2rem; }
+.v2-modal h2 { margin-bottom: .6rem; font-size: 2.2rem; }
+.v2-modal > p:not(.v2-eyebrow) { max-width: 560px; margin: 0 auto 1.2rem; }
+.confirmation-actions { display: flex; justify-content: center; gap: .6rem; margin: 1.2rem 0; }
+.v2-modal > small { color: var(--muted); font-size: .61rem; }
+.reset-modal code { display: inline-block; padding: .45rem; background: #0c1116; color: #acdff1; font-size: .67rem; }
+
+.complete-hero { border-color: rgba(104,205,160,.55); background: linear-gradient(100deg, rgba(104,205,160,.1), #161f27 52%); }
+.complete-hero > span { display: inline-flex; align-items: center; gap: .4rem; color: var(--mint); font-size: .68rem; }
+.completed-roadmap { display: grid; grid-template-columns: auto minmax(50px, 1fr) auto minmax(50px, .6fr) auto; align-items: center; margin: 1rem 0; padding: 1rem; border: 1px solid var(--line); border-radius: 7px; background: #121920; }
+.complete-node, .future-node { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 42px; padding: .5rem; border: 1px solid rgba(104,205,160,.5); color: var(--mint); font-size: .66rem; font-weight: 760; }
+.complete-node.primary { background: rgba(104,205,160,.08); }
+.future-node { border-style: dashed; border-color: #56636e; color: var(--muted); }
+.completed-roadmap i { height: 2px; background: var(--mint); }
+.completed-roadmap b { border-top: 2px dashed #56636e; }
+.chronicle-record { display: grid; grid-template-columns: 76px 1fr; gap: 1rem; padding: 1.1rem; border-left: 3px solid var(--mint); background: #151e25; }
+.chronicle-date { display: grid; align-content: center; justify-items: center; border-right: 1px solid var(--line); }
+.chronicle-date strong { font-size: 2rem; }
+.chronicle-date span { color: var(--mint); font: 700 .57rem "Cascadia Code", monospace; }
+.chronicle-record h2 { margin-bottom: .4rem; }
+.chronicle-record p { margin-bottom: .7rem; }
+.chronicle-record small { color: var(--muted); overflow-wrap: anywhere; font-size: .58rem; }
+.chronicle-badges { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .7rem; }
+.chronicle-badges span { display: inline-flex; align-items: center; gap: .3rem; color: var(--mint); font-size: .6rem; }
+.next-build { display: grid; grid-template-columns: auto 1fr; gap: .8rem; align-items: center; margin-top: 1rem; padding: 1rem; border-left: 2px solid var(--violet); background: rgba(155,122,241,.055); }
+.next-build h2 { margin-bottom: .25rem; font-size: 1.5rem; }
+.next-build p { margin: 0; font-size: .7rem; }
+.failure-state { max-width: 900px; text-align: center; }
+.failure-state > .companion-core { margin-bottom: 1rem; }
+.failure-state h1 { font-size: clamp(2.5rem, 5vw, 4.4rem); }
+.failure-state > small { display: block; margin-top: 1rem; color: var(--muted); }
+.v2-loading { min-height: 100vh; display: grid; place-content: center; justify-items: center; padding: 2rem; text-align: center; }
+.v2-loading h1 { margin-top: 1.5rem; }
+
+/* New game intake and GPT blueprint planning */
+.new-game-shell { min-height: 100vh; width: min(1320px, calc(100% - 48px)); margin: 0 auto; position: relative; }
+.new-game-shell::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-events: none; background: radial-gradient(circle at 70% 20%, rgba(155,122,241,.1), transparent 34rem), linear-gradient(rgba(88,196,237,.022) 1px, transparent 1px), linear-gradient(90deg, rgba(88,196,237,.022) 1px, transparent 1px); background-size: auto, 80px 80px, 80px 80px; }
+.new-game-header { min-height: 70px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-bottom: 1px solid var(--line-soft); }
+.new-game-header .back-button { justify-self: start; }
+.new-game-header .forge-brand { justify-self: center; }
+.new-game-header .companion-core { width: 36px; height: 36px; }
+.new-game-header .companion-core::before { inset: 6px; }
+.new-game-header .companion-core .companion-orbit { inset: 10px; }
+.new-game-header .companion-core .companion-center { width: 6px; height: 6px; }
+.planning-provenance { justify-self: end; padding: .42rem .65rem; border: 1px solid rgba(88,196,237,.28); border-radius: 999px; color: #9bdcf4; background: rgba(88,196,237,.06); font: 750 .6rem "Cascadia Code", monospace; letter-spacing: .05em; text-transform: uppercase; }
+.intake-layout { min-height: calc(100vh - 70px); display: grid; grid-template-columns: minmax(270px, .72fr) minmax(520px, 1.28fr); gap: clamp(2rem, 5vw, 5.5rem); align-items: center; padding: 2rem 4vw 2.5rem; }
+.intake-assembly { min-height: 500px; display: grid; align-content: center; justify-items: center; position: relative; overflow: hidden; border: 1px solid #394652; border-radius: 10px; background: linear-gradient(145deg, rgba(155,122,241,.09), transparent 48%), repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 5px), #111820; box-shadow: inset 0 1px rgba(255,255,255,.04), 0 24px 60px rgba(0,0,0,.3); }
+.intake-assembly::before, .intake-assembly::after { content: ""; width: 110px; height: 110px; position: absolute; border: 1px solid rgba(155,122,241,.18); transform: rotate(45deg); }
+.intake-assembly::before { top: -55px; left: -55px; }
+.intake-assembly::after { right: -55px; bottom: -55px; }
+.intake-assembly .companion-core { --core-color: var(--violet); width: 92px; height: 92px; margin-bottom: 2.2rem; }
+.assembly-label { margin-bottom: .7rem; color: var(--violet); font: 800 .62rem "Cascadia Code", monospace; letter-spacing: .18em; }
+.assembly-beam { width: min(270px, 74%); height: 2px; background: linear-gradient(90deg, transparent, var(--violet), var(--cyan), transparent); box-shadow: 0 0 15px rgba(155,122,241,.25); }
+.assembly-nodes { width: min(270px, 74%); display: flex; justify-content: space-between; margin-top: -7px; }
+.assembly-nodes i { width: 12px; height: 12px; border: 2px solid var(--violet); border-radius: 50%; background: var(--recess); }
+.assembly-nodes i:last-child { border-color: var(--cyan); }
+.intake-assembly strong { margin-top: 1.6rem; color: var(--secondary); font-size: .78rem; letter-spacing: .04em; }
+.intake-composer { max-width: 750px; }
+.intake-composer h1 { max-width: 730px; margin-bottom: 1rem; font-size: clamp(2.8rem, 4.6vw, 5rem); line-height: .94; }
+.intake-promise { max-width: 670px; margin-bottom: 1.4rem; font-size: 1rem; }
+.idea-composer { display: grid; gap: .55rem; }
+.idea-composer > span, .example-prompts > span { color: #cad2d8; font-size: .72rem; font-weight: 800; }
+.idea-composer textarea { width: 100%; min-height: 150px; resize: vertical; padding: 1rem; border: 1px solid #51606c; border-radius: 8px; color: var(--text); background: linear-gradient(145deg, rgba(155,122,241,.055), transparent 42%), #0e151c; line-height: 1.55; }
+.idea-composer textarea::placeholder { color: #65727e; }
+.idea-composer small { justify-self: end; color: var(--muted); font-size: .62rem; }
+.example-prompts { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.example-prompts > span { width: 100%; }
+.example-prompts button { padding: .45rem .6rem; border: 1px solid rgba(155,122,241,.28); border-radius: 5px; color: #cbbbf6; background: rgba(155,122,241,.055); cursor: pointer; text-align: left; font-size: .65rem; }
+.example-prompts button:hover { border-color: var(--violet); }
+.intake-scope { display: flex; flex-wrap: wrap; gap: .4rem; padding-top: .9rem; border-top: 1px solid var(--line-soft); }
+.intake-scope span { padding: .32rem .48rem; border: 1px solid #34424d; border-radius: 999px; color: #93a1ac; background: rgba(255,255,255,.018); font: 650 .57rem "Cascadia Code", monospace; }
+.intake-actions, .clarification-actions, .blueprint-actions, .ready-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.2rem; }
+.planning-error { margin: 1rem 0 0; padding: .7rem; border-left: 2px solid #e8665b; color: #f0aaa4; background: rgba(232,102,91,.07); font-size: .72rem; }
+
+.planning-center { min-height: calc(100vh - 70px); display: grid; align-content: center; justify-items: center; padding: 2rem; text-align: center; }
+.planning-core-stage { width: 130px; height: 130px; display: grid; place-items: center; position: relative; margin-bottom: 1.4rem; border: 1px solid rgba(88,196,237,.18); transform: rotate(45deg); background: rgba(88,196,237,.025); }
+.planning-core-stage .companion-core { --core-color: var(--cyan); transform: rotate(0); }
+.planning-pulse { position: absolute; inset: 11px; border: 1px solid rgba(88,196,237,.3); animation: planning-pulse 2.2s ease-in-out infinite; }
+.planning-center h1 { margin-bottom: .65rem; font-size: clamp(2.8rem, 5vw, 5rem); }
+.planning-center > p:not(.v2-eyebrow) { max-width: 680px; margin-bottom: 1.4rem; }
+.planning-stages { width: min(880px, 100%); display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 0 1.2rem; padding: 0; list-style: none; }
+.planning-stages li { min-height: 92px; display: grid; grid-template-columns: auto 1fr; align-content: center; gap: .18rem .55rem; position: relative; padding: .75rem; border: 1px solid #34414c; border-right: 0; background: #111820; text-align: left; }
+.planning-stages li:last-child { border-right: 1px solid #34414c; }
+.planning-stages li > span { grid-row: 1 / 3; align-self: center; color: var(--muted); font: 800 .62rem "Cascadia Code", monospace; }
+.planning-stages strong { font-size: .72rem; }
+.planning-stages em { color: var(--muted); font: normal .55rem "Cascadia Code", monospace; text-transform: uppercase; }
+.planning-stages .stage-active { border-color: rgba(88,196,237,.7); background: rgba(88,196,237,.08); }
+.planning-stages .stage-active > span, .planning-stages .stage-active em { color: var(--cyan); }
+.planning-stages .stage-complete > span, .planning-stages .stage-complete em { color: var(--mint); }
+.runtime-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: .65rem; margin-bottom: 1rem; color: #86a0b1; font: 650 .57rem "Cascadia Code", monospace; }
+.runtime-strip span { padding: .3rem .45rem; border-left: 1px solid rgba(88,196,237,.45); }
+.runtime-strip i { width: 6px; height: 6px; display: inline-block; margin-right: .3rem; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+.clarification-panel, .blueprint-review { width: min(1120px, 100%); margin: 0 auto; padding: clamp(1.4rem, 4vw, 3rem) 0 3rem; }
+.clarification-heading { display: grid; grid-template-columns: auto 1fr; gap: 1.2rem; align-items: center; max-width: 900px; margin-bottom: 1.5rem; }
+.clarification-heading h1 { margin-bottom: .5rem; font-size: clamp(2.5rem, 4.6vw, 4.5rem); line-height: .96; }
+.clarification-heading p:last-child { margin: 0; }
+.clarification-questions { display: grid; gap: .7rem; }
+.clarification-questions fieldset { min-width: 0; margin: 0; padding: 1rem; border: 1px solid #3b4854; border-radius: 7px; background: linear-gradient(100deg, rgba(155,122,241,.055), transparent), var(--gunmetal); }
+.clarification-questions legend { display: flex; align-items: center; gap: .7rem; padding: 0 .4rem; font-size: .9rem; font-weight: 800; }
+.clarification-questions legend span { color: var(--violet); font: 800 .62rem "Cascadia Code", monospace; }
+.clarification-questions > fieldset > input { width: 100%; margin-top: .7rem; padding: .75rem; border: 1px solid #4b5965; border-radius: 5px; color: var(--text); background: #0e151b; }
+.clarification-choices { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .7rem; }
+.clarification-choices label { cursor: pointer; }
+.clarification-choices input { position: absolute; opacity: 0; }
+.clarification-choices span { min-height: 40px; display: grid; place-items: center; padding: .55rem .8rem; border: 1px solid #46535f; border-radius: 5px; color: #b4c0c9; background: #111820; font-size: .7rem; }
+.clarification-choices input:checked + span { border-color: var(--violet); color: #e5dcff; background: rgba(155,122,241,.14); box-shadow: inset 0 0 0 1px rgba(155,122,241,.22); }
+
+.blueprint-review-screen { width: min(1420px, calc(100% - 48px)); }
+.blueprint-review { width: min(1240px, 100%); }
+.blueprint-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: 1.4rem; border: 1px solid rgba(155,122,241,.45); border-radius: 9px; background: linear-gradient(110deg, rgba(155,122,241,.13), transparent 52%), #151d24; }
+.blueprint-hero h1 { margin-bottom: .45rem; font-size: clamp(3rem, 5vw, 5.4rem); line-height: .92; }
+.blueprint-hero p { max-width: 760px; margin: 0; font-size: 1rem; }
+.blueprint-hero .companion-core { --core-color: var(--cyan); }
+.foundation-badge { grid-column: 1 / -1; width: max-content; padding: .35rem .55rem; border: 1px solid rgba(155,122,241,.4); border-radius: 999px; color: #d6c9fb; font: 700 .58rem "Cascadia Code", monospace; text-transform: uppercase; }
+.blueprint-promises { display: grid; grid-template-columns: repeat(3, 1fr); margin: 1rem 0; border: 1px solid #3a4752; border-radius: 8px; background: #141c23; }
+.blueprint-promises article { min-width: 0; position: relative; padding: 1rem; border-right: 1px solid #3a4752; }
+.blueprint-promises article:last-child { border-right: 0; }
+.blueprint-promises article > span { position: absolute; top: .7rem; right: .8rem; color: rgba(155,122,241,.5); font: 800 1.1rem "Cascadia Code", monospace; }
+.blueprint-promises h2 { margin-bottom: .5rem; padding-right: 2rem; font-size: 1.25rem; line-height: 1.15; }
+.blueprint-promises p:last-child { margin: 0; font-size: .7rem; }
+.blueprint-map-section { padding: 1.2rem; border: 1px solid #3a4752; border-radius: 8px; background: linear-gradient(180deg, rgba(88,196,237,.035), transparent 40%), #10171d; }
+.blueprint-map-section > div:first-child { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+.blueprint-map-section h2 { margin-bottom: .8rem; font-size: 1.5rem; }
+.blueprint-roadmap-review { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); align-items: stretch; gap: .55rem; overflow-x: auto; padding-bottom: .35rem; }
+.foundation-node, .blueprint-quest-step article { min-height: 142px; padding: .8rem; border: 1px solid #45535f; border-radius: 6px; background: #151e25; }
+.foundation-node { display: grid; align-content: center; border-color: rgba(155,122,241,.55); background: rgba(155,122,241,.09); }
+.foundation-node span, .blueprint-quest-step article > span { color: var(--muted); font: 700 .52rem "Cascadia Code", monospace; text-transform: uppercase; }
+.foundation-node strong { margin-top: .4rem; font-size: .85rem; }
+.blueprint-quest-step { min-width: 0; display: grid; grid-template-columns: 10px minmax(110px, 1fr); align-items: center; }
+.blueprint-quest-step i { height: 2px; background: linear-gradient(90deg, var(--violet), var(--cyan)); }
+.blueprint-quest-step h3 { margin: .45rem 0 .35rem; font-size: .9rem; line-height: 1.05; }
+.blueprint-quest-step p { margin: 0; font-size: .62rem; line-height: 1.4; }
+.blueprint-quest-step small { display: block; margin-top: .45rem; color: #78bad2; font-size: .52rem; }
+.blueprint-details { margin-top: 1rem; border: 1px solid #3a4752; border-radius: 8px; background: #121920; }
+.blueprint-details > summary { display: flex; align-items: center; gap: .6rem; padding: .9rem 1rem; cursor: pointer; font-size: .78rem; font-weight: 800; }
+.blueprint-details > summary span { color: var(--muted); font-size: .62rem; font-weight: 500; }
+.blueprint-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; padding: 0 1rem 1rem; }
+.blueprint-detail-grid > section { min-width: 0; padding: .9rem; border: 1px solid var(--line-soft); background: #0f161c; }
+.blueprint-detail-grid .detail-wide { grid-column: 1 / -1; }
+.blueprint-detail-grid h3 { margin-bottom: .55rem; font-size: .85rem; }
+.blueprint-detail-grid ul { margin: 0; padding-left: 1rem; color: var(--secondary); font-size: .68rem; line-height: 1.6; }
+.blueprint-detail-grid p { margin: 0; font-size: .68rem; }
+.blueprint-detail-grid article { padding: .55rem 0; border-top: 1px solid var(--line-soft); }
+.blueprint-detail-grid article:first-of-type { border-top: 0; }
+.blueprint-detail-grid article strong { color: #8fd2eb; font: 700 .58rem "Cascadia Code", monospace; }
+.blueprint-detail-grid article small { color: var(--muted); font-size: .58rem; }
+.blueprint-validation { display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: center; margin-top: 1rem; padding: .8rem 1rem; border-left: 3px solid var(--mint); background: rgba(104,205,160,.065); }
+.blueprint-validation > span { color: var(--mint); font-size: 1.4rem; }
+.blueprint-validation strong { color: var(--mint); font-size: .78rem; }
+.blueprint-validation p { margin: .15rem 0 0; font-size: .65rem; }
+.blueprint-validation small { color: var(--muted); font: .55rem "Cascadia Code", monospace; }
+.blueprint-actions { position: sticky; z-index: 5; bottom: 0; padding: .8rem 0; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 92%, transparent); backdrop-filter: blur(10px); }
+
+.ready-panel { min-height: calc(100vh - 70px); display: grid; align-content: center; justify-items: center; max-width: 980px; margin: 0 auto; padding: 2rem; text-align: center; }
+.ready-core { width: 120px; height: 120px; display: grid; place-items: center; position: relative; margin-bottom: 1.2rem; border: 1px solid rgba(104,205,160,.3); transform: rotate(45deg); background: rgba(104,205,160,.035); }
+.ready-core .companion-core { transform: rotate(0); }
+.ready-core > span { position: absolute; right: 5px; bottom: 5px; color: var(--mint); transform: rotate(-45deg); }
+.ready-panel h1 { margin-bottom: .75rem; font-size: clamp(3rem, 5.5vw, 5.5rem); }
+.ready-panel > p:not(.v2-eyebrow) { max-width: 760px; }
+.ready-summary { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); margin: 1rem 0; border: 1px solid rgba(104,205,160,.35); border-radius: 8px; background: #131b22; }
+.ready-summary article { display: grid; gap: .25rem; padding: .8rem; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.ready-summary article:nth-child(3n) { border-right: 0; }
+.ready-summary article:nth-child(n+4) { border-bottom: 0; }
+.ready-summary span { color: var(--muted); font: .55rem "Cascadia Code", monospace; text-transform: uppercase; }
+.ready-summary strong { color: var(--mint); font-size: .8rem; }
+.ready-boundary { width: 100%; display: grid; gap: .2rem; margin-bottom: 1rem; padding: .8rem; border-left: 2px solid var(--violet); background: rgba(155,122,241,.06); text-align: left; }
+.ready-boundary span { color: var(--secondary); font-size: .72rem; }
+.ready-boundary small { color: var(--muted); font-size: .6rem; }
+.ready-actions { justify-content: center; }
+.planning-failure { display: grid; min-height: 100vh; }
+.planning-failure > section { max-width: 760px; display: grid; align-content: center; justify-items: start; padding: 2rem; }
+.planning-failure h1 { margin-top: 1rem; font-size: clamp(2.8rem, 5vw, 4.8rem); }
+.planning-failure details { width: 100%; margin-bottom: 1rem; padding: .8rem; border: 1px solid #4b3c3c; background: rgba(232,102,91,.05); }
+.planning-failure > section > div:last-child { display: flex; gap: .6rem; }
+
+/* Controlled project creation */
+.recent-projects { margin: 1.2rem 0 1.8rem; padding: 1rem; border: 1px solid rgba(155,122,241,.3); border-radius: 10px; background: linear-gradient(135deg, rgba(155,122,241,.075), rgba(13,20,27,.85)); }
+.recent-projects > div:first-child { display: flex; align-items: end; justify-content: space-between; }
+.recent-projects h2 { margin-bottom: .8rem; font-size: 1.65rem; }
+.recent-project-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
+.recent-project-list article { min-width: 0; display: grid; align-content: start; gap: .45rem; padding: .9rem; border: 1px solid var(--line); border-radius: 7px; background: #111820; }
+.recent-project-list h3, .recent-project-list p { margin-bottom: 0; }
+.recent-project-list code { overflow: hidden; color: var(--muted); font-size: .68rem; text-overflow: ellipsis; }
+.recent-project-list .v2-button { margin-top: .3rem; }
+.recent-status { width: fit-content; padding: .25rem .45rem; border-radius: 999px; font: 700 .58rem "Cascadia Code", monospace; }
+.recent-status.is-ready { color: var(--mint); background: rgba(104,205,160,.09); }
+.recent-status.is-missing { color: #f1a298; background: rgba(232,102,91,.09); }
+
+.creation-confirmation, .creation-progress, .project-created, .creation-failure { width: min(920px, 100%); min-height: calc(100vh - 74px); display: grid; align-content: center; justify-items: start; margin: 0 auto; padding: 2rem 0 3rem; }
+.creation-confirmation > .companion-core, .creation-failure > .companion-core { margin-bottom: 1.2rem; }
+.creation-confirmation h1, .creation-progress h1, .project-created h1, .creation-failure h1 { margin-bottom: .7rem; font-size: clamp(2.7rem, 5vw, 5rem); }
+.creation-facts, .created-proof-grid { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 1rem 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #111820; }
+.creation-facts article, .created-proof-grid article { min-width: 0; display: grid; gap: .25rem; padding: .8rem; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.creation-facts article:nth-child(3n), .created-proof-grid article:nth-child(3n) { border-right: 0; }
+.creation-facts span, .created-proof-grid span, .project-location span, .failure-stage span { color: var(--muted); font: .58rem "Cascadia Code", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.creation-facts strong, .created-proof-grid strong { overflow-wrap: anywhere; font-size: .8rem; }
+.creation-promise, .created-boundary { width: 100%; margin-bottom: 1rem; padding: 1rem; border-left: 2px solid var(--ember); background: rgba(236,135,50,.06); }
+.creation-promise strong, .created-boundary strong { display: block; margin-bottom: .4rem; }
+.creation-promise ul, .creation-failure ul { margin: .3rem 0 0; padding-left: 1.2rem; color: var(--secondary); line-height: 1.6; }
+.creation-confirm-actions, .created-actions { width: 100%; display: flex; justify-content: flex-end; gap: .65rem; }
+
+.creation-progress { justify-items: stretch; }
+.creation-progress-screen .new-game-header > .back-button { visibility: hidden; pointer-events: none; }
+.creation-companion { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; color: var(--violet); font: 800 .66rem "Cascadia Code", monospace; letter-spacing: .14em; }
+.creation-companion.is-verifying { color: var(--cyan); }
+.creation-identity { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: .7rem 0 1rem; border: 1px solid rgba(88,196,237,.24); background: rgba(88,196,237,.045); }
+.creation-identity > span { min-width: 0; display: grid; gap: .22rem; padding: .75rem; border-right: 1px solid var(--line-soft); }
+.creation-identity > span:last-child { border-right: 0; }
+.creation-identity small { color: var(--muted); font: .55rem "Cascadia Code", monospace; text-transform: uppercase; }
+.creation-identity strong { overflow-wrap: anywhere; font-size: .76rem; }
+.creation-stage-list { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.creation-stage-list li { min-width: 0; display: grid; align-content: start; gap: .42rem; min-height: 118px; padding: .65rem; border: 1px solid #303d48; background: #111820; }
+.creation-stage-list li > span { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--muted); font: 800 .62rem "Cascadia Code", monospace; }
+.creation-stage-list strong { font-size: .72rem; line-height: 1.28; }
+.creation-stage-list em { color: var(--muted); font-size: .6rem; font-style: normal; }
+.creation-stage-list .stage-active { border-color: var(--cyan); background: rgba(88,196,237,.07); }
+.creation-stage-list .stage-active > span { border-color: var(--cyan); color: var(--cyan); animation: stage-pulse 1.5s ease-in-out infinite; }
+.creation-stage-list .stage-complete > span { border-color: var(--mint); color: var(--mint); }
+.creation-truth { margin: .8rem 0; color: var(--muted); font-size: .7rem; }
+
+.project-created { justify-items: center; text-align: center; }
+.project-created > p:not(.v2-eyebrow) { max-width: 760px; }
+.created-proof-grid { text-align: left; }
+.created-proof-grid strong { color: var(--mint); }
+.project-location { width: 100%; display: grid; gap: .35rem; margin-bottom: 1rem; padding: .8rem; border: 1px solid var(--line); background: #0c1218; text-align: left; }
+.project-location code { overflow-wrap: anywhere; color: #b9d9e8; font-size: .72rem; }
+.created-boundary { border-color: var(--violet); text-align: left; }
+.created-boundary p { margin-bottom: 0; }
+.project-created .v2-details { width: 100%; margin-top: 1rem; text-align: left; }
+.project-created .v2-details code { overflow-wrap: anywhere; }
+
+.creation-failure { max-width: 760px; }
+.failure-stage { width: 100%; display: grid; gap: .25rem; margin: .8rem 0; padding: .8rem; border-left: 2px solid #e8665b; background: rgba(232,102,91,.06); }
+.creation-failure > div:last-child { display: flex; gap: .6rem; }
+.creation-failure code { overflow-wrap: anywhere; }
+
+@keyframes planning-pulse { 0%, 100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
+
+@keyframes powered-module { 0%, 100% { box-shadow: inset 0 1px rgba(255,255,255,.06), 0 16px 32px rgba(0,0,0,.28); } 50% { box-shadow: inset 0 1px rgba(255,255,255,.08), 0 16px 36px rgba(236,135,50,.12); } }
+@keyframes stage-pulse { 0%, 100% { box-shadow: 0 0 0 rgba(88,196,237,0); } 50% { box-shadow: 0 0 18px rgba(88,196,237,.22); } }
+
+@media (max-width: 1100px) {
+  .workflow-header { grid-template-columns: auto minmax(220px, 1fr) auto; }
+  .workflow-header > .forge-brand { display: none; }
+  .world-project-title { display: none; }
+  .quest-three { grid-template-columns: 1fr 1fr; }
+  .quest-three article:last-child { grid-column: 1 / -1; border-top: 1px solid var(--line); }
+  .build-stages { grid-template-columns: 1fr; gap: .5rem; }
+  .build-stages li { min-height: 52px; grid-template-columns: 30px 1fr; }
+  .build-stages li::after { width: 1px; height: auto; top: 30px; bottom: -.5rem; left: 15px; right: auto; }
+  .build-stages li div { padding: 0; margin: 0; }
+  .intake-layout { grid-template-columns: minmax(220px, .55fr) minmax(440px, 1.45fr); gap: 2rem; padding-inline: 0; }
+  .blueprint-roadmap-review { grid-template-columns: repeat(6, minmax(150px, 1fr)); }
+  .creation-stage-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .recent-project-list { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .workflow-header { grid-template-columns: auto 1fr; }
+  .workshop-nav { justify-self: end; }
+  .workshop-nav button { padding: 0 .45rem; }
+  .workflow-page { padding-top: 1.4rem; }
+  .quest-three, .technical-grid, .playtest-layout { grid-template-columns: 1fr; }
+  .quest-three article { border-right: 0; border-bottom: 1px solid var(--line); }
+  .quest-three article:last-child { grid-column: auto; border-bottom: 0; }
+  .proof-strip { grid-template-columns: 1fr 1fr; }
+  .proof-strip article:nth-child(2) { border-right: 0; }
+  .proof-strip article:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .playtest-hero, .complete-hero { grid-template-columns: auto 1fr; }
+  .complete-hero > span { grid-column: 2; }
+  .workflow-dock { flex-wrap: wrap; position: static; }
+  .workflow-dock > div { width: 100%; margin: 0 0 .25rem; }
+  .completed-roadmap { grid-template-columns: 1fr; gap: .4rem; }
+  .completed-roadmap i { width: 2px; height: 24px; justify-self: center; }
+  .completed-roadmap b { width: 0; height: 24px; justify-self: center; border-top: 0; border-left: 2px dashed #56636e; }
+  .new-game-shell, .blueprint-review-screen { width: min(100% - 28px, 1320px); }
+  .new-game-header { grid-template-columns: 1fr auto; }
+  .new-game-header .forge-brand { justify-self: end; }
+  .planning-provenance { display: none; }
+  .intake-layout { grid-template-columns: 1fr; align-items: start; padding: 1.5rem 0 2rem; }
+  .intake-assembly { min-height: 190px; }
+  .intake-assembly .companion-core { width: 58px; height: 58px; margin-bottom: 1.2rem; }
+  .intake-assembly .assembly-label, .intake-assembly strong { margin-top: .65rem; }
+  .planning-stages { grid-template-columns: 1fr 1fr; gap: .4rem; }
+  .planning-stages li, .planning-stages li:last-child { border: 1px solid #34414c; }
+  .blueprint-promises { grid-template-columns: 1fr; }
+  .blueprint-promises article { border-right: 0; border-bottom: 1px solid #3a4752; }
+  .blueprint-promises article:last-child { border-bottom: 0; }
+  .blueprint-detail-grid { grid-template-columns: 1fr; }
+  .blueprint-detail-grid .detail-wide { grid-column: auto; }
+  .blueprint-validation { grid-template-columns: auto 1fr; }
+  .blueprint-validation small { grid-column: 2; }
+  .ready-summary { grid-template-columns: 1fr 1fr; }
+  .ready-summary article:nth-child(n) { border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+  .ready-summary article:nth-child(2n) { border-right: 0; }
+  .ready-summary article:nth-child(n+5) { border-bottom: 0; }
+  .creation-facts, .created-proof-grid { grid-template-columns: 1fr 1fr; }
+  .creation-identity { grid-template-columns: 1fr 1fr; }
+  .creation-identity > span:nth-child(2) { border-right: 0; }
+  .creation-identity > span:nth-child(-n+2) { border-bottom: 1px solid var(--line-soft); }
+  .creation-stage-list { grid-template-columns: 1fr 1fr; }
+  .recent-project-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .workshop-nav { grid-column: 1 / -1; width: 100%; order: 3; }
+  .workshop-nav button { flex: 1; }
+  .workflow-header { padding: .45rem 0; }
+  .workflow-title h1, .playtest-hero h1, .complete-hero h1 { font-size: 2.45rem; }
+  .quest-three h2 { font-size: 1.2rem; }
+  .proof-strip { grid-template-columns: 1fr; }
+  .proof-strip article { border-right: 0; border-bottom: 1px solid var(--line); }
+  .proof-strip article:last-child { border-bottom: 0; }
+  .playtest-hero, .complete-hero { grid-template-columns: 1fr; text-align: left; }
+  .playtest-hero > .companion-core, .complete-hero > .companion-core { width: 42px; height: 42px; }
+  .complete-hero > span { grid-column: auto; }
+  .build-module { grid-template-columns: auto 1fr; }
+  .build-module time { grid-column: 1 / -1; font-size: 1.45rem; }
+  .confirmation-actions { flex-direction: column; }
+  .confirmation-actions .v2-button, .workflow-dock .v2-button { width: 100%; }
+  .chronicle-record { grid-template-columns: 1fr; }
+  .chronicle-date { display: flex; gap: .4rem; justify-content: start; border-right: 0; }
+  .world-actions { align-items: flex-start; flex-direction: column; }
+  .new-game-shell, .blueprint-review-screen { width: min(100% - 20px, 1320px); }
+  .new-game-header { min-height: 62px; }
+  .new-game-header .forge-brand > div { display: none; }
+  .intake-composer h1 { font-size: 2.65rem; }
+  .intake-assembly { min-height: 150px; }
+  .intake-assembly strong { font-size: .66rem; }
+  .idea-composer textarea { min-height: 165px; }
+  .example-prompts button { width: 100%; }
+  .intake-actions, .clarification-actions, .blueprint-actions, .ready-actions { flex-direction: column-reverse; }
+  .intake-actions .v2-button, .clarification-actions .v2-button, .blueprint-actions .v2-button, .ready-actions .v2-button { width: 100%; }
+  .planning-center { padding-inline: 0; }
+  .planning-center h1 { font-size: 2.6rem; }
+  .planning-core-stage { width: 100px; height: 100px; }
+  .planning-stages { grid-template-columns: 1fr; }
+  .planning-stages li { min-height: 62px; }
+  .clarification-heading { grid-template-columns: 1fr; }
+  .clarification-heading .companion-core { width: 44px; height: 44px; }
+  .clarification-heading h1 { font-size: 2.45rem; }
+  .clarification-choices { display: grid; }
+  .clarification-choices span { width: 100%; }
+  .blueprint-hero { grid-template-columns: 1fr; }
+  .blueprint-hero h1 { font-size: 2.8rem; }
+  .blueprint-hero .companion-core { width: 44px; height: 44px; }
+  .blueprint-map-section { padding: .8rem; }
+  .blueprint-roadmap-review { display: grid; grid-template-columns: 1fr; overflow: visible; }
+  .foundation-node, .blueprint-quest-step article { min-height: 0; }
+  .blueprint-quest-step { grid-template-columns: 1fr; }
+  .blueprint-quest-step i { width: 2px; height: 20px; justify-self: center; background: linear-gradient(var(--violet), var(--cyan)); }
+  .blueprint-details > summary { align-items: flex-start; flex-direction: column; }
+  .blueprint-validation { grid-template-columns: 1fr; }
+  .blueprint-validation small { grid-column: auto; }
+  .blueprint-actions { position: static; }
+  .ready-panel { padding-inline: 0; }
+  .ready-panel h1 { font-size: 3rem; }
+  .ready-summary { grid-template-columns: 1fr; }
+  .ready-summary article:nth-child(n) { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .ready-summary article:last-child { border-bottom: 0; }
+  .creation-confirmation, .creation-progress, .project-created, .creation-failure { padding-inline: 0; }
+  .creation-facts, .created-proof-grid, .creation-identity, .creation-stage-list { grid-template-columns: 1fr; }
+  .creation-facts article:nth-child(n), .created-proof-grid article:nth-child(n), .creation-identity > span:nth-child(n) { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .creation-facts article:last-child, .created-proof-grid article:last-child, .creation-identity > span:last-child { border-bottom: 0; }
+  .creation-stage-list li { min-height: 76px; grid-template-columns: 34px 1fr auto; align-items: center; }
+  .creation-confirm-actions, .created-actions, .creation-failure > div:last-child { flex-direction: column; width: 100%; }
+  .creation-confirm-actions .v2-button, .created-actions .v2-button, .creation-failure > div:last-child .v2-button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-active.module-active, .build-stages .current > span, .planning-pulse, .creation-stage-list .stage-active > span, .new-game-shell .companion-core, .new-game-shell .companion-orbit { animation: none !important; transition-duration: 0s !important; }
+}

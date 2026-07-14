@@ -269,3 +269,149 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Documentation-only checkpoint commit created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Push the checkpoint commit and annotated tag when authorized, then complete only the remaining submission packaging tasks.
+
+---
+
+## 2026-07-13 — Protect v0.1 before Forge v0.2 development
+
+- **Actor/model surface:** Codex repository implementation and verification
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Forge v0.2 with one required Top-down arena starter; deferred Side-scrolling platformer, Movement sandbox, generated-quest implementation, and sample art until the required path is stable; required an independently launchable v0.1 fallback and focused compatibility command before interface work.
+- **AI contribution:** Created `feature/v0.2-living-workshop`; preserved the original sample React component byte-for-byte behind a dedicated legacy entry; kept the normal Forge command unchanged; added the focused compatibility command and guard test; revised `PLAN.md` to the one-starter deadline; reviewed protected paths and recorded evidence.
+- **Files changed:** `PLAN.md`; package/build and legacy dashboard entry files; one compatibility test; project status, roadmap, Task 1 handoff/review/closeout, and this log.
+- **Verification:** `npm run check:v0.1` passed typechecking, production build, and 37/37 compatibility tests; `npm run check` passed 49/49 tests; `/legacy.html` returned HTTP 200; Godot 4.7 emitted the full Enemy Targeting success token; the protected component hash matched the pre-task App; no fixture, runner, verification, reset, completion, contract, or demo-workspace file changed.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Build the Launchpad and Project World shell with fixture data only while keeping the normal and legacy sample paths on the proven backend.
+
+---
+
+## 2026-07-13 — Build the isolated Living Game Workshop shell
+
+- **Actor/model surface:** Codex repository implementation and in-app browser review
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 2 as fixture-only UI work; required the normal and legacy launches to remain on v0.1; prohibited GPT planning, blueprint contracts, starter creation, new-project persistence, generated quest execution, and sample art.
+- **AI contribution:** Added the two-choice Launchpad, honest Create placeholder, and responsive sample Project World with a roadmap-dominant canvas, preview/current-state anchor, five roadmap states, Forge Companion, and local-only idea field; isolated the new surface behind `npm run forge:v0.2`; added focused source/state tests and visual evidence.
+- **Files changed:** Additive `src/dashboard-v2` entry and fixture; `v0.2.html`; minimal host/build/script configuration; one focused test; two screenshots; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, Task 2 handoff/review/closeout, and this log.
+- **Verification:** `npm run check` passed 52/52 tests; `npm run check:v0.1` passed the three-entry production build and 37/37 protected compatibility tests; browser review passed at 1440×900, 768×900, and 390×844 without horizontal overflow or console warnings/errors; protected sample workspace, fixture, runner, verification, reset, and completion files were unchanged.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Reframe the real prepared Enemy Targeting journey inside the Living Game Workshop shell without beginning the new-game planning path.
+
+---
+
+## 2026-07-13 — Refine v0.2 visual hierarchy and roadmap semantics
+
+- **Actor/model surface:** Codex implementation with high design-reasoning focus and in-app browser review
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 2.1 before backend integration; selected restrained industrial sci-fi workshop language; required a single semantic progression, meaningful Launchpad previews, game-like snapshot, compact Companion, distinct idea port, visible desktop actions, and no Task 3, GPT, persistence, project creation, or sample-Godot art work.
+- **AI contribution:** Replaced the absolute-position graph and crossing paths with a four-module responsive sequence; moved Review into Enemy Targeting; anchored the Companion and idea port beneath the active module; rebuilt the sample snapshot as an arena; added explanatory Launchpad miniatures and selective gunmetal/machined material treatment; extended focused semantic tests and captured desktop/mobile evidence.
+- **Files changed:** `src/dashboard-v2/App.tsx`, `src/dashboard-v2/styles.css`, `tests/dashboard-v2.test.ts`, three Task 2.1 screenshots, `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, Task 2.1 handoff/review/closeout, and this log.
+- **Verification:** `npm run check` passed 52/52 tests; `npm run check:v0.1` passed the production build and 37/37 protected compatibility tests; browser review at 1440×900, 768×900, and 390×844 found no horizontal overflow, node/Companion overlap, or console warnings/errors; the exact mobile order and local-only idea focus interaction were exercised; the production reduced-motion rule was present and neutralized animated duration.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 3 may connect the real sample workflow later without reopening visual graph semantics.
+
+---
+
+## 2026-07-14 — Connect the real sample workflow to the Living Game Workshop
+
+- **Actor/model surface:** Codex repository implementation, official `@openai/codex-sdk` live run, real dashboard host, Godot 4.7, and explicit creator play confirmation
+- **Workflow stage:** Implement / Review / Document; Complete pending supported-browser evidence
+- **Human decisions:** Approved Task 3 only; required the protected v0.1 service semantics and default/legacy launches to remain unchanged; explicitly reported `I saw it work` after playing the launched Godot result; prohibited GPT planning, starters, generated projects, sample art, and UI frameworks.
+- **AI contribution:** Replaced fixture sample state with a presentation adapter over the authoritative dashboard snapshot; recomposed Project World, Quest Forge, Active Build, Playtest Gate, confirmation, Proof, Chronicle, completion, failure, and reset states; connected approval cancellation to the existing host route; added focused real-state adapter/source tests; performed the live run, reload, and reset checks; recorded sanitized evidence and the browser-tooling limitation.
+- **Files changed:** v0.2 application and styles; sample presentation adapter; dashboard API cancellation wrapper; focused tests; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog; Task 3 evidence, handoff, review, pending closeout; this log.
+- **Verification:** `npm test` passed 52/52; `npm run check:v0.1` passed the production build and 37/37 protected tests; live run `enemy-targeting-1784006264583` rejected duplicate approval, delivered all five stages, changed exactly the three approved files, produced zero unexpected files, passed repository and Godot verification, launched Godot, remained incomplete until explicit creator confirmation, persisted final `PASS`, reloaded completion after host restart, preserved completion on cancelled reset, restored the available baseline on confirmed reset, and passed the post-reset Godot verifier.
+- **Known limitation:** The installed in-app Browser plugin failed before tab creation with `Cannot redefine property: process`; required screenshots, console inspection, and responsive visual review remain unclaimed and block Task 3 completion.
+- **Commit:** Created after final checks; exact SHA reported in the task response
+- **Session ID:** Live run ID `enemy-targeting-1784006264583`; sanitized Codex thread data was reset with the demo workspace after persistence evidence was recorded; primary `/feedback` ID pending
+- **Next step:** Restore the supported browser-review connection, capture the required real-state evidence, and promote Task 3 to complete before Task 4.
+
+---
+
+## 2026-07-14 — Complete Task 3 through the project-local browser-review fallback
+
+- **Actor/model surface:** Codex repository work, pinned `@playwright/test` `1.61.1`, installed Microsoft Edge `150.0.4078.65`, the real Forge host, official Codex SDK, Godot 4.7, and explicit creator confirmation
+- **Workflow stage:** Review / Document / Complete
+- **Human decisions:** Accepted Task 3 implementation and live rehearsal; authorized a project-local Playwright fallback after the installed Browser plugin repeatedly failed; allowed one bounded real workflow run; explicitly reported `I saw it work`; prohibited Task 4, GPT planning, project creation, persistence work, and fixture-only evidence presented as real.
+- **AI contribution:** Added a pinned Edge-first Playwright review command with Chrome/managed-Chromium fallback; captured real fresh, live, confirmation, completion, proof, reload, responsive, and reduced-motion states; enforced console, exception, same-origin network, overflow, action, navigation, and roadmap-order gates; corrected the discovered v0.2 favicon 404; documented the Browser plugin defect and promoted Task 3 artifacts to complete.
+- **Files changed:** `package.json`, lockfile, `src/visual-review/v0.2.ts`, `v0.2.html`, focused v0.2 source tests, browser reports/screenshots and sanitized live evidence, `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog, Task 3 handoff/review/closeout, and this log.
+- **Verification:** Real review run `enemy-targeting-1784009287800` used the official SDK, changed exactly the three approved files, passed repository and Godot verification, reached the real play and creator gates, and persisted `PASS` only after the creator’s exact confirmation. Edge review passed at `1440×900`, `768×900`, and `390×844` with no console warnings/errors, page exceptions, React warnings, failed same-origin application requests, horizontal overflow, missing primary actions, or broken navigation; reduced-motion computed durations were zero or effectively zero. Full, protected compatibility, production-build, visual-review, and diff checks are rerun before commit.
+- **Known limitation:** The in-app Browser plugin still fails before tab creation with `Cannot redefine property: process`; the repository-local Playwright command is the documented repeatable fallback.
+- **Commit:** Created after final checks; exact SHA reported in the task response
+- **Session ID:** Live run `enemy-targeting-1784009287800`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 4 may add focused GPT-5.6 intake and a reviewable Top-down arena blueprint, without project creation.
+
+---
+
+## 2026-07-14 — Add New Game Intake and real GPT-5.6 blueprint planning
+
+- **Actor/model surface:** Codex repository implementation; official `@openai/codex-sdk` `0.144.3`; GPT-5.6 high-reasoning live planning; pinned Playwright `1.61.1`; Microsoft Edge
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 4A only; fixed the required foundation to Top-down arena; limited clarification to five topics and three questions; required one repair attempt; prohibited project creation, starter copying, Git initialization, Godot verification, generated-project persistence, generated Project World work, generated-quest implementation, and sample art changes.
+- **AI contribution:** Added the strict creator-facing blueprint contract and cross-reference/safety validator; isolated session planning state and host routes from the sample workflow; configured GPT-5.6 high with structured output, read-only sandboxing, disabled network/search, and abortable cancellation; added Intake, Clarification, Planning, Blueprint Review, Ready, and failure states; added deterministic tests, a real rehearsal command, and responsive Edge evidence.
+- **Files changed:** Blueprint contracts, planner runtime/prompts/service/rehearsal, v0.2 planning UI and styles, additive host/API routes, focused tests and visual harness, Task 4A plan/handoff/review/closeout/evidence, `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog, and this log.
+- **Verification:** `npm run check` passed 65/65; `npm run check:v0.1` passed the production build and 37/37 protected tests; deterministic Edge review passed ten requested state/viewport captures plus reduced motion with no console/network/layout/action issues; the real GPT-5.6 run produced **Last-Moment Pulse**, five quests, no clarification, one valid response, sanitized thread `019f5f61-62a…`, approximately 29.5 seconds latency, and recorded usage; the project-directory list remained unchanged with zero project files, commands, or Godot processes.
+- **Known limitation:** The current ChatGPT-authenticated Codex surface rejected `gpt-5.6`; the successful rehearsal used the available OpenAI API key through the same official SDK. Forge stopped safely on the rejected surface and never switched models.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Sanitized live planning thread `019f5f61-62a…`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 5 may create and verify the real controlled Top-down arena project, without beginning generated Project World integration or generated-quest Codex implementation.
+
+---
+
+## 2026-07-14 — Create, verify, baseline, and persist the controlled Top-down Arena project
+
+- **Actor/model surface:** Codex repository implementation; official `@openai/codex-sdk` `0.144.3`; real GPT-5.6 high-reasoning blueprint planning; pinned Godot 4.7; local Git; pinned Playwright `1.61.1`; Microsoft Edge `150.0.4078.65`
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 5 only; required one controlled Top-down Arena starter, a separate exact filesystem confirmation, deterministic Forge-owned creation, strict persisted artifacts, pinned Godot verification, a clean local Git baseline, restart discovery, responsive review, and no Task 6 Project World work, generated-quest implementation, extra starter, or sample-art change.
+- **AI contribution:** Added the controlled starter and manifest; strict generated-project contracts; safe path allocation, staging, atomic artifact writes and reload validation; fixed Godot verification; local Git initialization; registry-last persistence and recovery; cancellation/failure cleanup and evidence; same-origin one-time mutation authorization; the seven-stage UI, created/recent/reopen states; focused tests; real rehearsal; and Edge visual evidence.
+- **Files changed:** Controlled Godot starter; generated-project contracts; project-creation service, filesystem, starter, artifact, registry, Godot, Git, process, and rehearsal modules; additive host/API routes; v0.2 UI and styles; focused tests and visual harness; Task 5 plan/handoff/review/closeout/evidence; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog, and this log.
+- **Verification:** `npm run check` passed 79/79; `npm run check:v0.1` passed the production build and 37/37 protected tests; the real rehearsal planned then created **Last-Moment Pulse** as `last-moment-pulse-6631032087`, wrote 32 controlled files, emitted the exact pinned-Godot success marker, created clean no-remote Git commit `9f73f5040bac9b67e806a56129170a150c139637`, relaunched Godot visibly for 120 frames, and reloaded through a fresh service instance. Edge captured ten required states without console, network, layout, focus, overlap, action, or reduced-motion issues. The sample hash stayed unchanged and the model supplied no destination paths, commands, arbitrary files, source code, or verification commands.
+- **Known limitation:** Created projects reopen to `Created · Project World integration pending`; Task 6 must render the existing authoritative artifacts without regenerating them. The installed in-app Browser plugin still fails before tab creation, so the pinned local Edge harness remains the repeatable visual-review path.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Sanitized live planning thread `019f5f83-a6f…`; created project `last-moment-pulse-6631032087`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 6 may connect the registered project to Project World from its existing artifacts, without generated-quest implementation or another starter.
+
+---
+
+## 2026-07-14 — Connect generated projects to a truthful, restart-safe Project World
+
+- **Actor/model surface:** Codex repository implementation; strict local artifact adapter; pinned Godot 4.7; local Git metadata; pinned Playwright `1.61.1`; Microsoft Edge `150.0.4078.65`
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Approved Task 6 only from protected checkpoint `302002f49ed819c453695dea4154f0bcdeb250df`; required read-only GET, projectId-only explicit open mutation, idea-owned derived activity instead of Chronicle mutation, byte-identical Chronicle/roadmap after idea saves, truthful preview labels, unavailable generated-quest implementation, real Last-Moment Pulse rehearsal, protected regressions, and one clean commit.
+- **AI contribution:** Added strict generated-world response/idea contracts; canonical registry resolution and cross-artifact joins; read-only/open/state/idea/launch host boundaries; Launchpad and generated Project World UI; planning-only briefs; Chronicle/activity and documentation views; atomic idea persistence; local Git handling for mutable Forge state; deterministic failure/accessibility/responsive review; focused tests; real restart/Godot rehearsal; and closeout documentation.
+- **Files changed:** Generated-project contracts; generated-world service/shared/rehearsal; registry summaries/resolution; additive host/API routes; generated UI and styles; creation-summary entry action; focused tests and Edge harness; Task 6 plan/evidence/handoff/review/closeout; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, README, changelog, and this log.
+- **Verification:** `npm run check` passed typechecking plus 86/86 tests; `npm run check:v0.1` passed the production build plus 37/37 protected tests; real Last-Moment Pulse restart restored quest `q4-implement-the-push-pulse`, one idea, derived activity, and the authoritative Chronicle; roadmap/Chronicle SHA-256 values remained identical; generated Git stayed clean; sample hash stayed unchanged; pinned Godot launched 120 frames and exited `0`; Edge captured 11 states with zero issues.
+- **Known limitation:** Generated quests remain planning-only; additional starters, import, scanning, sample art, and final Task 7 hardening remain deferred. The installed Browser plugin still fails before tab creation, so the repository-local Edge harness remains the repeatable path.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; real project `last-moment-pulse-6631032087`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 7 may harden and rehearse both completed required paths without adding deferred capabilities.
+
+---
+
+## 2026-07-14 — Harden repository navigation and authoritative context routing
+
+- **Actor/model surface:** Codex repository inspection, documentation, and local validation; primary tool documentation reviewed for Graphify, Repomix, and Aider-style repository maps
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Requested a bounded context-hardening task only; prohibited product features, runtime behavior changes, third-party indexing installation, production dependencies, exhaustive inventories, historical evidence rewrites, and duplicated project status; required one clean commit.
+- **AI contribution:** Mapped ten stable subsystems from source imports, contracts, persisted writes, tests, and Tasks 3–6 closeouts; added a task-oriented repository guide, authoritative-state matrix, symptom change map, and bounded context-tool evaluation; added six brief local instruction files at high-risk ownership boundaries; routed root instructions through the guide; added a zero-dependency staleness validator for structure, unique IDs, linked paths, and test references.
+- **Files changed:** Root and six nested `AGENTS.md` files; `docs/REPOSITORY_GUIDE.md`; `docs/CHANGE_MAP.md`; `docs/research/REPOSITORY_CONTEXT_TOOLS.md`; `scripts/validate-repository-context.mjs`; the `context:check` package script; and this log. `PROJECT_STATUS.md`, historical task artifacts, product source, fixtures, lockfile, and runtime dependencies were unchanged.
+- **Verification:** `npm run context:check` passed 10 subsystem entries, 9 change routes, 230 path references, and 65 test references; an injected duplicate subsystem ID was rejected; `npm run check` passed typechecking plus 86/86 tests; `npm run check:v0.1` passed the production build plus 37/37 protected tests; five representative maintenance routes resolved to the intended owner/start file; final staged diff and `git diff --check` are run before commit.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Use the curated guide and change map during Task 7; after Build Week, run only the documented disposable Graphify experiment before considering optional adoption.
+
+---
+
+## 2026-07-14 — Harden and rehearse both Forge v0.2 judge paths
+
+- **Actor/model surface:** Codex repository implementation and review; official `@openai/codex-sdk` live sample run; real GPT-5.6 high-reasoning planning; pinned Godot 4.7; local Git; Playwright `1.61.1`; Microsoft Edge `150.0.4078.65`; Windows app inspection
+- **Workflow stage:** Rehearse / Fix / Review / Document / Complete
+- **Human decisions:** Approved Task 7 only; required fresh-evaluator setup, both real journeys, responsive/accessibility review, submission documents, default promotion only after every gate, and no generated-quest execution or other deferred capability.
+- **AI contribution:** Audited the protected branch and tools; completed a clean-clone first-download rehearsal; ran the fresh real sample SDK path through creator confirmation; created and reopened real **Gravity Tap Arena** through exact HTTP approvals; fixed Windows host spawning, visual evidence isolation/composition/cleanup, and visible Godot/Explorer launching; recorded the creator's exact manual confirmation through the normal completion boundary; verified reload/reset; promoted the default launch only after all gates; produced judge, video, checklist, evidence, review, closeout, and handoff records.
+- **Files changed:** Two narrow Windows process options; Task 7 new-game rehearsal; four visual-review harnesses; default v0.2 package route; focused tests; README/status/plan/roadmap/changelog; judge/video/checklist; Task 7 evidence/review/closeout/handoff; this log.
+- **Verification:** Clean setup passed with zero npm vulnerabilities and a real Godot download. Sample run `enemy-targeting-1784056119542` changed only three approved files, passed automated Godot proof, then received exact creator confirmation after visible chase and retreat. Final `PASS` survived host reload; reset cancellation changed no bytes; confirmed reset restored all nine tracked fixture files, removed run artifacts, and left a clean sample Git worktree. Real project `gravity-tap-arena-6cbe7b2a54` passed GPT-5.6, exact creation confirmation, Godot, clean Git commit `7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8`, registry, restart, idea ownership, visible launch/folder actions, and sample isolation. Six Edge reports contain 48 automated captures and zero issues; one additional screenshot records real creator-confirmed completion. Context validation, full and protected suites, production build, default-route regression, final isolated clone, diff, and cleanliness checks pass.
+- **Commit:** Single conditional Task 7 checkpoint; exact SHA reported in the handoff response
+- **Session ID:** Sample Codex thread `019f6208-05c8-7752-8dc0-47e4efc7b0f8`; primary submission `/feedback` ID remains pending
+- **Known limitation:** Generated-quest implementation remains intentionally unavailable. License, public submission media/URLs, repository visibility, and the primary `/feedback` ID remain owner decisions.
+- **Next step:** Complete submission packaging and push or submit only with explicit owner authorization.

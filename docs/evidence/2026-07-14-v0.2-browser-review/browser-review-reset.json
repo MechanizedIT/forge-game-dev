@@ -1,0 +1,65 @@
+{
+  "date": "2026-07-14",
+  "mode": "reset",
+  "baseUrl": "http://127.0.0.1:4173",
+  "environment": {
+    "node": "v22.17.1",
+    "npm": "10.9.2",
+    "playwright": "1.61.1",
+    "browser": "Microsoft Edge",
+    "browserVersion": "150.0.4078.65",
+    "channel": "msedge"
+  },
+  "host": "connected",
+  "realStates": [
+    "real-launchpad-desktop",
+    "real-project-world-desktop",
+    "real-quest-forge-desktop",
+    "real-project-world-tablet",
+    "real-project-world-mobile",
+    "real-project-world-mobile-reduced-motion"
+  ],
+  "visualStateFixtures": [],
+  "screenshots": [
+    "real-launchpad-desktop.png",
+    "real-project-world-desktop.png",
+    "real-quest-forge-desktop.png",
+    "real-project-world-tablet.png",
+    "real-project-world-mobile.png",
+    "real-project-world-mobile-reduced-motion.png"
+  ],
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 900
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "reducedMotion": {
+    "checked": true,
+    "animationDurations": [
+      "1e-06s",
+      "0s",
+      "1e-06s"
+    ]
+  },
+  "ignoredExpectedNoise": [
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED",
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED",
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED",
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED",
+    "SSE closed with page: GET http://127.0.0.1:4173/api/events: net::ERR_ABORTED"
+  ],
+  "issues": [],
+  "result": "PASS"
+}

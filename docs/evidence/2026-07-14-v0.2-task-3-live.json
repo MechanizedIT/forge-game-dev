@@ -1,0 +1,61 @@
+{
+  "date": "2026-07-14",
+  "objective": "Rehearse the real Enemy Targeting workflow through the v0.2 host boundary",
+  "entry": "/v0.2.html",
+  "runId": "enemy-targeting-1784006264583",
+  "officialCodexSdk": true,
+  "duplicateApproval": {
+    "status": 409,
+    "message": "Enemy Targeting already has an active operation."
+  },
+  "progress": [
+    "Inspecting approved files",
+    "Preparing the change",
+    "Updating the game",
+    "Running verification",
+    "Preparing the result"
+  ],
+  "changedFiles": [
+    "main.tscn",
+    "scripts/enemy.gd",
+    "scripts/verify_fixture.gd"
+  ],
+  "unexpectedFiles": [],
+  "automatedReview": "CONDITIONAL PASS",
+  "verification": {
+    "repositoryCheck": "pass",
+    "godotCheck": "FORGE_ENEMY_TARGETING_VERIFY_OK idle=pass detection=pass chase=pass player=pass controls=arrows+wasd",
+    "godotVersion": "4.7.stable.official.5b4e0cb0f"
+  },
+  "godotLaunched": true,
+  "creatorConfirmationRequiredAfterExit": true,
+  "creatorConfirmation": "I SAW IT WORK",
+  "finalReview": "PASS",
+  "persistedReload": {
+    "phase": "quest_complete",
+    "workspace": "preserved",
+    "questState": "completed",
+    "completionRunId": "enemy-targeting-1784006264583"
+  },
+  "resetCancellationPreservedCompletion": true,
+  "confirmedReset": {
+    "phase": "world_ready",
+    "workspace": "reset",
+    "questState": "available",
+    "completion": false,
+    "review": false
+  },
+  "postResetGodotCheck": "FORGE_FIXTURE_VERIFY_OK player=Player enemy=Enemy baseline=idle controls=arrows+wasd",
+  "visualEvidence": {
+    "status": "pass",
+    "browserPlugin": "Unavailable before tab creation with: Cannot redefine property: process",
+    "fallback": "Pinned project-local @playwright/test 1.61.1 using installed Microsoft Edge 150.0.4078.65",
+    "viewports": [
+      "1440x900",
+      "768x900",
+      "390x844"
+    ],
+    "reports": "docs/evidence/2026-07-14-v0.2-browser-review",
+    "result": "No console warnings/errors, uncaught exceptions, failed same-origin requests, horizontal overflow, missing primary actions, or broken navigation. Reduced-motion review passed."
+  }
+}

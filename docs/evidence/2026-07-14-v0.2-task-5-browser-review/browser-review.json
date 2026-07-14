@@ -1,0 +1,44 @@
+{
+  "date": "2026-07-14",
+  "browser": "Microsoft Edge",
+  "browserVersion": "150.0.4078.65",
+  "channel": "msedge",
+  "states": [
+    "creation-confirmation-desktop",
+    "creation-progress-desktop",
+    "godot-verification-desktop",
+    "project-created-desktop",
+    "project-created-tablet",
+    "project-created-mobile",
+    "project-created-mobile-reduced-motion",
+    "launchpad-recent-project",
+    "reopened-project-created",
+    "creation-failure-controlled"
+  ],
+  "screenshots": [
+    "creation-confirmation-desktop.png",
+    "creation-progress-desktop.png",
+    "godot-verification-desktop.png",
+    "project-created-desktop.png",
+    "project-created-tablet.png",
+    "project-created-mobile.png",
+    "project-created-mobile-reduced-motion.png",
+    "launchpad-recent-project.png",
+    "reopened-project-created.png",
+    "creation-failure-controlled.png"
+  ],
+  "focusChecks": [
+    "creation-confirmation-desktop: primary action focused"
+  ],
+  "reducedMotionDurations": [
+    "0s",
+    "0s",
+    "0s",
+    "0s",
+    "0s",
+    "0s"
+  ],
+  "visualStateSource": "deterministic mocked Godot/Git process boundary; real creation rehearsal recorded separately",
+  "issues": [],
+  "result": "PASS"
+}

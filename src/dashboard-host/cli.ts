@@ -1,11 +1,15 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 
+import { OfficialBlueprintModelExecutor } from "../blueprint-planner/sdk.js";
+import { BlueprintPlanningService } from "../blueprint-planner/service.js";
 import { repositoryRoot } from "../demo/paths.js";
 import { launchPreparedGame } from "../godot/run-fixture.js";
 import { OfficialCodexExecutor } from "../quest-runner/sdk.js";
 import { ForgeDashboardService } from "./service.js";
 import { createForgeDashboardServer } from "./server.js";
+import { ProjectCreationService } from "../project-creation/service.js";
+import { GeneratedProjectWorldService } from "../generated-project-world/service.js";
 
 function parsePort(value: string | undefined): number {
   const port = Number(value ?? "4173");
@@ -33,6 +37,8 @@ function openBrowser(url: string): void {
 }
 
 const port = parsePort(process.env.FORGE_PORT);
+const legacyMode = process.argv.includes("--legacy");
+const v02Mode = process.argv.includes("--v0.2");
 const service = new ForgeDashboardService({
   codexExecutor: new OfficialCodexExecutor(),
   gameLauncher: async (workspacePath) => {
@@ -40,9 +46,17 @@ const service = new ForgeDashboardService({
     return { version: result.version };
   },
 });
+const planningService = new BlueprintPlanningService(
+  new OfficialBlueprintModelExecutor(repositoryRoot),
+);
+const creationService = new ProjectCreationService();
+const generatedWorldService = new GeneratedProjectWorldService();
 const server = createForgeDashboardServer(
   service,
   path.join(repositoryRoot, "dist", "dashboard"),
+  planningService,
+  creationService,
+  generatedWorldService,
 );
 
 server.once("error", (error: NodeJS.ErrnoException) => {
@@ -57,7 +71,8 @@ server.once("error", (error: NodeJS.ErrnoException) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  const url = `http://127.0.0.1:${port}`;
+  const startPath = legacyMode ? "/legacy.html" : v02Mode ? "/v0.2.html" : "";
+  const url = `http://127.0.0.1:${port}${startPath}`;
   console.log(`Forge Workshop is ready: ${url}`);
   console.log("Close this terminal or press Ctrl+C to stop Forge.");
   openBrowser(url);
