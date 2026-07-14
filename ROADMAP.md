@@ -127,7 +127,7 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 - [x] Build the Launchpad and Project World shell with fixture data.
 - [x] Refine Task 2 visual hierarchy, roadmap semantics, game preview, Companion placement, and responsive progression.
-- [ ] Reframe the real sample flow inside the Living Game Workshop without changing backend semantics.
+- [ ] Reframe the real sample flow inside the Living Game Workshop without changing backend semantics. Implementation and creator-confirmed rehearsal pass; supported-browser screenshots and responsive/console review remain before completion.
 - [ ] Add focused GPT-5.6 idea intake and Top-down arena blueprint generation.
 - [ ] Create and verify one real Top-down arena starter project.
 - [ ] Persist and reopen the generated roadmap, documentation, project state, and Chronicle.
@@ -175,4 +175,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Task 3 from [`PLAN.md`](PLAN.md), after explicit approval: reframe the real sample Enemy Targeting journey inside the Living Game Workshop shell without changing backend semantics. Connect the prepared roadmap, Quest Forge, Active Build, Playtest Gate, completion, Proof, Chronicle, and reset states; keep `npm run forge` and `npm run forge:v0.1` available throughout the task. Do not begin GPT planning, blueprint contracts, starter creation, or new-project persistence.
+Finish Task 3 review by restoring the supported Browser connection and capturing the required real-state desktop, tablet, and narrow evidence with console and reduced-motion checks. The product integration and live creator-confirmed rehearsal pass, but Task 4 must not begin until the visual validation gap is closed. See the [Task 3 review](docs/reviews/2026-07-14-v0.2-task-3-sample-integration-review.md).

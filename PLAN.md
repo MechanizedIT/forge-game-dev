@@ -245,7 +245,7 @@ The roadmap owns quest availability/completion. Project state owns only selected
 
 Higher reasoning is reserved for artifact safety, workspace creation, compatibility, and final review. Medium is sufficient for bounded UI composition and visual work. GPT-5.6 supports configurable reasoning levels, while the current Codex SDK exposes through `xhigh`; do not add a model selector for v0.2. See <https://developers.openai.com/api/docs/models>.
 
-**Current checkpoint:** Tasks 1, 2, and the approved Task 2.1 visual-hierarchy refinement are complete. The Living Game Workshop shell is available only through `npm run forge:v0.2`; `npm run forge` and `npm run forge:v0.1` remain on the protected sample experience. The v0.2 shell still uses explicit fixture data and does not claim GPT planning, generated-project creation, new-project persistence, or integrated quest execution.
+**Current checkpoint:** Tasks 1, 2, and Task 2.1 are complete. Task 3 product integration and its real official-SDK, Godot, creator-confirmation, persistence, restart, and reset rehearsal pass. Task 3 remains in `REVIEW` because the installed supported Browser plugin failed before tab creation, so the required screenshots and responsive/console review are not complete. `npm run forge:v0.2` contains the real sample workflow; `npm run forge` and `npm run forge:v0.1` remain protected. GPT planning, generated-project creation, and new-project persistence have not begun.
 
 ## Task 1 — exact acceptance criteria
 
@@ -283,6 +283,14 @@ Evidence: `npm run check` passes 52 tests; `npm run check:v0.1` passes its produ
 Task 2.1 replaces the free-form, crossing graph with one semantic sequence: **Foundation → First Encounter → Game Feel → Polish**. The first transition visibly combines the online mint foundation with the ember current step; future dependencies use one neutral dashed treatment. **Add an idea** is a short violet port beneath Enemy Targeting rather than a quest node. The primary review action lives inside the active quest, and the compact Companion guidance is anchored beneath it without covering the sequence.
 
 The Launchpad now previews the experience behind each path: the sample choice contains a miniature game stage and verified quest rail; the create choice shows plain-language input becoming a three-node roadmap. Both desktop actions remain above the 1440×900 fold. The Project World uses one industrial sci-fi workbench, a larger game-like arena snapshot, open roadmap space, restrained machined structure, and a vertical semantic sequence at narrow widths. All behavior remains fixture-only.
+
+## Task 3 — implemented, review pending
+
+The sample choice now loads the authoritative dashboard snapshot and reuses the existing approval, official SDK runner, five-stage progress, diff review, verification, Godot launch, exact creator confirmation, completion, Chronicle, restart, and reset services. Quest Forge, Active Build, Playtest Gate, Proof, Quest Complete, and failure/reset states are recomposed inside the Living Game Workshop without a new workflow owner.
+
+Live run `enemy-targeting-1784006264583` changed exactly the three approved files, rejected a duplicate start, passed repository and Godot checks, launched Godot 4.7, remained incomplete after game exit, received explicit creator confirmation, persisted final `PASS`, reloaded completion after a host restart, preserved it on cancelled reset, and restored the available baseline on confirmed reset.
+
+Task 3 is not complete because the installed supported Browser plugin failed before opening a tab. The required eight screenshots, console review, and responsive visual checks remain. Do not begin Task 4 until that review evidence is captured and the Task 3 verdict is promoted from `CONDITIONAL PASS` to `PASS`.
 
 ## Rollback strategy
 

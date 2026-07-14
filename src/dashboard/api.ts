@@ -27,6 +27,14 @@ export async function approveQuest(): Promise<void> {
   });
 }
 
+export async function cancelQuestApproval(): Promise<void> {
+  await request("/api/quests/enemy-targeting/run", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ approval: "CANCEL" }),
+  });
+}
+
 export function launchGame(): Promise<DashboardSnapshot> {
   return request<DashboardSnapshot>("/api/quests/enemy-targeting/play", {
     method: "POST",

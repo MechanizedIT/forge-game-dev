@@ -311,3 +311,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Stop for approval. Task 3 may connect the real sample workflow later without reopening visual graph semantics.
+
+---
+
+## 2026-07-14 — Connect the real sample workflow to the Living Game Workshop
+
+- **Actor/model surface:** Codex repository implementation, official `@openai/codex-sdk` live run, real dashboard host, Godot 4.7, and explicit creator play confirmation
+- **Workflow stage:** Implement / Review / Document; Complete pending supported-browser evidence
+- **Human decisions:** Approved Task 3 only; required the protected v0.1 service semantics and default/legacy launches to remain unchanged; explicitly reported `I saw it work` after playing the launched Godot result; prohibited GPT planning, starters, generated projects, sample art, and UI frameworks.
+- **AI contribution:** Replaced fixture sample state with a presentation adapter over the authoritative dashboard snapshot; recomposed Project World, Quest Forge, Active Build, Playtest Gate, confirmation, Proof, Chronicle, completion, failure, and reset states; connected approval cancellation to the existing host route; added focused real-state adapter/source tests; performed the live run, reload, and reset checks; recorded sanitized evidence and the browser-tooling limitation.
+- **Files changed:** v0.2 application and styles; sample presentation adapter; dashboard API cancellation wrapper; focused tests; `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog; Task 3 evidence, handoff, review, pending closeout; this log.
+- **Verification:** `npm test` passed 52/52; `npm run check:v0.1` passed the production build and 37/37 protected tests; live run `enemy-targeting-1784006264583` rejected duplicate approval, delivered all five stages, changed exactly the three approved files, produced zero unexpected files, passed repository and Godot verification, launched Godot, remained incomplete until explicit creator confirmation, persisted final `PASS`, reloaded completion after host restart, preserved completion on cancelled reset, restored the available baseline on confirmed reset, and passed the post-reset Godot verifier.
+- **Known limitation:** The installed in-app Browser plugin failed before tab creation with `Cannot redefine property: process`; required screenshots, console inspection, and responsive visual review remain unclaimed and block Task 3 completion.
+- **Commit:** Created after final checks; exact SHA reported in the task response
+- **Session ID:** Live run ID `enemy-targeting-1784006264583`; sanitized Codex thread data was reset with the demo workspace after persistence evidence was recorded; primary `/feedback` ID pending
+- **Next step:** Restore the supported browser-review connection, capture the required real-state evidence, and promote Task 3 to complete before Task 4.

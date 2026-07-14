@@ -33,6 +33,18 @@ Automated proof and creator confirmation remain separate gates: passing checks p
 - Live implementation requires internet access and Codex authentication.
 - Plan refinement, contextual questions, generalized project scanning, additional engines, and broader Chronicle features are not part of this checkpoint.
 
+## v0.2 Task 3 — Living Game Workshop sample integration
+
+**Date:** 2026-07-14
+**Status:** Product path implemented and creator-confirmed; visual review pending
+
+- The v0.2 sample Project World now reads the real protected workspace, roadmap, quest, plan, review, completion, and Chronicle artifacts.
+- Quest Forge, Active Build, Playtest Gate, creator confirmation, Quest Complete, Proof, reset, and failure states use the new workshop visual system while calling the existing v0.1 host services.
+- The official-SDK rehearsal changed exactly the three approved Godot files, passed automated verification, launched Godot, received explicit creator confirmation, persisted final completion, reloaded after host restart, and restored the baseline through confirmed reset.
+- `npm run forge` and `npm run forge:v0.1` remain unchanged; the integrated path remains `npm run forge:v0.2`.
+- Create, GPT planning, project generation, generated-project persistence, and idea-to-quest behavior remain unavailable.
+- Supported-browser screenshot, console, and responsive review is pending because the installed Browser plugin failed before tab creation. No screenshot substitute is presented as real evidence.
+
 ### First-time judge usability refinement
 
 Direct observations from a real first-time run drove this focused update:

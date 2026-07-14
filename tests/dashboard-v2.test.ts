@@ -4,66 +4,138 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { sampleWorldFixture } from "../src/dashboard-v2/fixture.js";
+import {
+  implementationPlanSchema,
+  questCompletionSchema,
+  questSchema,
+  reviewResultSchema,
+  roadmapSchema,
+} from "../src/contracts/index.js";
+import type { DashboardSnapshot } from "../src/dashboard/shared.js";
+import { buildSampleWorkflowPresentation } from "../src/dashboard-v2/sample-workflow.js";
 import { returnToLaunchpad, viewForLaunchChoice } from "../src/dashboard-v2/state.js";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("v0.2 launch choices navigate to honest isolated preview states", () => {
+async function readJson(relativePath: string): Promise<unknown> {
+  return JSON.parse(await readFile(path.join(repositoryRoot, relativePath), "utf8")) as unknown;
+}
+
+async function sampleSnapshot(): Promise<DashboardSnapshot> {
+  const [roadmap, quest, plan] = await Promise.all([
+    readJson("fixtures/godot/baseline/.forge/roadmap.json").then((value) => roadmapSchema.parse(value)),
+    readJson("fixtures/godot/baseline/.forge/quests/enemy-targeting.json").then((value) => questSchema.parse(value)),
+    readJson("fixtures/godot/baseline/.forge/plans/enemy-targeting.json").then((value) => implementationPlanSchema.parse(value)),
+  ]);
+  return {
+    project: { projectId: "sample-game", name: "Sample Game", engine: "Godot 4.7", workspaceStatus: "created" },
+    phase: "world_ready",
+    runStartedAt: null,
+    roadmap,
+    quest,
+    plan,
+    progress: [],
+    handoff: null,
+    review: null,
+    completion: null,
+    technicalEvents: [],
+    notice: null,
+    error: null,
+  };
+}
+
+test("v0.2 launch choices route to the real sample path and honest creation placeholder", () => {
   assert.equal(viewForLaunchChoice("explore_sample"), "sample_world");
   assert.equal(viewForLaunchChoice("create_game"), "create_placeholder");
   assert.equal(returnToLaunchpad(), "launchpad");
 });
 
-test("sample Project World fixture exposes the exact required roadmap states", () => {
-  assert.deepEqual(
-    sampleWorldFixture.quests.map(({ id, state }) => ({ id, state })),
-    [
-      { id: "player-movement", state: "completed" },
-      { id: "enemy-targeting", state: "available" },
-      { id: "game-feel", state: "planned" },
-      { id: "polish", state: "future" },
-      { id: "new-idea", state: "idea" },
-    ],
-  );
-  assert.equal(sampleWorldFixture.quests.filter((quest) => quest.recommended).length, 1);
-  assert.equal(sampleWorldFixture.quests.find((quest) => quest.recommended)?.id, "enemy-targeting");
+test("real sample adapter distinguishes fresh, preserved, active, and completed workspace states", async () => {
+  const fresh = await sampleSnapshot();
+  const freshPresentation = buildSampleWorkflowPresentation(fresh);
+  assert.equal(freshPresentation.workspaceState, "fresh");
+  assert.equal(freshPresentation.nodes.find((node) => node.authoritative)?.state, "available");
+  assert.equal(freshPresentation.proofAvailable, false);
+  assert.equal(freshPresentation.chronicleAvailable, false);
+
+  const preserved = buildSampleWorkflowPresentation({
+    ...fresh,
+    project: { ...fresh.project, workspaceStatus: "preserved" },
+  });
+  assert.equal(preserved.workspaceState, "preserved");
+
+  const active = buildSampleWorkflowPresentation({
+    ...fresh,
+    phase: "implementation_running",
+    runStartedAt: "2026-07-14T12:00:00.000Z",
+    progress: ["Inspecting approved files", "Preparing the change"],
+  });
+  assert.equal(active.workspaceState, "in_progress");
+  assert.equal(active.currentStage, "Preparing the change");
+  assert.equal(active.nodes.find((node) => node.authoritative)?.state, "active");
+  assert.equal(active.runLabel, null);
+  assert.equal(active.resetEligible, false);
+
+  const [completion, review] = await Promise.all([
+    readJson("docs/templates/quest-completion.template.json").then((value) => questCompletionSchema.parse(value)),
+    readJson("docs/templates/review-result.template.json").then((value) => reviewResultSchema.parse(value)),
+  ]);
+  const completedRoadmap = roadmapSchema.parse({
+    ...fresh.roadmap,
+    quests: fresh.roadmap.quests.map((quest) => ({ ...quest, state: "completed" })),
+    updatedAt: completion.completedAt,
+  });
+  const completed = buildSampleWorkflowPresentation({
+    ...fresh,
+    phase: "quest_complete",
+    roadmap: completedRoadmap,
+    completion,
+    review,
+  });
+  assert.equal(completed.workspaceState, "completed");
+  assert.equal(completed.nodes.find((node) => node.authoritative)?.state, "completed");
+  assert.equal(completed.proofAvailable, true);
+  assert.equal(completed.chronicleAvailable, true);
+  assert.equal(completed.runLabel, completion.runId);
 });
 
-test("v0.2 source keeps roadmap semantics, placeholder honesty, and companion states explicit", async () => {
-  const [app, styles, html, packageJsonText] = await Promise.all([
+test("v0.2 source connects the protected API while keeping creation and ideas honest", async () => {
+  const [app, adapter, styles, html, packageJsonText] = await Promise.all([
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "App.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "sample-workflow.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "styles.css"), "utf8"),
     readFile(path.join(repositoryRoot, "v0.2.html"), "utf8"),
     readFile(path.join(repositoryRoot, "package.json"), "utf8"),
   ]);
 
+  assert.match(app, /loadDashboard/);
+  assert.match(app, /subscribeToDashboard/);
+  assert.match(app, /approveQuest/);
+  assert.match(app, /cancelQuestApproval/);
+  assert.match(app, /launchGame/);
+  assert.match(app, /confirmCreatorResult/);
+  assert.match(app, /resetDemo/);
+  assert.doesNotMatch(app, /sampleWorldFixture/);
+  assert.match(adapter, /snapshot\.roadmap\.quests\.find/);
+  assert.match(adapter, /snapshot\.completion/);
   assert.match(app, /What would you like to build\?/);
-  assert.match(app, /sample-miniature/);
-  assert.match(app, /create-miniature/);
-  assert.match(app, /Explore sample world/);
-  assert.match(app, /Start a new game/);
-  assert.equal(app.match(/<RoadmapConnector kind="current"/g)?.length, 1);
-  assert.equal(app.match(/<RoadmapConnector kind="planned"/g)?.length, 2);
-  assert.match(app, /className="roadmap-sequence"/);
-  assert.match(app, /className="idea-port"/);
-  assert.match(app, /\+ Add an idea/);
-  assert.doesNotMatch(app, /<QuestModule[^>]+new-idea/);
-  assert.match(app, /This quest creates the first real\s+encounter/);
-  assert.match(app, /Upcoming v0\.2 capability/);
+  assert.match(app, /What will change\?/);
+  assert.match(app, /What may Codex change\?/);
+  assert.match(app, /How will we prove it\?/);
+  assert.match(app, /Approve & build with Codex/);
+  assert.match(app, /Live run through the official Codex SDK/);
+  assert.match(app, /Codex finished\. The code passed\. Now the game needs you\./);
+  assert.match(app, /I saw it work/);
+  assert.match(app, /It did not work/);
+  assert.match(app, /Cancel \/ not ready/);
+  assert.match(app, /What should we build next\?/);
+  assert.match(app, /preview only/i);
   assert.match(app, /No GPT call, project generation, or artifact creation is active/);
-  assert.match(app, /Review Enemy Targeting/);
-  assert.match(styles, /grid-template-columns: minmax\(135px, \.9fr\).*minmax\(185px, 1\.18fr\)/);
-  assert.match(styles, /\.online-segment \{ background: var\(--mint\)/);
+  assert.match(styles, /\.complete-segment \{ width: 100%; background: var\(--mint\)/);
   assert.match(styles, /\.available-segment \{ background: var\(--ember\)/);
   assert.match(styles, /\.planned-segment \{ width: 100%; border-top: 2px dashed/);
-  assert.match(styles, /\.idea-port::before/);
-  assert.match(styles, /@media \(max-width: 900px\)/);
-  assert.match(styles, /\.roadmap-sequence \{ min-height: 0; grid-template-columns: minmax\(0, 1fr\)/);
-  assert.match(styles, /\.companion-ready/);
-  assert.match(styles, /\.companion-focused/);
-  assert.match(styles, /\.companion-thinking/);
-  assert.match(styles, /\.companion-complete/);
+  assert.match(styles, /@media \(max-width: 768px\)/);
+  assert.match(styles, /@media \(max-width: 480px\)/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(html, /src\/dashboard-v2\/main\.tsx/);
 
