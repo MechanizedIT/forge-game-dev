@@ -33,6 +33,7 @@ function openBrowser(url: string): void {
 }
 
 const port = parsePort(process.env.FORGE_PORT);
+const legacyMode = process.argv.includes("--legacy");
 const service = new ForgeDashboardService({
   codexExecutor: new OfficialCodexExecutor(),
   gameLauncher: async (workspacePath) => {
@@ -57,7 +58,7 @@ server.once("error", (error: NodeJS.ErrnoException) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  const url = `http://127.0.0.1:${port}`;
+  const url = `http://127.0.0.1:${port}${legacyMode ? "/legacy.html" : ""}`;
   console.log(`Forge Workshop is ready: ${url}`);
   console.log("Close this terminal or press Ctrl+C to stop Forge.");
   openBrowser(url);

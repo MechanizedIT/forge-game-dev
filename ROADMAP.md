@@ -109,6 +109,37 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Checkpoint:** The focused usability work is implemented without a new workflow, state owner, or product capability. Review evidence records the one remaining narrow-window presentation check.
 
+### v0.2 — Living Game Workshop
+
+#### Task 1 — Protect the v0.1 baseline
+
+- [x] Confirm immutable tag `v0.1.0` and refined fallback commit `4d27612`.
+- [x] Create `feature/v0.2-living-workshop` from the refined fallback.
+- [x] Preserve the current sample component behind `npm run forge:v0.1` and `/legacy.html`.
+- [x] Keep `npm run forge` pointed at the existing experience.
+- [x] Add `npm run check:v0.1` for the protected compatibility boundary.
+- [x] Pass 37 focused compatibility tests, 49 full tests, production build, legacy HTTP smoke, and real Godot verification.
+- [x] Confirm no fixture, runner, verification, reset, completion, or sample-workspace behavior changed.
+
+**Exit:** The golden sample remains independently launchable and measurable before v0.2 interface work begins.
+
+#### Required v0.2 path
+
+- [ ] Build the Launchpad and Project World shell with fixture data.
+- [ ] Reframe the real sample flow inside the Living Game Workshop without changing backend semantics.
+- [ ] Add focused GPT-5.6 idea intake and Top-down arena blueprint generation.
+- [ ] Create and verify one real Top-down arena starter project.
+- [ ] Persist and reopen the generated roadmap, documentation, project state, and Chronicle.
+- [ ] Harden and rehearse both required paths end to end.
+
+#### Optional after required rehearsal
+
+- [ ] Apply the bounded sample visual-art pass.
+- [ ] Plan generated-quest Codex implementation as a separate task.
+- [ ] Add Side-scrolling platformer or Movement sandbox one at a time.
+
+**Scope:** The required starter is Top-down arena only. Do not build a generalized template framework or the other starters before the required experience works and has been rehearsed.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -143,4 +174,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The command-line loop, dashboard integration, clean-Windows rehearsal, and first-time usability refinement are preserved as `v0.1.0`. The usability work is recorded in its [plan](docs/plans/2026-07-13-v0.1.0-first-run-usability.md), [review](docs/reviews/2026-07-13-v0.1.0-first-run-usability-review.md), and [closeout](docs/closeouts/2026-07-13-v0.1.0-first-run-usability-closeout.md). The next bounded work is the manual narrow-window check followed by submission packaging: video, final links and metadata, `/feedback` ID, license decision, and an offline-fallback decision.
+Task 2 from [`PLAN.md`](PLAN.md): build the Launchpad and Project World shell with fixture data only. Keep the normal and legacy sample launches on the proven backend; do not begin GPT planning, blueprint contracts, starter creation, new-project persistence, or sample art in that task.

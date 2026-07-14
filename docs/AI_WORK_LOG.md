@@ -269,3 +269,17 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Documentation-only checkpoint commit created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Push the checkpoint commit and annotated tag when authorized, then complete only the remaining submission packaging tasks.
+
+---
+
+## 2026-07-13 — Protect v0.1 before Forge v0.2 development
+
+- **Actor/model surface:** Codex repository implementation and verification
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Forge v0.2 with one required Top-down arena starter; deferred Side-scrolling platformer, Movement sandbox, generated-quest implementation, and sample art until the required path is stable; required an independently launchable v0.1 fallback and focused compatibility command before interface work.
+- **AI contribution:** Created `feature/v0.2-living-workshop`; preserved the original sample React component byte-for-byte behind a dedicated legacy entry; kept the normal Forge command unchanged; added the focused compatibility command and guard test; revised `PLAN.md` to the one-starter deadline; reviewed protected paths and recorded evidence.
+- **Files changed:** `PLAN.md`; package/build and legacy dashboard entry files; one compatibility test; project status, roadmap, Task 1 handoff/review/closeout, and this log.
+- **Verification:** `npm run check:v0.1` passed typechecking, production build, and 37/37 compatibility tests; `npm run check` passed 49/49 tests; `/legacy.html` returned HTTP 200; Godot 4.7 emitted the full Enemy Targeting success token; the protected component hash matched the pre-task App; no fixture, runner, verification, reset, completion, contract, or demo-workspace file changed.
+- **Commit:** Created after this entry; exact SHA reported in the task response
+- **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
+- **Next step:** Build the Launchpad and Project World shell with fixture data only while keeping the normal and legacy sample paths on the proven backend.
