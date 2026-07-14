@@ -326,3 +326,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after final checks; exact SHA reported in the task response
 - **Session ID:** Live run ID `enemy-targeting-1784006264583`; sanitized Codex thread data was reset with the demo workspace after persistence evidence was recorded; primary `/feedback` ID pending
 - **Next step:** Restore the supported browser-review connection, capture the required real-state evidence, and promote Task 3 to complete before Task 4.
+
+---
+
+## 2026-07-14 — Complete Task 3 through the project-local browser-review fallback
+
+- **Actor/model surface:** Codex repository work, pinned `@playwright/test` `1.61.1`, installed Microsoft Edge `150.0.4078.65`, the real Forge host, official Codex SDK, Godot 4.7, and explicit creator confirmation
+- **Workflow stage:** Review / Document / Complete
+- **Human decisions:** Accepted Task 3 implementation and live rehearsal; authorized a project-local Playwright fallback after the installed Browser plugin repeatedly failed; allowed one bounded real workflow run; explicitly reported `I saw it work`; prohibited Task 4, GPT planning, project creation, persistence work, and fixture-only evidence presented as real.
+- **AI contribution:** Added a pinned Edge-first Playwright review command with Chrome/managed-Chromium fallback; captured real fresh, live, confirmation, completion, proof, reload, responsive, and reduced-motion states; enforced console, exception, same-origin network, overflow, action, navigation, and roadmap-order gates; corrected the discovered v0.2 favicon 404; documented the Browser plugin defect and promoted Task 3 artifacts to complete.
+- **Files changed:** `package.json`, lockfile, `src/visual-review/v0.2.ts`, `v0.2.html`, focused v0.2 source tests, browser reports/screenshots and sanitized live evidence, `PLAN.md`, `PROJECT_STATUS.md`, `ROADMAP.md`, changelog, Task 3 handoff/review/closeout, and this log.
+- **Verification:** Real review run `enemy-targeting-1784009287800` used the official SDK, changed exactly the three approved files, passed repository and Godot verification, reached the real play and creator gates, and persisted `PASS` only after the creator’s exact confirmation. Edge review passed at `1440×900`, `768×900`, and `390×844` with no console warnings/errors, page exceptions, React warnings, failed same-origin application requests, horizontal overflow, missing primary actions, or broken navigation; reduced-motion computed durations were zero or effectively zero. Full, protected compatibility, production-build, visual-review, and diff checks are rerun before commit.
+- **Known limitation:** The in-app Browser plugin still fails before tab creation with `Cannot redefine property: process`; the repository-local Playwright command is the documented repeatable fallback.
+- **Commit:** Created after final checks; exact SHA reported in the task response
+- **Session ID:** Live run `enemy-targeting-1784009287800`; primary submission `/feedback` ID remains pending
+- **Next step:** Stop for approval. Task 4 may add focused GPT-5.6 intake and a reviewable Top-down arena blueprint, without project creation.

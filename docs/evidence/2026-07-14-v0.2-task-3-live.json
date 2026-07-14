@@ -47,7 +47,15 @@
   },
   "postResetGodotCheck": "FORGE_FIXTURE_VERIFY_OK player=Player enemy=Enemy baseline=idle controls=arrows+wasd",
   "visualEvidence": {
-    "status": "blocked",
-    "reason": "The installed in-app Browser plugin failed before tab creation with: Cannot redefine property: process. No substitute screenshots were fabricated."
+    "status": "pass",
+    "browserPlugin": "Unavailable before tab creation with: Cannot redefine property: process",
+    "fallback": "Pinned project-local @playwright/test 1.61.1 using installed Microsoft Edge 150.0.4078.65",
+    "viewports": [
+      "1440x900",
+      "768x900",
+      "390x844"
+    ],
+    "reports": "docs/evidence/2026-07-14-v0.2-browser-review",
+    "result": "No console warnings/errors, uncaught exceptions, failed same-origin requests, horizontal overflow, missing primary actions, or broken navigation. Reduced-motion review passed."
   }
 }

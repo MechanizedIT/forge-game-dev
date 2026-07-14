@@ -36,14 +36,15 @@ Automated proof and creator confirmation remain separate gates: passing checks p
 ## v0.2 Task 3 — Living Game Workshop sample integration
 
 **Date:** 2026-07-14
-**Status:** Product path implemented and creator-confirmed; visual review pending
+**Status:** Complete — product path, creator confirmation, persistence, and responsive browser review passed
 
 - The v0.2 sample Project World now reads the real protected workspace, roadmap, quest, plan, review, completion, and Chronicle artifacts.
 - Quest Forge, Active Build, Playtest Gate, creator confirmation, Quest Complete, Proof, reset, and failure states use the new workshop visual system while calling the existing v0.1 host services.
 - The official-SDK rehearsal changed exactly the three approved Godot files, passed automated verification, launched Godot, received explicit creator confirmation, persisted final completion, reloaded after host restart, and restored the baseline through confirmed reset.
 - `npm run forge` and `npm run forge:v0.1` remain unchanged; the integrated path remains `npm run forge:v0.2`.
 - Create, GPT planning, project generation, generated-project persistence, and idea-to-quest behavior remain unavailable.
-- Supported-browser screenshot, console, and responsive review is pending because the installed Browser plugin failed before tab creation. No screenshot substitute is presented as real evidence.
+- The installed Browser plugin failed before tab creation, so the pinned project-local Playwright `1.61.1` fallback reviewed the real host in Edge at `1440×900`, `768×900`, and `390×844`. Real-state screenshots, console/network checks, navigation, overflow, primary actions, mobile roadmap order, and reduced-motion behavior pass.
+- The first fallback pass found a missing favicon 404; an inline code-native v0.2 Forge favicon corrected it without changing workflow behavior.
 
 ### First-time judge usability refinement
 

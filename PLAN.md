@@ -284,13 +284,13 @@ Task 2.1 replaces the free-form, crossing graph with one semantic sequence: **Fo
 
 The Launchpad now previews the experience behind each path: the sample choice contains a miniature game stage and verified quest rail; the create choice shows plain-language input becoming a three-node roadmap. Both desktop actions remain above the 1440×900 fold. The Project World uses one industrial sci-fi workbench, a larger game-like arena snapshot, open roadmap space, restrained machined structure, and a vertical semantic sequence at narrow widths. All behavior remains fixture-only.
 
-## Task 3 — implemented, review pending
+## Task 3 — complete
 
 The sample choice now loads the authoritative dashboard snapshot and reuses the existing approval, official SDK runner, five-stage progress, diff review, verification, Godot launch, exact creator confirmation, completion, Chronicle, restart, and reset services. Quest Forge, Active Build, Playtest Gate, Proof, Quest Complete, and failure/reset states are recomposed inside the Living Game Workshop without a new workflow owner.
 
-Live run `enemy-targeting-1784006264583` changed exactly the three approved files, rejected a duplicate start, passed repository and Godot checks, launched Godot 4.7, remained incomplete after game exit, received explicit creator confirmation, persisted final `PASS`, reloaded completion after a host restart, preserved it on cancelled reset, and restored the available baseline on confirmed reset.
+Live runs changed exactly the three approved files, rejected duplicate starts, passed repository and Godot checks, launched Godot 4.7, remained incomplete after game exit, received explicit creator confirmation, persisted final `PASS`, and reloaded completed roadmap and Chronicle state. The accepted fallback-review run is `enemy-targeting-1784009287800`.
 
-Task 3 is not complete because the installed supported Browser plugin failed before opening a tab. The required eight screenshots, console review, and responsive visual checks remain. Do not begin Task 4 until that review evidence is captured and the Task 3 verdict is promoted from `CONDITIONAL PASS` to `PASS`.
+The installed Browser plugin remained unavailable, so a pinned project-local Playwright `1.61.1` harness reviewed the real host in Edge at `1440×900`, `768×900`, and `390×844`. Launchpad, fresh World, Quest Forge, Active Build, Playtest Gate, desktop/mobile confirmation, Quest Complete, completed proof, reloaded World, and reduced-motion evidence pass without console warnings/errors, page exceptions, failed same-origin requests, horizontal overflow, missing primary actions, or broken navigation. Task 3’s verdict is `PASS`; Task 4 still requires separate approval.
 
 ## Rollback strategy
 

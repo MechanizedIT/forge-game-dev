@@ -100,12 +100,13 @@ test("real sample adapter distinguishes fresh, preserved, active, and completed 
 });
 
 test("v0.2 source connects the protected API while keeping creation and ideas honest", async () => {
-  const [app, adapter, styles, html, packageJsonText] = await Promise.all([
+  const [app, adapter, styles, html, packageJsonText, visualReview] = await Promise.all([
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "App.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "sample-workflow.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "styles.css"), "utf8"),
     readFile(path.join(repositoryRoot, "v0.2.html"), "utf8"),
     readFile(path.join(repositoryRoot, "package.json"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2.ts"), "utf8"),
   ]);
 
   assert.match(app, /loadDashboard/);
@@ -138,9 +139,21 @@ test("v0.2 source connects the protected API while keeping creation and ideas ho
   assert.match(styles, /@media \(max-width: 480px\)/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(html, /src\/dashboard-v2\/main\.tsx/);
+  assert.match(html, /rel="icon"/);
+  assert.match(visualReview, /channel: "msedge"/);
+  assert.match(visualReview, /channel: "chrome"/);
+  assert.match(visualReview, /Horizontal overflow/);
+  assert.match(visualReview, /prefers-reduced-motion|reducedMotion/);
+  assert.match(visualReview, /pageerror/);
+  assert.match(visualReview, /requestfailed/);
 
-  const packageJson = JSON.parse(packageJsonText) as { scripts: Record<string, string> };
+  const packageJson = JSON.parse(packageJsonText) as {
+    scripts: Record<string, string>;
+    devDependencies: Record<string, string>;
+  };
   assert.equal(packageJson.scripts.forge, "npm run dashboard:build && npm run dashboard:host");
   assert.equal(packageJson.scripts["forge:v0.1"], "npm run dashboard:build && npm run dashboard:host -- --legacy");
   assert.equal(packageJson.scripts["forge:v0.2"], "npm run dashboard:build && npm run dashboard:host -- --v0.2");
+  assert.equal(packageJson.scripts["visual:review:v0.2"], "tsx src/visual-review/v0.2.ts");
+  assert.equal(packageJson.devDependencies["@playwright/test"], "1.61.1");
 });
