@@ -1,18 +1,26 @@
-import { lstat, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { lstat, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { GeneratedAllowedFile, GeneratedQuestRunJournal } from "../contracts/index.js";
-import { readContainedUtf8File, runGit, sha256 } from "./boundary.js";
+import { readContainedUtf8File, runGit, sha256, validateExpectedAbsentWorkFile } from "./boundary.js";
 
 export interface GeneratedPreimage {
   relativePath: string;
   sha256: string;
   contentsBase64: string;
+  kind?: "existing";
+}
+
+export interface GeneratedAbsentPreimage {
+  relativePath: string;
+  kind: "new";
+  expectedAbsent: true;
 }
 
 export interface GeneratedPreimageBundle {
   runId: string;
-  files: GeneratedPreimage[];
+  files: Array<GeneratedPreimage | GeneratedAbsentPreimage>;
+  schemaVersion?: 2;
 }
 
 export class GeneratedConcurrentEditError extends Error {
@@ -38,12 +46,21 @@ export async function captureGeneratedPreimages(
   allowedFiles: GeneratedAllowedFile[],
 ): Promise<GeneratedPreimageBundle> {
   const files = await Promise.all(allowedFiles.map(async (allowed) => {
+    if ("kind" in allowed && allowed.kind === "new") {
+      await validateExpectedAbsentWorkFile(projectPath, allowed.relativePath);
+      return { relativePath: allowed.relativePath, kind: "new" as const, expectedAbsent: true as const };
+    }
     const file = await readContainedUtf8File(projectPath, allowed.relativePath);
-    if (file.sha256 !== allowed.preSha256) throw new Error(`Preimage hash changed before capture: ${allowed.relativePath}`);
+    if (!("preSha256" in allowed) || file.sha256 !== allowed.preSha256) throw new Error(`Preimage hash changed before capture: ${allowed.relativePath}`);
     const bytes = await readFile(path.join(projectPath, allowed.relativePath));
-    return { relativePath: allowed.relativePath, sha256: file.sha256, contentsBase64: bytes.toString("base64") };
+    return {
+      relativePath: allowed.relativePath,
+      sha256: file.sha256,
+      contentsBase64: bytes.toString("base64"),
+      ...("kind" in allowed ? { kind: "existing" as const } : {}),
+    };
   }));
-  return { runId, files };
+  return allowedFiles.some((allowed) => "kind" in allowed) ? { schemaVersion: 2, runId, files } : { runId, files };
 }
 
 export async function exactRollbackGeneratedRun(options: {
@@ -70,13 +87,22 @@ export async function exactRollbackGeneratedRun(options: {
   if (concurrent.length > 0) throw new GeneratedConcurrentEditError(concurrent.sort());
   for (const relativePath of journal.changedFiles) {
     const preimage = preimages.get(relativePath)!;
+    if (preimage.kind === "new") {
+      await unlink(path.join(journal.canonicalProjectPath, relativePath));
+      continue;
+    }
     const bytes = Buffer.from(preimage.contentsBase64, "base64");
     if (sha256(bytes) !== preimage.sha256) throw new Error(`Rollback preimage is corrupt: ${relativePath}`);
     await writeBufferAtomic(path.join(journal.canonicalProjectPath, relativePath), bytes);
   }
   for (const relativePath of journal.changedFiles) {
+    const preimage = preimages.get(relativePath)!;
+    if (preimage.kind === "new") {
+      if (await lstat(path.join(journal.canonicalProjectPath, relativePath)).catch(() => null)) throw new Error(`Rollback deletion failed: ${relativePath}`);
+      continue;
+    }
     const restored = sha256(await readFile(path.join(journal.canonicalProjectPath, relativePath)));
-    if (restored !== preimages.get(relativePath)!.sha256) throw new Error(`Rollback verification failed: ${relativePath}`);
+    if (restored !== preimage.sha256) throw new Error(`Rollback verification failed: ${relativePath}`);
   }
   return [...journal.changedFiles].sort();
 }

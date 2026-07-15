@@ -148,7 +148,7 @@ test("legacy quest and system statuses follow the exact compatibility truth tabl
     assert.equal(deriveLegacyQuestStatus(persisted, { phase: "cancelled" }), persisted);
     assert.equal(deriveLegacyQuestStatus(persisted, { phase: "interrupted" }), persisted);
   }
-  for (const phase of ["approved", "implementing", "verifying", "waiting_for_playtest", "completion_pending"] as const) {
+  for (const phase of ["approved", "implementing", "scope_review", "verifying", "waiting_for_playtest", "completion_pending"] as const) {
     assert.equal(deriveLegacyQuestStatus("available", { phase }), "active");
     assert.equal(deriveLegacyQuestStatus("completed", { phase }), "completed");
   }

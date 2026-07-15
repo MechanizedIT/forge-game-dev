@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import {
   generatedQuestArtifactV2Schema,
   generatedQuestImplementationContractSchema,
+  generatedQuestImplementationContractV1Schema,
+  generatedQuestImplementationContractV2Schema,
   generatedRoadmapV2Schema,
   type GeneratedQuestArtifactAny,
   type GeneratedQuestArtifactV2,
@@ -11,7 +13,7 @@ import {
   type GeneratedRoadmapV2,
   type Roadmap,
 } from "../contracts/index.js";
-import { readContainedUtf8File } from "./boundary.js";
+import { readContainedUtf8File, validateExpectedAbsentWorkFile } from "./boundary.js";
 import { profileForQuest } from "./profiles.js";
 
 const roleCatalog = {
@@ -103,13 +105,58 @@ export async function buildGeneratedQuestContract(options: {
   dependencyStates: Map<string, GeneratedQuestPlanState>;
 }): Promise<GeneratedQuestImplementationContract> {
   const { quest } = options;
-  const profile = profileForQuest(quest);
-  if (!profile) throw new Error("This planned quest has no registered Forge existing-file implementation profile.");
   if (quest.state !== "available") throw new Error("Only an available generated quest can be prepared.");
   if (quest.implementation !== "not_enabled") throw new Error("The generated quest already has implementation provenance.");
   for (const dependency of quest.dependsOn) {
     if (options.dependencyStates.get(dependency) !== "completed") throw new Error(`Quest dependency is incomplete: ${dependency}`);
   }
+  if (quest.workOrder) {
+    const allowedFiles = [
+      ...await Promise.all(quest.workOrder.existingFiles.map(async (relativePath) => {
+        const file = await readContainedUtf8File(options.projectPath, relativePath);
+        return { kind: "existing" as const, relativePath, preSha256: file.sha256 };
+      })),
+      ...await Promise.all(quest.workOrder.newFiles.map(async (relativePath) => {
+        await validateExpectedAbsentWorkFile(options.projectPath, relativePath);
+        return { kind: "new" as const, relativePath, encoding: "utf-8" as const };
+      })),
+    ];
+    const proofReferences = ["boundary", "project_health", ...(quest.verificationProfile ? ["mechanic" as const] : []), "creator"] as const;
+    const parsedWithPlaceholder = generatedQuestImplementationContractV2Schema.parse({
+      schemaVersion: 2,
+      projectId: quest.projectId,
+      questId: quest.questId,
+      questRevision: quest.revision,
+      visibleOutcome: quest.visibleOutcome,
+      whyItMatters: quest.whyItMatters,
+      currentPlayableFacts: quest.currentPlayableFacts,
+      steps: [{ id: "STEP-1", summary: "Make the approved player-visible change inside the reviewed files.", filePaths: allowedFiles.map((file) => file.relativePath) }],
+      allowedFiles,
+      excludedScope: quest.scope.excluded,
+      acceptanceCriteria: quest.acceptanceCriteria.map((criterion) => ({
+        id: criterion.id,
+        criterion: criterion.criterion,
+        proofReferences,
+      })),
+      verificationProfile: quest.verificationProfile,
+      creatorPlaySteps: [
+        "Launch the real game from Forge.",
+        `Confirm that ${quest.visibleOutcome.charAt(0).toLowerCase()}${quest.visibleOutcome.slice(1)}`,
+      ],
+      risksAndAssumptions: [
+        "Forge will stop if Codex writes outside the approved files.",
+        "Extra mechanic proof may be unavailable; creator play confirmation remains required.",
+      ],
+      fingerprint: "0".repeat(64),
+    });
+    const { fingerprint: _placeholder, ...withoutFingerprint } = parsedWithPlaceholder;
+    return generatedQuestImplementationContractV2Schema.parse({
+      ...withoutFingerprint,
+      fingerprint: contractFingerprint(withoutFingerprint),
+    });
+  }
+  const profile = profileForQuest(quest);
+  if (!profile) throw new Error("This planned quest has no registered Forge existing-file implementation profile or approved work order.");
   const catalog = roleCatalog[`${options.starterId}@${options.starterVersion}` as keyof typeof roleCatalog];
   if (!catalog) throw new Error("The starter version has no Forge-owned editable-file role catalog.");
   const allowedFiles = await Promise.all(quest.editableFileRoles.map(async (role) => {
@@ -118,7 +165,7 @@ export async function buildGeneratedQuestContract(options: {
     const file = await readContainedUtf8File(options.projectPath, relativePath);
     return { role, relativePath, preSha256: file.sha256 };
   }));
-  const parsedWithPlaceholder = generatedQuestImplementationContractSchema.parse({
+  const parsedWithPlaceholder = generatedQuestImplementationContractV1Schema.parse({
     schemaVersion: 1 as const,
     projectId: quest.projectId,
     questId: quest.questId,
@@ -136,7 +183,7 @@ export async function buildGeneratedQuestContract(options: {
     fingerprint: "0".repeat(64),
   });
   const { fingerprint: _placeholder, ...withoutFingerprint } = parsedWithPlaceholder;
-  return generatedQuestImplementationContractSchema.parse({
+  return generatedQuestImplementationContractV1Schema.parse({
     ...withoutFingerprint,
     fingerprint: contractFingerprint(withoutFingerprint),
   });

@@ -27,6 +27,7 @@ export interface GeneratedQuestRunSnapshot {
   changedFiles: string[];
   creatorResult: GeneratedCreatorResult | null;
   error: string | null;
+  scopeRequest: { paths: string[]; reason: string } | null;
   recovery: {
     action: "none" | "resume" | "retry" | "rollback" | "manual";
     message: string;

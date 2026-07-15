@@ -6,6 +6,10 @@ import type { ThreadEvent } from "@openai/codex-sdk";
 
 import {
   gameBlueprintSchema,
+  generatedQuestArtifactAnySchema,
+  generatedQuestArtifactV2Schema,
+  generatedRoadmapV2Schema,
+  roadmapSchema,
   godotVerificationResultSchema,
   type GameBlueprint,
 } from "../../src/contracts/index.js";
@@ -14,6 +18,8 @@ import { acceptRoadmap, buildBlueprintProposal, createSignalSweepRoadmap } from 
 import { ProjectCreationService } from "../../src/project-creation/service.js";
 import type { ApprovedBlueprintEnvelope } from "../../src/project-creation/shared.js";
 import type { CodexExecutor, CodexRunRequest, CodexRunSession } from "../../src/quest-runner/types.js";
+import { runGit } from "../../src/generated-quest-runner/boundary.js";
+import { normalizeGeneratedQuest, normalizeGeneratedRoadmap } from "../../src/generated-quest-runner/contract.js";
 
 export const fixtureTime = "2026-07-14T20:00:00.000Z";
 
@@ -170,11 +176,16 @@ export const passingProofDependencies = {
 };
 
 export class MutatingCodexExecutor implements CodexExecutor {
-  constructor(private readonly mutate: (request: CodexRunRequest) => Promise<void>, private readonly failAfterMutation = false) {}
+  constructor(
+    private readonly mutate: (request: CodexRunRequest) => Promise<void>,
+    private readonly failAfterMutation = false,
+    private readonly agentMessage: string | null = null,
+  ) {}
 
   async start(request: CodexRunRequest): Promise<CodexRunSession> {
     const mutate = this.mutate;
     const fail = this.failAfterMutation;
+    const agentMessage = this.agentMessage;
     return {
       events: (async function* () {
         yield { type: "thread.started", thread_id: "thread-generated-test" } as ThreadEvent;
@@ -184,6 +195,9 @@ export class MutatingCodexExecutor implements CodexExecutor {
         if (fail) {
           yield { type: "turn.failed", error: { message: "Injected SDK failure after an allowed edit" } } as ThreadEvent;
           return;
+        }
+        if (agentMessage) {
+          yield { type: "item.completed", item: { id: "message-1", type: "agent_message", text: agentMessage } } as unknown as ThreadEvent;
         }
         yield {
           type: "turn.completed",
@@ -203,6 +217,48 @@ export async function applyOrbChange(request: CodexRunRequest): Promise<void> {
     .replace("OBJECTIVE · Reach the signal relay", "OBJECTIVE · Find the gravity orb");
   assert.notEqual(changed, scene);
   await writeFile(scenePath, changed, "utf8");
+}
+
+export async function configureWelcomeBeaconQuest(fixture: GeneratedQuestFixture): Promise<void> {
+  const questPath = path.join(fixture.projectPath, ".forge", "quests", "q1-enter-the-arena.json");
+  const roadmapPath = path.join(fixture.projectPath, ".forge", "roadmap.json");
+  const questAny = generatedQuestArtifactAnySchema.parse(JSON.parse(await readFile(questPath, "utf8")) as unknown);
+  const quest = normalizeGeneratedQuest(questAny, "available");
+  const welcomeQuest = generatedQuestArtifactV2Schema.parse({
+    ...quest,
+    title: "Show the welcome beacon",
+    visibleOutcome: "A bright welcome beacon appears when the opening arena starts.",
+    whyItMatters: "The creator can immediately see that Forge added one new mechanic safely.",
+    scope: { included: ["One code-native welcome beacon"], excluded: ["New assets", "Project settings", "Unapproved files"] },
+    acceptanceCriteria: [{ id: "AC-1", criterion: "The opening arena shows one welcome beacon.", verificationIds: ["V-1"] }],
+    verificationIdeas: [{ id: "V-1", idea: "Launch the real game and confirm the welcome beacon is visible." }],
+    editableFileRoles: [],
+    verificationProfile: null,
+    workOrder: { existingFiles: ["scenes/main.tscn"], newFiles: ["scripts/welcome_beacon.gd"] },
+  });
+  const roadmapValue = JSON.parse(await readFile(roadmapPath, "utf8")) as unknown;
+  const roadmap = normalizeGeneratedRoadmap(generatedRoadmapV2Schema.safeParse(roadmapValue).success ? generatedRoadmapV2Schema.parse(roadmapValue) : roadmapSchema.parse(roadmapValue));
+  const welcomeRoadmap = generatedRoadmapV2Schema.parse({
+    ...roadmap,
+    quests: roadmap.quests.map((node) => node.questId === welcomeQuest.questId ? { ...node, title: welcomeQuest.title, summary: welcomeQuest.visibleOutcome } : node),
+  });
+  await writeFile(questPath, `${JSON.stringify(welcomeQuest, null, 2)}\n`, "utf8");
+  await writeFile(roadmapPath, `${JSON.stringify(welcomeRoadmap, null, 2)}\n`, "utf8");
+  runGit(fixture.projectPath, ["add", "--", ".forge/quests/q1-enter-the-arena.json", ".forge/roadmap.json"]);
+  runGit(fixture.projectPath, ["commit", "-m", "test: configure welcome beacon quest"]);
+}
+
+export async function applyWelcomeBeaconChange(request: CodexRunRequest): Promise<void> {
+  const scenePath = path.join(request.workspacePath, "scenes", "main.tscn");
+  const scriptPath = path.join(request.workspacePath, "scripts", "welcome_beacon.gd");
+  const scene = await readFile(scenePath, "utf8");
+  const changed = scene
+    .replace("[gd_scene load_steps=5 format=3]", "[gd_scene load_steps=6 format=3]")
+    .replace('[ext_resource type="Script" path="res://scripts/objective_marker.gd" id="3_objective"]', '[ext_resource type="Script" path="res://scripts/objective_marker.gd" id="3_objective"]\n[ext_resource type="Script" path="res://scripts/welcome_beacon.gd" id="4_welcome"]')
+    .replace('[node name="Title" type="Label" parent="."]', '[node name="WelcomeBeacon" type="Node2D" parent="."]\nscript = ExtResource("4_welcome")\n\n[node name="Title" type="Label" parent="."]');
+  assert.notEqual(changed, scene);
+  await writeFile(scenePath, changed, "utf8");
+  await writeFile(scriptPath, "extends Node2D\n\nfunc _draw() -> void:\n\tdraw_circle(Vector2(480, 180), 28.0, Color(0.4, 0.9, 1.0))\n", "utf8");
 }
 
 export const approvedAdjustment = {

@@ -8,15 +8,95 @@ import {
   captureControlledInventory,
   readContainedUtf8File,
   sha256,
+  validateExpectedAbsentWorkFile,
 } from "../src/generated-quest-runner/boundary.js";
 import { GeneratedQuestRunConflictError, GeneratedQuestRunnerService } from "../src/generated-quest-runner/service.js";
 import {
   applyOrbChange,
+  applyWelcomeBeaconChange,
   approvedAdjustment,
   createGeneratedQuestFixture,
+  configureWelcomeBeaconQuest,
   fixtureTime,
   MutatingCodexExecutor,
 } from "./helpers/generated-quest-fixture.js";
+
+test("profile-free rollback restores the scene and deletes only the unchanged approved new file", async () => {
+  const fixture = await createGeneratedQuestFixture();
+  try {
+    await configureWelcomeBeaconQuest(fixture);
+    const scenePath = path.join(fixture.projectPath, "scenes", "main.tscn");
+    const scriptPath = path.join(fixture.projectPath, "scripts", "welcome_beacon.gd");
+    const before = sha256(await readFile(scenePath));
+    const service = new GeneratedQuestRunnerService({
+      forgeHome: fixture.forgeHome,
+      now: () => new Date(fixtureTime),
+      randomId: () => "77777777-7777-7777-7777-777777777777",
+      codexExecutor: new MutatingCodexExecutor(applyWelcomeBeaconChange, true),
+    });
+    const prepared = await service.prepare(fixture.projectId, "q1-enter-the-arena");
+    await service.approve(fixture.projectId, "q1-enter-the-arena", prepared.contract.fingerprint, "APPROVE");
+    await service.start(fixture.projectId, "q1-enter-the-arena");
+    const failed = await service.waitForRun(fixture.projectId, "q1-enter-the-arena");
+    assert.equal(failed.recovery.action, "rollback");
+    const rolledBack = await service.rollback(fixture.projectId, "q1-enter-the-arena", "ROLL BACK REVIEWED CHANGES");
+    assert.equal(rolledBack.phase, "cancelled");
+    assert.equal(sha256(await readFile(scenePath)), before);
+    await assert.rejects(readFile(scriptPath), /ENOENT/u);
+  } finally { await fixture.cleanup(); }
+});
+
+test("a strict scope request pauses without expanding authority", async () => {
+  const fixture = await createGeneratedQuestFixture();
+  try {
+    await configureWelcomeBeaconQuest(fixture);
+    const marker = 'FORGE_SCOPE_REQUEST {"paths":["scripts/beacon_label.gd"],"reason":"The beacon label needs its own small script."}';
+    const service = new GeneratedQuestRunnerService({
+      forgeHome: fixture.forgeHome,
+      now: () => new Date(fixtureTime),
+      randomId: () => "88888888-8888-8888-8888-888888888888",
+      codexExecutor: new MutatingCodexExecutor(async () => {}, false, marker),
+    });
+    const prepared = await service.prepare(fixture.projectId, "q1-enter-the-arena");
+    await service.approve(fixture.projectId, "q1-enter-the-arena", prepared.contract.fingerprint, "APPROVE");
+    await service.start(fixture.projectId, "q1-enter-the-arena");
+    const paused = await service.waitForRun(fixture.projectId, "q1-enter-the-arena");
+    assert.equal(paused.phase, "scope_review");
+    assert.deepEqual(paused.scopeRequest?.paths, ["scripts/beacon_label.gd"]);
+    assert.deepEqual(paused.contract.allowedFiles.map((file) => file.relativePath), ["scenes/main.tscn", "scripts/welcome_beacon.gd"]);
+    assert.deepEqual(paused.changedFiles, []);
+    const cancelled = await service.cancel(fixture.projectId, "q1-enter-the-arena", "CANCEL");
+    assert.equal(cancelled.phase, "cancelled");
+  } finally { await fixture.cleanup(); }
+});
+
+test("a scope request after approved edits keeps the lock and offers exact rollback", async () => {
+  const fixture = await createGeneratedQuestFixture();
+  try {
+    await configureWelcomeBeaconQuest(fixture);
+    const scenePath = path.join(fixture.projectPath, "scenes", "main.tscn");
+    const scriptPath = path.join(fixture.projectPath, "scripts", "welcome_beacon.gd");
+    const before = sha256(await readFile(scenePath));
+    const marker = 'FORGE_SCOPE_REQUEST {"paths":["scripts/beacon_label.gd"],"reason":"A separate label script would improve the result."}';
+    const service = new GeneratedQuestRunnerService({
+      forgeHome: fixture.forgeHome,
+      now: () => new Date(fixtureTime),
+      randomId: () => "99999999-9999-9999-9999-999999999999",
+      codexExecutor: new MutatingCodexExecutor(applyWelcomeBeaconChange, false, marker),
+    });
+    const prepared = await service.prepare(fixture.projectId, "q1-enter-the-arena");
+    await service.approve(fixture.projectId, "q1-enter-the-arena", prepared.contract.fingerprint, "APPROVE");
+    await service.start(fixture.projectId, "q1-enter-the-arena");
+    const paused = await service.waitForRun(fixture.projectId, "q1-enter-the-arena");
+    assert.equal(paused.phase, "scope_review");
+    assert.equal(paused.recovery.action, "rollback");
+    assert.deepEqual(paused.changedFiles, ["scenes/main.tscn", "scripts/welcome_beacon.gd"]);
+    const rolledBack = await service.rollback(fixture.projectId, "q1-enter-the-arena", "ROLL BACK REVIEWED CHANGES");
+    assert.equal(rolledBack.phase, "cancelled");
+    assert.equal(sha256(await readFile(scenePath)), before);
+    await assert.rejects(readFile(scriptPath), /ENOENT/u);
+  } finally { await fixture.cleanup(); }
+});
 
 async function prepareFailedRun(service: GeneratedQuestRunnerService, projectId: string) {
   const adjusted = await service.adjust(projectId, "q1-enter-the-arena", { expectedRevision: 1, ...approvedAdjustment });
@@ -39,6 +119,14 @@ test("controlled inventory rejects path escape and junction traversal", async ()
       readContainedUtf8File(projectPath, "../outside/secret.gd"),
       /escapes the project/i,
     );
+    await mkdir(path.join(projectPath, "scripts"));
+    await validateExpectedAbsentWorkFile(projectPath, "scripts/new_script.gd");
+    await writeFile(path.join(projectPath, "scripts", "already.gd"), "extends Node\n", "utf8");
+    await assert.rejects(validateExpectedAbsentWorkFile(projectPath, "scripts/already.gd"), /already exists/i);
+    await assert.rejects(validateExpectedAbsentWorkFile(projectPath, ".forge/new.gd"), /protected/i);
+    await assert.rejects(validateExpectedAbsentWorkFile(projectPath, "scripts/verification.gd"), /verifier code/i);
+    await assert.rejects(validateExpectedAbsentWorkFile(projectPath, "scripts/new.txt"), /supported Godot text/i);
+    await assert.rejects(validateExpectedAbsentWorkFile(projectPath, "missing/new.gd"), /missing or unsafe parent/i);
     await symlink(outsidePath, path.join(projectPath, "linked-outside"), "junction");
     await assert.rejects(
       captureControlledInventory(projectPath),

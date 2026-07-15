@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-07-15
 
-**Current milestone:** `Alpha Pivot Milestone 1 — Open Project Model`
+**Current milestone:** `Alpha Pivot Milestone 2 — Profile-free, Creator-approved Work Sessions`
 
-**Overall state:** `ALPHA PIVOT MILESTONE 1 COMPLETE` — Generated Project World now exposes one open Project → Systems → Quests → Work Sessions → Results model. Broad systems may be planned before they contain quests, and focus may remain on an unrefined system. Existing v1/v2 projects reopen through a read-only compatibility adapter with exact session, result, Chronicle, and focus links. Arbitrary Godot systems and quests are representable without a capability or verification-profile permission. Generic profile-free Codex execution is still deferred because this milestone did not rewrite the runner.
+**Overall state:** `ALPHA PIVOT MILESTONE 2 COMPLETE` — An ordinary available quest can now run through the existing Forge runner from an exact creator-approved file scope. The scope may contain existing files and expected-new Godot text files. A profile may add extra proof, but it no longer grants permission. Exact approval, baseline Godot health, real play, creator confirmation, completion, reload, and safe undo remain required.
 
 ## What works now
 
@@ -38,6 +38,20 @@
 - Real Signal Sweep reopens with Quest 1 available, later quests blocked, session `run-q1-activate-the-signal-relay-1784097644808-d6b07df30793` still in `contract_review`, zero changed files, no result, and the same active-lock hash.
 - Before/after hashes match for the registry, every `.forge` record, all run files, both Git heads, both clean statuses, and both empty remote lists. No live project write or runner execution occurred.
 
+## Alpha Pivot Milestone 2 evidence
+
+- The test-owned **Show the welcome beacon** quest changes one approved existing scene and creates one approved new GDScript with `verificationProfile: null`.
+- It passes exact scope review and fixed pinned-Godot health, records optional mechanic proof as `not_run`, requires real launch plus exact creator `worked`, completes one local Git transaction and receipt, reloads from a fresh service, and leaves a clean worktree.
+- Recovery tests restore the exact existing scene and delete only the unchanged approved new script after every changed path passes preflight. Concurrent edits and undeclared files fail closed.
+- Strict scope requests enter `scope_review`, retain the project lock when reviewed changes exist, never add requested paths to authority, and offer exact rollback.
+- Exact v1 Gravity Tap fingerprint `2f90b794bdea0a224ba2ef64aef7ec2275de9f18cf8e5c37579d7e7082f0b572` and v1 proof rules remain protected.
+- The full suite passes 126/126. Protected v0.1 passes 38/38 with the production build. The focused milestone commands pass 72/72.
+- A corrected read-only live audit loaded both real projects and proved registry, project files, Forge records, Git HEAD/status, and remotes remained byte-identical. Gravity Tap remains completed at `f4cbba5928e22c0a3471239d7b67b490c7649a56`; Signal Sweep remains unchanged in `contract_review` with zero changed files.
+
+## How to test this milestone
+
+Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run check`, then `npm run check:v0.1`. The welcome-beacon proof is fully temporary and does not touch registered projects.
+
 ## Alpha Task B implementation evidence
 
 - Failure-first proposal/planner tests established the missing contract and provenance behavior before implementation. Additional regressions cover the creator's three-turn planning sequence, failed-state reset, and bounded retry for a transient Windows registry lock. The final suite passes 114/114 tests; the protected v0.1 suite remains 38/38.
@@ -67,6 +81,6 @@
 2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
 3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-The open project model is complete. Signal Sweep implementation/play/completion, profile-free generic Codex execution, native multi-system writing, open conversational planning, controlled new-file authority, import, generalized scanning, Graphify, Godot MCP, general chat, and sample art remain deferred. Task A still provides the only real completed generated-quest proof. Forge can represent arbitrary Godot systems and quests, but it does not yet execute arbitrary unprofiled work.
+The open project model and profile-free runner boundary are complete. Forge still lacks creator-facing work-order authoring, native multi-system writing, open conversational planning, external import, broad scanning, and the connected workspace shell. Signal Sweep remains unapproved and unimplemented. The next recommended milestone is the smallest persistent workspace shell and system roadmap; it must reuse existing actions and must not add new runner authority.
 
-See the [Alpha Pivot Milestone 1 review](docs/reviews/2026-07-15-alpha-pivot-project-model-review.md), [Alpha Task B implementation review](docs/reviews/2026-07-14-alpha-task-b-starter-aware-planning-review.md), [Alpha Task A review](docs/reviews/2026-07-14-alpha-task-a-generated-quest-loop-review.md), [showcase README](showcase/README.md), and [judge guide](docs/JUDGE_GUIDE.md).
+See the [Alpha Pivot Milestone 2 review](docs/reviews/2026-07-15-alpha-pivot-work-sessions-review.md), [Alpha Pivot Milestone 1 review](docs/reviews/2026-07-15-alpha-pivot-project-model-review.md), [Alpha Task A review](docs/reviews/2026-07-14-alpha-task-a-generated-quest-loop-review.md), and [judge guide](docs/JUDGE_GUIDE.md).

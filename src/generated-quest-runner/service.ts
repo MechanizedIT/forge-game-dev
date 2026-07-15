@@ -13,6 +13,7 @@ import {
   generatedQuestArtifactV2Schema,
   generatedQuestImplementationContractSchema,
   generatedQuestRunJournalSchema,
+  generatedScopeRequestSchema,
   generatedRoadmapV2Schema,
   gitBaselineResultSchema,
   roadmapSchema,
@@ -68,7 +69,7 @@ import {
   runGeneratedAutomatedProof,
   type GeneratedProofDependencies,
 } from "./verification.js";
-import { generatedProfileCatalog, profileForQuest } from "./profiles.js";
+import { generatedProfileCatalog } from "./profiles.js";
 
 const activeLockSchema = z.object({
   schemaVersion: z.literal(1),
@@ -163,6 +164,15 @@ function eventRecord(event: ThreadEvent): Record<string, unknown> {
     return { type: event.type, itemType: event.item.type };
   }
   return { type: event.type };
+}
+
+function scopeRequestFromEvent(event: ThreadEvent): z.infer<typeof generatedScopeRequestSchema> | null {
+  if (event.type !== "item.completed") return null;
+  const item = event.item as unknown as Record<string, unknown>;
+  if (item.type !== "agent_message" || typeof item.text !== "string" || !item.text.includes("FORGE_SCOPE_REQUEST")) return null;
+  const matches = [...item.text.matchAll(/(?:^|\r?\n)FORGE_SCOPE_REQUEST (\{[^\r\n]+\})$/gu)];
+  if (matches.length !== 1) throw new Error("Codex emitted an invalid Forge scope request marker.");
+  return generatedScopeRequestSchema.parse(JSON.parse(matches[0]![1]!) as unknown);
 }
 
 async function defaultLaunchGame(input: {
@@ -278,6 +288,7 @@ export class GeneratedQuestRunnerService {
     if (
       journal.runId !== runId
       || journal.canonicalProjectPath !== projectPath
+      || contract.schemaVersion !== journal.schemaVersion
       || contract.fingerprint !== journal.contractFingerprint
       || contract.projectId !== journal.projectId
       || contract.questId !== journal.questId
@@ -312,6 +323,7 @@ export class GeneratedQuestRunnerService {
       changedFiles: journal.changedFiles,
       creatorResult: journal.creatorResult,
       error: journal.error,
+      scopeRequest: journal.schemaVersion === 2 ? journal.scopeRequest : null,
       recovery: journal.recovery,
       receipt,
       actions: {
@@ -320,33 +332,35 @@ export class GeneratedQuestRunnerService {
         play: journal.phase === "waiting_for_playtest",
         confirm: journal.phase === "waiting_for_playtest",
         retry: journal.phase === "failed" && journal.changedFiles.length === 0,
-        cancel: ["contract_review", "approved", "implementing", "waiting_for_playtest"].includes(journal.phase),
+        cancel: ["contract_review", "approved", "implementing", "scope_review", "waiting_for_playtest"].includes(journal.phase),
         rollback: safeRollback,
       },
     };
   }
 
-  private async writeJournal(journal: GeneratedQuestRunJournal): Promise<GeneratedQuestRunJournal> {
-    const parsed = generatedQuestRunJournalSchema.parse({ ...journal, updatedAt: this.now().toISOString() });
+  private async writeJournal(journal: unknown): Promise<GeneratedQuestRunJournal> {
+    const parsedInput = generatedQuestRunJournalSchema.parse(journal);
+    const parsed = generatedQuestRunJournalSchema.parse({ ...parsedInput, updatedAt: this.now().toISOString() });
     await writeJsonAtomic(path.join(runDirectory(parsed.canonicalProjectPath, parsed.runId), "journal.json"), parsed);
     this.emit({ type: "refresh", projectId: parsed.projectId, questId: parsed.questId, phase: parsed.phase });
     return parsed;
   }
 
-  private progress(journal: GeneratedQuestRunJournal, message: string): GeneratedQuestRunJournal {
-    const progress = journal.progress.at(-1) === message ? journal.progress : [...journal.progress, message].slice(-24);
-    this.emit({ type: "progress", projectId: journal.projectId, questId: journal.questId, phase: journal.phase, message });
-    return { ...journal, progress };
+  private progress(journal: unknown, message: string): GeneratedQuestRunJournal {
+    const parsed = generatedQuestRunJournalSchema.parse(journal);
+    const progress = parsed.progress.at(-1) === message ? parsed.progress : [...parsed.progress, message].slice(-24);
+    this.emit({ type: "progress", projectId: parsed.projectId, questId: parsed.questId, phase: parsed.phase, message });
+    return generatedQuestRunJournalSchema.parse({ ...parsed, progress });
   }
 
   async getSummary(projectId: string, questId: string): Promise<GeneratedQuestRunnerSummary> {
     const project = await this.loadProject(projectId, questId);
     const lock = await this.readLock(project.projectPath);
     let reason: string | null = null;
-    const registered = project.quest.verificationProfile ? generatedProfileCatalog[project.quest.verificationProfile] : null;
-    if (!registered) reason = "This quest is planned, but Forge has no registered existing-file verifier for it.";
-    else if ((registered.preparedQuestId !== null && project.quest.questId !== registered.preparedQuestId) || project.quest.sequence !== 1) reason = "This quest does not match its Forge-owned prepared profile.";
-    else if (project.quest.revision < registered.minimumRevision) reason = "Adjust this outcome to the bounded gravity-orb quest before Build.";
+    const registered = project.quest.workOrder ? null : project.quest.verificationProfile ? generatedProfileCatalog[project.quest.verificationProfile] : null;
+    if (!project.quest.workOrder && !registered) reason = "This quest is planned, but Forge has no registered existing-file verifier for it.";
+    else if (!project.quest.workOrder && registered && ((registered.preparedQuestId !== null && project.quest.questId !== registered.preparedQuestId) || project.quest.sequence !== 1)) reason = "This quest does not match its Forge-owned prepared profile.";
+    else if (!project.quest.workOrder && registered && project.quest.revision < registered.minimumRevision) reason = "Adjust this outcome to the bounded gravity-orb quest before Build.";
     else if (project.quest.implementation !== "not_enabled") reason = "This quest is already completed.";
     else if (project.quest.state !== "available") reason = `This quest is ${project.quest.state}.`;
     else if (lock && lock.questId !== questId) reason = "Another generated quest run owns the project lock.";
@@ -489,8 +503,6 @@ export class GeneratedQuestRunnerService {
   async prepare(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
     const project = await this.loadProject(projectId, questId);
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("This project already has an active generated quest run.");
-    const profile = profileForQuest(project.quest);
-    if (!profile) throw new GeneratedQuestRunConflictError("This planned quest has no currently eligible Forge-owned existing-file profile.");
     const git = inspectCleanGitStart(project.projectPath, project.baselineHead);
     const startInventory = await captureControlledInventory(project.projectPath);
     const contract = await buildGeneratedQuestContract({
@@ -506,7 +518,7 @@ export class GeneratedQuestRunnerService {
     const runId = `run-${questId}-${this.now().getTime()}-${suffix}`;
     const createdAt = this.now().toISOString();
     const journal = generatedQuestRunJournalSchema.parse({
-      schemaVersion: 1,
+      schemaVersion: contract.schemaVersion,
       runId,
       projectId,
       questId,
@@ -517,10 +529,11 @@ export class GeneratedQuestRunnerService {
       startHead: git.startHead,
       contractFingerprint: contract.fingerprint,
       allowedFiles: contract.allowedFiles,
+      ...(contract.schemaVersion === 2 ? { scopeRequest: null } : {}),
       startInventory,
       observedPostHashes: {},
       changedFiles: [],
-      progress: ["Prepared the bounded quest contract for creator review."],
+      progress: [contract.schemaVersion === 2 ? "Prepared the creator-approved work contract for review." : "Prepared the bounded quest contract for creator review."],
       proofs: createPendingGeneratedProof(contract.verificationProfile),
       creatorResult: null,
       codexThreadId: null,
@@ -568,7 +581,7 @@ export class GeneratedQuestRunnerService {
       phase: "approved",
       error: null,
       recovery: { action: "resume", message: "The exact contract is approved and ready to start.", concurrentPaths: [] },
-    }, "Creator approved the exact existing-file implementation contract."));
+    }, run.contract.schemaVersion === 2 ? "Creator approved the exact work-session contract." : "Creator approved the exact existing-file implementation contract."));
     return this.snapshot(run.contract, journal, run.receipt);
   }
 
@@ -589,7 +602,7 @@ export class GeneratedQuestRunnerService {
       ...run.journal,
       phase: "implementing",
       recovery: { action: "none", message: "Codex is running inside the approved workspace boundary.", concurrentPaths: [] },
-    }, "Codex is updating only the approved existing game files."));
+    }, run.contract.schemaVersion === 2 ? "Codex is updating only the creator-approved game files." : "Codex is updating only the approved existing game files."));
     const execution = this.execute(journal, run.contract, context.prompt).finally(() => this.executions.delete(journal.runId));
     this.executions.set(journal.runId, execution);
     return this.snapshot(run.contract, journal, run.receipt);
@@ -600,10 +613,16 @@ export class GeneratedQuestRunnerService {
     let journal = initial;
     let codexError: string | null = null;
     let turnCompleted = false;
+    let scopeRequest: z.infer<typeof generatedScopeRequestSchema> | null = null;
     try {
       const session = await this.codexExecutor!.start({ prompt, workspacePath: journal.canonicalProjectPath });
       for await (const event of session.events) {
         events.push(eventRecord(event));
+        const requested = contract.schemaVersion === 2 ? scopeRequestFromEvent(event) : null;
+        if (requested) {
+          if (contract.schemaVersion !== 2 || scopeRequest) throw new Error("Codex emitted an unexpected or repeated Forge scope request.");
+          scopeRequest = requested;
+        }
         if (event.type === "thread.started" || event.type === "turn.started") journal = this.progress(journal, "Codex inspected the approved context and files.");
         if ((event.type === "item.started" || event.type === "item.updated" || event.type === "item.completed") && event.item.type === "file_change") {
           journal = this.progress(journal, "Codex is applying the bounded game change.");
@@ -618,18 +637,39 @@ export class GeneratedQuestRunnerService {
       codexError = (error instanceof Error ? error.message : String(error)).replaceAll(journal.canonicalProjectPath, "<generated-project>").slice(0, 2_000);
     }
     await writeJsonLinesAtomic(path.join(runDirectory(journal.canonicalProjectPath, journal.runId), "events.jsonl"), events.slice(-500));
-    const boundary = await reviewBoundary({
-      projectPath: journal.canonicalProjectPath,
-      startHead: journal.startHead,
-      startInventory: journal.startInventory,
-      allowedFiles: journal.allowedFiles,
-    });
+    let boundary;
+    try {
+      boundary = await reviewBoundary({
+        projectPath: journal.canonicalProjectPath,
+        startHead: journal.startHead,
+        startInventory: journal.startInventory,
+        allowedFiles: journal.allowedFiles,
+      });
+    } catch (error) {
+      const message = (error instanceof Error ? error.message : String(error)).replaceAll(journal.canonicalProjectPath, "<generated-project>").slice(0, 2_000);
+      await this.writeJournal(this.progress({
+        ...journal,
+        phase: "failed",
+        error: message,
+        recovery: { action: "manual", message: "Forge found an unsafe filesystem change and preserved the project for manual recovery.", concurrentPaths: [] },
+      }, "Forge stopped because the project boundary could not be inspected safely."));
+      return;
+    }
     journal = {
       ...journal,
       phase: "verifying",
       changedFiles: boundary.changedFiles,
       observedPostHashes: boundary.observedPostHashes,
     };
+    const authorityProblems = boundary.problems.filter((problem) => problem !== "Codex completed without changing an approved file.");
+    if (scopeRequest && !codexError && authorityProblems.length === 0) {
+      const scopedJournal = generatedQuestRunJournalSchema.parse({ ...journal, phase: "scope_review", scopeRequest });
+      const recovery = scopedJournal.changedFiles.length === 0
+        ? { action: "retry" as const, message: "Codex asked for more scope without changing the project. The request did not grant permission.", concurrentPaths: [] }
+        : await assessGeneratedRecovery(scopedJournal);
+      await this.writeJournal(this.progress({ ...scopedJournal, recovery }, "Codex paused and asked the creator to review more file scope. No authority was added."));
+      return;
+    }
     if (codexError || this.cancellationRequests.has(journal.runId)) {
       this.cancellationRequests.delete(journal.runId);
       const recovery = boundary.problems.some((problem) => /(?:New file|deleted|Unapproved|Git reported|HEAD changed)/u.test(problem))
@@ -651,18 +691,30 @@ export class GeneratedQuestRunnerService {
       verificationProfile: contract.verificationProfile,
       ...(this.proofDependencies ? { dependencies: this.proofDependencies } : {}),
     });
-    const verifiedBoundary = await reviewBoundary({
-      projectPath: journal.canonicalProjectPath,
-      startHead: journal.startHead,
-      startInventory: journal.startInventory,
-      allowedFiles: journal.allowedFiles,
-    });
+    let verifiedBoundary;
+    try {
+      verifiedBoundary = await reviewBoundary({
+        projectPath: journal.canonicalProjectPath,
+        startHead: journal.startHead,
+        startInventory: journal.startInventory,
+        allowedFiles: journal.allowedFiles,
+      });
+    } catch (error) {
+      const message = (error instanceof Error ? error.message : String(error)).replaceAll(journal.canonicalProjectPath, "<generated-project>").slice(0, 2_000);
+      await this.writeJournal(this.progress({
+        ...journal,
+        phase: "failed",
+        error: message,
+        recovery: { action: "manual", message: "Forge found an unsafe filesystem change during verification and preserved the project.", concurrentPaths: [] },
+      }, "Verification stopped because the project boundary was unsafe."));
+      return;
+    }
     const passed = automatedProofPassed(proofs);
     const recovery = passed
       ? { action: "resume" as const, message: "Automated proof passed; launch and play the real game.", concurrentPaths: [] }
       : verifiedBoundary.problems.some((problem) => /(?:New file|deleted|Unapproved|Git reported|HEAD changed)/u.test(problem))
         ? { action: "manual" as const, message: "Verification found changes outside the safe rollback boundary.", concurrentPaths: [] }
-        : await assessGeneratedRecovery({ ...journal, proofs, phase: "failed", changedFiles: verifiedBoundary.changedFiles, observedPostHashes: verifiedBoundary.observedPostHashes });
+        : await assessGeneratedRecovery(generatedQuestRunJournalSchema.parse({ ...journal, proofs, phase: "failed", changedFiles: verifiedBoundary.changedFiles, observedPostHashes: verifiedBoundary.observedPostHashes }));
     await this.writeJournal(this.progress({
       ...journal,
       proofs,
@@ -689,7 +741,9 @@ export class GeneratedQuestRunnerService {
     if (!lock || lock.questId !== questId) throw new GeneratedQuestRunNotFoundError("No generated playtest is active for this quest.");
     const run = await this.loadRun(project.projectPath, lock.runId);
     if (run.journal.phase !== "waiting_for_playtest" || !automatedProofPassed(run.journal.proofs)) {
-      throw new GeneratedQuestRunConflictError("All three automated proof layers must pass before the real playtest.");
+      throw new GeneratedQuestRunConflictError(run.contract.schemaVersion === 1
+        ? "All three automated proof layers must pass before the real playtest."
+        : "Boundary and project health must pass before the real playtest.");
     }
     const result = await this.launchGame({ projectId, projectPath: project.projectPath, forgeHome: this.forgeHome });
     await this.writeJournal(this.progress(run.journal, "The real game launched; creator confirmation is still required."));
@@ -708,7 +762,7 @@ export class GeneratedQuestRunnerService {
       const phase = result === "cancel" ? "cancelled" as const : result === "did_not_work" ? "failed" as const : "waiting_for_playtest" as const;
       const recovery = phase === "waiting_for_playtest"
         ? { action: "resume" as const, message: "The quest remains ready for another real playtest; it is not complete.", concurrentPaths: [] }
-        : await assessGeneratedRecovery({ ...run.journal, phase, creatorResult: result });
+        : await assessGeneratedRecovery(generatedQuestRunJournalSchema.parse({ ...run.journal, phase, creatorResult: result }));
       const journal = await this.writeJournal(this.progress({
         ...run.journal,
         phase,
@@ -734,7 +788,14 @@ export class GeneratedQuestRunnerService {
       creatorResult: "worked",
       proofs: {
         ...run.journal.proofs,
-        creator: { result: "passed", summary: generatedProfileCatalog[run.contract.verificationProfile].creatorSuccessSummary, evidence: [`Creator chose worked at ${confirmedAt}.`], verifiedAt: confirmedAt },
+        creator: {
+          result: "passed",
+          summary: run.contract.verificationProfile
+            ? generatedProfileCatalog[run.contract.verificationProfile].creatorSuccessSummary
+            : "The creator confirmed that the approved visible result worked in the real game.",
+          evidence: [`Creator chose worked at ${confirmedAt}.`],
+          verifiedAt: confirmedAt,
+        },
       },
       recovery: { action: "none", message: "Forge is rerunning proof before the atomic completion transaction.", concurrentPaths: [] },
     }, "Creator confirmed the visible result. Forge is rerunning all automated proof."));
@@ -752,7 +813,7 @@ export class GeneratedQuestRunnerService {
         phase: "failed",
         proofs: rerun,
         error: "Final automated proof failed after creator confirmation; no completion commit was created.",
-        recovery: await assessGeneratedRecovery({ ...journal, phase: "failed", proofs: rerun }),
+        recovery: await assessGeneratedRecovery(generatedQuestRunJournalSchema.parse({ ...journal, phase: "failed", proofs: rerun })),
       });
       return this.snapshot(run.contract, journal, null);
     }

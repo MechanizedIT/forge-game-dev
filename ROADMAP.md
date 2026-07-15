@@ -192,6 +192,21 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Generated Project World exposes the open hierarchy, both real compatibility projects reopen read-only, and the protected runner and UI behavior still pass.
 
+#### Alpha Pivot Milestone 2 — Profile-free Work Sessions
+
+- [x] Let an available quest prepare from one to four creator-approved existing or expected-new Godot text files without a verification profile.
+- [x] Keep exact v1 Gravity Tap and Signal Sweep contracts, fingerprints, prompts, proof, histories, and reload behavior.
+- [x] Run exact file-boundary review and fixed pinned-Godot project health for every new work session; record missing optional mechanic proof as `not_run`.
+- [x] Pause in `scope_review` when Codex asks for undeclared files without changing authority.
+- [x] Restore approved existing bytes and delete only unchanged run-owned approved new files after an all-path safety check.
+- [x] Prove approval, execution, play, creator confirmation, completion, one local Git receipt, restart reload, and exact undo with the test-owned welcome beacon.
+
+**Status:** `COMPLETE`. Creator-approved file scope now grants permission. Profiles add optional proof only. The existing runner remains the single execution path, and the current UI only gained the small wording needed to show existing/new files, no extra proof, and scope review.
+
+**Truth boundary:** Forge does not yet create or edit work orders through conversation or a file picker. The alpha proof uses a test-owned work order. External project import, broad scanning, non-Godot engines, and the new workspace shell remain separate milestones.
+
+**Exit:** The profile-free temporary project completes and undoes safely; all full and protected checks pass; live Gravity Tap and Signal Sweep read audits are byte-identical.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -226,10 +241,12 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Pivot Milestone 1 is complete in the uncommitted working tree. The next bounded
-product task is a separate owner-approved plan for profile-free, creator-approved work
-sessions with baseline Godot checks and optional extra proof. Do not broaden the
-runner, planning writer, UI, project import, or repository scan before that approval.
+Alpha Pivot Milestone 2 is complete. The next bounded product task is the smallest
+useful persistent workspace shell: keep the Launchpad, show the project's systems and
+quests as the main roadmap, use one contextual right panel, and add a slim Workbench
+Dock that reuses Play and Open Folder first. Do not add custom launch configuration,
+broad integrations, a general customization framework, or conversational quest
+decomposition in that milestone.
 Submission actions remain owner-controlled: review public copy, supply the
 demo/live/Devpost URLs, select a license, deploy the static site, and push or submit
 only when authorized.

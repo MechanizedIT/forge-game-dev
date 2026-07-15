@@ -136,7 +136,7 @@ const generatedQuestImplementationSchema = z.union([
     runId: slugSchema,
     completedAt: timestampSchema,
     changedFiles: z.array(relativePathSchema).min(1).max(4),
-    verificationProfile: generatedVerificationProfileSchema,
+    verificationProfile: generatedVerificationProfileSchema.nullable(),
     contractFingerprint: sha256Schema,
     creatorConfirmation: z.literal("worked"),
   }).strict(),
@@ -169,9 +169,21 @@ export const generatedQuestArtifactV2Schema = z.object({
   }).strict()).min(1).max(8),
   editableFileRoles: z.array(generatedEditableFileRoleSchema).max(4),
   verificationProfile: generatedVerificationProfileSchema.nullable(),
+  workOrder: z.object({
+    existingFiles: z.array(relativePathSchema).max(4),
+    newFiles: z.array(relativePathSchema).max(4),
+  }).strict().superRefine((workOrder, context) => {
+    const files = [...workOrder.existingFiles, ...workOrder.newFiles];
+    if (files.length < 1 || files.length > 4) {
+      context.addIssue({ code: "custom", message: "A work order must approve one to four files" });
+    }
+    if (new Set(files).size !== files.length) {
+      context.addIssue({ code: "custom", message: "Work-order files must be unique" });
+    }
+  }).optional(),
   implementation: generatedQuestImplementationSchema,
 }).strict().superRefine((quest, context) => {
-  if ((quest.verificationProfile === null) !== (quest.editableFileRoles.length === 0)) {
+  if (!quest.workOrder && (quest.verificationProfile === null) !== (quest.editableFileRoles.length === 0)) {
     context.addIssue({ code: "custom", message: "A registered verification profile and editable roles must be assigned together", path: ["verificationProfile"] });
   }
   if (quest.implementation !== "not_enabled" && quest.verificationProfile !== quest.implementation.verificationProfile) {

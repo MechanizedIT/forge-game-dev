@@ -10,6 +10,8 @@ import {
 
 const excludedDirectoryPaths = new Set([".git", ".godot", ".forge/local", "node_modules"]);
 const allowedUntrackedPaths = new Set([".forge/idea-seeds.json"]);
+const allowedWorkExtensions = new Set([".gd", ".tscn", ".tres", ".gdshader", ".gdshaderinc"]);
+const protectedWorkRoots = [".forge", ".git", ".godot", "addons", "node_modules"];
 
 export interface GitStartState {
   baselineHead: string;
@@ -39,6 +41,22 @@ function excluded(relativePath: string): boolean {
   return false;
 }
 
+function normalizedWorkPath(relativePath: string): string {
+  const normalized = relativePath.replaceAll("\\", "/");
+  if (normalized !== relativePath || normalized.startsWith("./") || normalized.includes("//")) {
+    throw new Error(`Approved path is not normalized: ${relativePath}`);
+  }
+  if (normalized === "project.godot" || protectedWorkRoots.some((root) => normalized === root || normalized.startsWith(`${root}/`))) {
+    throw new Error(`Approved path is protected: ${relativePath}`);
+  }
+  if (normalized.includes("verification-profiles/") || /(?:^|\/)verif(?:y|ier|ication)[^/]*\.(?:gd|ts|js)$/iu.test(normalized)) {
+    throw new Error(`Approved path is verifier code: ${relativePath}`);
+  }
+  const extension = [...allowedWorkExtensions].find((candidate) => normalized.endsWith(candidate));
+  if (!extension) throw new Error(`Approved path is not a supported Godot text file: ${relativePath}`);
+  return normalized;
+}
+
 export function sha256(contents: string | Buffer): string {
   return createHash("sha256").update(contents).digest("hex");
 }
@@ -48,6 +66,7 @@ export async function readContainedUtf8File(
   relativePath: string,
   maximumBytes = 120_000,
 ): Promise<{ contents: string; sha256: string; size: number }> {
+  normalizedWorkPath(relativePath);
   const root = await realpath(path.resolve(projectPath));
   const target = path.resolve(root, relativePath);
   if (!isContained(root, target)) throw new Error(`Allowed file escapes the project: ${relativePath}`);
@@ -65,6 +84,23 @@ export async function readContainedUtf8File(
   }
   if (contents.includes("\0")) throw new Error(`Allowed file contains binary data: ${relativePath}`);
   return { contents, sha256: sha256(bytes), size: bytes.length };
+}
+
+export async function validateExpectedAbsentWorkFile(projectPath: string, relativePath: string): Promise<void> {
+  normalizedWorkPath(relativePath);
+  const root = await realpath(path.resolve(projectPath));
+  const target = path.resolve(root, relativePath);
+  if (!isContained(root, target)) throw new Error(`Approved new file escapes the project: ${relativePath}`);
+  const existing = await lstat(target).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (existing !== null) throw new Error(`Approved new file already exists: ${relativePath}`);
+  const parent = path.dirname(target);
+  const parentInfo = await lstat(parent).catch(() => null);
+  if (!parentInfo?.isDirectory() || parentInfo.isSymbolicLink()) throw new Error(`Approved new file has a missing or unsafe parent: ${relativePath}`);
+  const canonicalParent = await realpath(parent);
+  if (canonicalParent !== parent || !isContained(root, canonicalParent)) throw new Error(`Approved new file parent escapes the project: ${relativePath}`);
 }
 
 export async function captureControlledInventory(projectPath: string): Promise<Array<{
@@ -139,6 +175,7 @@ export async function reviewBoundary(options: {
   const before = new Map(options.startInventory.map((entry) => [entry.relativePath, entry]));
   const after = new Map(currentInventory.map((entry) => [entry.relativePath, entry]));
   const allowed = new Set(options.allowedFiles.map((file) => file.relativePath));
+  const approvedNew = new Set(options.allowedFiles.filter((file) => "kind" in file && file.kind === "new").map((file) => file.relativePath));
   const changed = new Set<string>();
   const observedPostHashes: Record<string, string> = {};
   const problems: string[] = [];
@@ -146,7 +183,13 @@ export async function reviewBoundary(options: {
   for (const relativePath of new Set([...before.keys(), ...after.keys()])) {
     const left = before.get(relativePath);
     const right = after.get(relativePath);
-    if (!left) problems.push(`New file is outside the existing-file boundary: ${relativePath}`);
+    if (!left) {
+      if (!right || !approvedNew.has(relativePath)) problems.push(`New file is outside the approved boundary: ${relativePath}`);
+      else {
+        changed.add(relativePath);
+        observedPostHashes[relativePath] = right.sha256;
+      }
+    }
     else if (!right) problems.push(`File was deleted: ${relativePath}`);
     else if (left.sha256 !== right.sha256) {
       changed.add(relativePath);
@@ -154,10 +197,15 @@ export async function reviewBoundary(options: {
       else observedPostHashes[relativePath] = right.sha256;
     }
   }
-  const nameStatus = runGit(options.projectPath, ["diff", "--name-status", "--find-renames", options.startHead, "--"], true);
+  const nameStatus = runGit(options.projectPath, ["status", "--porcelain", "--untracked-files=all"], true);
   for (const line of nameStatus.split(/\r?\n/u).filter(Boolean)) {
-    const [kind, ...paths] = line.split("\t");
-    if (kind !== "M" || paths.length !== 1 || !allowed.has(paths[0]!)) {
+    const untracked = line.startsWith("?? ");
+    const worktreeModified = line.startsWith(" M ") || line.startsWith("M ");
+    const relativePath = line.slice(untracked || line.startsWith(" M ") ? 3 : 2).replaceAll("\\", "/");
+    const acceptedExisting = worktreeModified && allowed.has(relativePath) && !approvedNew.has(relativePath);
+    const acceptedNew = untracked && approvedNew.has(relativePath);
+    const ignoredOwned = allowedUntrackedPaths.has(relativePath) || excluded(relativePath);
+    if (!acceptedExisting && !acceptedNew && !ignoredOwned) {
       problems.push(`Git reported an unapproved change: ${line}`);
     }
   }

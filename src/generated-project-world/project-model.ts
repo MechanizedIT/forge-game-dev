@@ -30,6 +30,7 @@ export interface LegacyProjectModelInputs {
 const activePhases = new Set([
   "approved",
   "implementing",
+  "scope_review",
   "verifying",
   "waiting_for_playtest",
   "completion_pending",
