@@ -4,6 +4,7 @@ import type {
   GeneratedQuestArtifactV2,
   GeneratedRoadmapV2,
   IdeaSeed,
+  ProjectModel,
 } from "../contracts/index.js";
 import type { GeneratedQuestEligibility, GeneratedQuestRunSnapshot } from "../generated-quest-runner/shared.js";
 
@@ -62,6 +63,7 @@ export type GeneratedActivity = {
 
 export interface GeneratedProjectWorldSnapshot {
   project: GeneratedProjectIdentity;
+  projectModel: ProjectModel;
   vision: {
     vision: string;
     coreAction: string;
@@ -69,6 +71,7 @@ export interface GeneratedProjectWorldSnapshot {
     inputMode: string;
     smallestPlayableResult: string;
   };
+  /** @deprecated Compatibility transport for the current generated-project UI. */
   starterAwarePlanning: {
     accepted: boolean;
     acceptedRoadmapFingerprint: string | null;
@@ -80,7 +83,9 @@ export interface GeneratedProjectWorldSnapshot {
     outcome: string;
     questIds: string[];
   };
+  /** @deprecated Use projectModel.systems and projectModel.quests. */
   roadmap: GeneratedRoadmapV2;
+  /** @deprecated Use projectModel.quests and projectModel.workSessions. */
   quests: GeneratedQuestBrief[];
   state: {
     currentView: GeneratedWorldView;

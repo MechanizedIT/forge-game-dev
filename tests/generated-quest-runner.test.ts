@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -47,6 +47,9 @@ test("accepted Signal Sweep Quest 1 prepares the relay profile without adjustmen
     assert.equal(summary.eligibility.eligible, true, summary.eligibility.reason ?? "");
     assert.equal(summary.eligibility.revision, 1);
     const prepared = await service.prepare(fixture.projectId, firstQuestId);
+    assert.match(prepared.runId, /^run-q1-activate-the-signal-relay-/u);
+    assert.equal(prepared.createdAt, fixtureTime);
+    assert.equal(prepared.updatedAt, fixtureTime);
     assert.equal(prepared.phase, "contract_review");
     assert.equal(prepared.contract.verificationProfile, "relay_activation_v1");
     assert.deepEqual(prepared.contract.allowedFiles.map((item) => item.relativePath), ["scenes/main.tscn", "scripts/main.gd", "scripts/objective_marker.gd"]);
@@ -57,6 +60,36 @@ test("accepted Signal Sweep Quest 1 prepares the relay profile without adjustmen
     const later = await service.getSummary(fixture.projectId, "q2-carry-the-signal-response");
     assert.equal(later.eligibility.eligible, false);
     assert.match(later.eligibility.reason ?? "", /no registered existing-file verifier/i);
+  } finally { await fixture.cleanup(); }
+});
+
+test("project session listing returns every validated run in stable order and rejects malformed run directories", async () => {
+  const fixture = await createSignalSweepFixture();
+  try {
+    let currentTime = fixtureTime;
+    const runIds = [
+      "11111111-1111-1111-1111-111111111111",
+      "22222222-2222-2222-2222-222222222222",
+    ];
+    let idIndex = 0;
+    const service = new GeneratedQuestRunnerService({
+      forgeHome: fixture.forgeHome,
+      now: () => new Date(currentTime),
+      randomId: () => runIds[idIndex++]!,
+    });
+    const first = await service.prepare(fixture.projectId, "q1-activate-the-signal-relay");
+    const cancelled = await service.cancel(fixture.projectId, "q1-activate-the-signal-relay", "CANCEL");
+    assert.equal(cancelled.runId, first.runId);
+    currentTime = "2026-07-14T21:00:00.000Z";
+    const second = await service.prepare(fixture.projectId, "q1-activate-the-signal-relay");
+
+    const sessions = await service.listProjectSessions(fixture.projectId);
+    assert.deepEqual(sessions.map((session) => session.runId), [first.runId, second.runId]);
+    assert.deepEqual(sessions.map((session) => session.phase), ["cancelled", "contract_review"]);
+    assert.deepEqual(sessions.map((session) => session.createdAt), [fixtureTime, currentTime]);
+
+    await mkdir(path.join(fixture.projectPath, ".forge", "local", "runs", "run-malformed"));
+    await assert.rejects(service.listProjectSessions(fixture.projectId));
   } finally { await fixture.cleanup(); }
 });
 

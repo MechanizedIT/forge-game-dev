@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
-import { mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, realpath, rm, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ThreadEvent } from "@openai/codex-sdk";
 import { z } from "zod";
@@ -131,6 +131,11 @@ function activeLockPath(projectPath: string): string {
 
 function runDirectory(projectPath: string, runId: string): string {
   return path.join(projectPath, ".forge", "local", "runs", runId);
+}
+
+function isContained(root: string, target: string): boolean {
+  const relative = path.relative(root, target);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
 function questRelativePath(questsDirectory: string, questId: string): string {
@@ -270,7 +275,18 @@ export class GeneratedQuestRunnerService {
     const journal = generatedQuestRunJournalSchema.parse(await readUnknown(path.join(directory, "journal.json")));
     const receiptValue = await readOptionalUnknown(path.join(directory, "commit.json"));
     const receipt = receiptValue === null ? null : generatedCompletionReceiptSchema.parse(receiptValue);
-    if (contract.fingerprint !== journal.contractFingerprint || contract.projectId !== journal.projectId || contract.questId !== journal.questId) {
+    if (
+      journal.runId !== runId
+      || journal.canonicalProjectPath !== projectPath
+      || contract.fingerprint !== journal.contractFingerprint
+      || contract.projectId !== journal.projectId
+      || contract.questId !== journal.questId
+      || (receipt !== null && (
+        receipt.runId !== journal.runId
+        || receipt.projectId !== journal.projectId
+        || receipt.questId !== journal.questId
+      ))
+    ) {
       throw new GeneratedQuestRunConflictError("Generated run contract and journal do not match.");
     }
     verifyContractFingerprint(contract);
@@ -284,9 +300,12 @@ export class GeneratedQuestRunnerService {
   ): GeneratedQuestRunSnapshot {
     const safeRollback = journal.recovery.action === "rollback";
     return {
+      runId: journal.runId,
       projectId: journal.projectId,
       questId: journal.questId,
       phase: journal.phase,
+      createdAt: journal.createdAt,
+      updatedAt: journal.updatedAt,
       contract,
       progress: journal.progress,
       proofs: journal.proofs,
@@ -336,6 +355,42 @@ export class GeneratedQuestRunnerService {
     if (!runId && project.quest.implementation !== "not_enabled") runId = project.quest.implementation.runId;
     const run = runId ? await this.loadRun(project.projectPath, runId) : null;
     return { eligibility, run: run ? this.snapshot(run.contract, run.journal, run.receipt) : null };
+  }
+
+  async listProjectSessions(projectId: string): Promise<GeneratedQuestRunSnapshot[]> {
+    let entry;
+    try {
+      entry = await this.registry.resolveRegisteredProject(projectId);
+    } catch (error) {
+      throw new GeneratedQuestRunNotFoundError(error instanceof Error ? error.message : String(error));
+    }
+    const projectPath = entry.canonicalPath;
+    const runsRoot = path.join(projectPath, ".forge", "local", "runs");
+    const rootInfo = await lstat(runsRoot).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    });
+    if (rootInfo === null) return [];
+    if (rootInfo.isSymbolicLink() || !rootInfo.isDirectory()) {
+      throw new GeneratedQuestRunConflictError("Generated run storage is missing or unsafe.");
+    }
+    const canonicalRunsRoot = await realpath(runsRoot);
+    if (!isContained(projectPath, canonicalRunsRoot) || canonicalRunsRoot !== runsRoot) {
+      throw new GeneratedQuestRunConflictError("Generated run storage moved outside its registered project.");
+    }
+    const entries = await readdir(canonicalRunsRoot, { withFileTypes: true });
+    const snapshots: GeneratedQuestRunSnapshot[] = [];
+    for (const runEntry of entries) {
+      if (!runEntry.isDirectory() || runEntry.isSymbolicLink()) {
+        throw new GeneratedQuestRunConflictError(`Generated run entry is not an owned directory: ${runEntry.name}`);
+      }
+      const run = await this.loadRun(projectPath, runEntry.name);
+      if (run.journal.projectId !== projectId) {
+        throw new GeneratedQuestRunConflictError(`Generated run belongs to another project: ${runEntry.name}`);
+      }
+      snapshots.push(this.snapshot(run.contract, run.journal, run.receipt));
+    }
+    return snapshots.sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.runId.localeCompare(right.runId));
   }
 
   private async commitPlanArtifacts(projectPath: string, artifacts: Map<string, string>, message: string): Promise<string> {

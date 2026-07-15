@@ -126,6 +126,11 @@ test("read-only Project World joins exact Task 5 artifacts without changing proj
     const snapshot = await new GeneratedProjectWorldService({ forgeHome }).loadWorld(projectId);
     assert.equal(snapshot.project.displayName, "Last-Moment Pulse");
     assert.equal(snapshot.quests.length, 4);
+    assert.equal(snapshot.projectModel.modelVersion, 1);
+    assert.deepEqual(snapshot.projectModel.project.systemIds, ["system-first-playable"]);
+    assert.equal(snapshot.projectModel.focus.selectedSystemId, "system-first-playable");
+    assert.deepEqual(snapshot.projectModel.systems[0]?.questIds, snapshot.roadmap.quests.map((quest) => quest.questId));
+    assert.deepEqual(snapshot.projectModel.quests.map((quest) => quest.questId), snapshot.quests.map((quest) => quest.questId));
     assert.equal(snapshot.playable.layoutLabel, "Verified starter layout");
     assert.match(snapshot.playable.summary, /verified starter/i);
     assert.deepEqual(snapshot.playable.plannedNotPlayable, ["Enemy approach remains planned.", "The Space-key push pulse remains planned."]);
@@ -144,6 +149,11 @@ test("fresh starter-aware Project World exposes accepted facts and honest quest 
     const runner = new GeneratedQuestRunnerService({ forgeHome: fixture.forgeHome });
     const snapshot = await new GeneratedProjectWorldService({ forgeHome: fixture.forgeHome, generatedRunner: runner }).loadWorld(fixture.projectId);
     assert.equal(snapshot.starterAwarePlanning.accepted, true);
+    assert.equal(snapshot.projectModel.systems[0]?.status, "active");
+    assert.equal(snapshot.projectModel.focus.selectedSystemId, "system-first-playable");
+    assert.equal(snapshot.projectModel.quests[0]?.status, "available");
+    assert.equal(snapshot.projectModel.quests[0]?.extraProof?.profileId, "relay_activation_v1");
+    assert.equal(snapshot.projectModel.quests[1]?.extraProof, null);
     assert.equal(snapshot.starterAwarePlanning.alreadyPlayable.length, 3);
     assert.equal(snapshot.quests[0]?.verificationProfile, "relay_activation_v1");
     assert.equal(snapshot.quests[0]?.eligibility.eligible, true);

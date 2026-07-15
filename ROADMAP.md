@@ -177,6 +177,21 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** One fresh idea has an honestly supported interpretation, an explicitly accepted non-duplicative roadmap, and one clean created project whose first quest has a registered existing-file contract. Real relay implementation and completion remain a separate creator-gated proof run.
 
+#### Alpha Pivot Milestone 1 — Open Project Model
+
+- [x] Add one strict product-facing `Project → Systems → Quests → Work Sessions → Results` read model where broad systems can wait for quest refinement, with system-or-quest focus and ordered history links.
+- [x] Project every validated v1/v2 generated project into one deterministic `First Playable` compatibility system without rewriting project files.
+- [x] Add runner-owned read-only listing for every validated project session, including stable run IDs and timestamps.
+- [x] Keep verification profiles as optional descriptive extra proof only; they do not decide model validity, dependency readiness, quest status, or system status.
+- [x] Reopen real Gravity Tap and Signal Sweep records without changing project, run, lock, registry, or Git state.
+- [x] Preserve the current UI and Task A runner through deprecated compatibility transport.
+
+**Status:** `COMPLETE`. Arbitrary Godot systems and quests are now representable in the new product model. A planned system may exist before it has quests, and focus may stay on that system until refinement. Legacy flat roadmaps reopen as one truthful `system-first-playable` system with exact quest, session, result, history, and focus links.
+
+**Truth boundary:** Generic profile-free Codex execution is not complete. The existing generated runner still uses Task A/Task B profile gates only as compatibility execution policy. Removing those gates requires a separate owner-approved runner milestone.
+
+**Exit:** Generated Project World exposes the open hierarchy, both real compatibility projects reopen read-only, and the protected runner and UI behavior still pass.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -211,7 +226,10 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Task A is merged into `main`, and the approved Task B checkpoint is complete.
-Any alpha-pivot work under `docs/PRODUCT_VISION.md` must begin as a separate owner-approved task. Submission actions remain
-owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a
-license, deploy the static site, and push or submit only when authorized.
+Alpha Pivot Milestone 1 is complete in the uncommitted working tree. The next bounded
+product task is a separate owner-approved plan for profile-free, creator-approved work
+sessions with baseline Godot checks and optional extra proof. Do not broaden the
+runner, planning writer, UI, project import, or repository scan before that approval.
+Submission actions remain owner-controlled: review public copy, supply the
+demo/live/Devpost URLs, select a license, deploy the static site, and push or submit
+only when authorized.

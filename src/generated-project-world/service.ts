@@ -33,7 +33,7 @@ import { ensurePinnedGodot } from "../godot/bootstrap.js";
 import { ProjectRegistryStore } from "../project-creation/registry.js";
 import { writeJsonAtomic, writeTextAtomic } from "../quest-runner/artifacts.js";
 import { normalizeGeneratedQuest, normalizeGeneratedRoadmap } from "../generated-quest-runner/contract.js";
-import type { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
+import { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
 import type {
   GeneratedActivity,
   GeneratedIdeaSaveResponse,
@@ -43,6 +43,7 @@ import type {
   GeneratedWorldStateInput,
   GeneratedWorldView,
 } from "./shared.js";
+import { buildLegacyProjectModel } from "./project-model.js";
 
 const ideaRelativePath = ".forge/idea-seeds.json";
 const generatedViews = new Set<GeneratedWorldView>(["project_world", "quest_brief", "chronicle", "documents"]);
@@ -77,7 +78,7 @@ export interface GeneratedProjectWorldServiceOptions {
   registry?: ProjectRegistryStore;
   resolveGodot?: typeof ensurePinnedGodot;
   launchGodot?: GeneratedWorldLauncher;
-  generatedRunner?: Pick<GeneratedQuestRunnerService, "getSummary">;
+  generatedRunner?: Pick<GeneratedQuestRunnerService, "getSummary" | "listProjectSessions">;
 }
 
 function defaultLauncher(request: GeneratedWorldLaunchRequest): void {
@@ -135,7 +136,8 @@ export class GeneratedProjectWorldService {
   private readonly registry: ProjectRegistryStore;
   private readonly resolveGodot: typeof ensurePinnedGodot;
   private readonly launchGodotProcess: GeneratedWorldLauncher;
-  private readonly generatedRunner: Pick<GeneratedQuestRunnerService, "getSummary"> | undefined;
+  private readonly generatedRunner: Pick<GeneratedQuestRunnerService, "getSummary" | "listProjectSessions"> | undefined;
+  private readonly sessionReader: Pick<GeneratedQuestRunnerService, "listProjectSessions">;
   private readonly launching = new Set<string>();
   private readonly ideaQueues = new Map<string, Promise<unknown>>();
 
@@ -147,6 +149,7 @@ export class GeneratedProjectWorldService {
     this.resolveGodot = options.resolveGodot ?? ensurePinnedGodot;
     this.launchGodotProcess = options.launchGodot ?? defaultLauncher;
     this.generatedRunner = options.generatedRunner;
+    this.sessionReader = options.generatedRunner ?? new GeneratedQuestRunnerService({ forgeHome: this.forgeHome, registry: this.registry });
   }
 
   private async resolveProject(projectId: string): Promise<{ projectPath: string; entry: Awaited<ReturnType<ProjectRegistryStore["resolveRegisteredProject"]>> }> {
@@ -250,6 +253,18 @@ export class GeneratedProjectWorldService {
         }
       });
 
+      const sessions = await this.sessionReader.listProjectSessions(projectId);
+      const projectModel = buildLegacyProjectModel({
+        manifest,
+        vision,
+        firstPlayable,
+        roadmap,
+        quests,
+        state,
+        chronicle,
+        sessions,
+      });
+
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
       const selectedIsValid = state.selectedQuestId !== null && roadmapIds.includes(state.selectedQuestId);
       const selectedQuestId = selectedIsValid ? state.selectedQuestId! : roadmapIds[0]!;
@@ -313,6 +328,7 @@ export class GeneratedProjectWorldService {
           createdAt: manifest.createdAt,
           lastOpenedAt: entry.lastOpenedAt,
         },
+        projectModel,
         vision,
         starterAwarePlanning: {
           accepted: acceptedRoadmapProvenance !== null,
@@ -342,9 +358,7 @@ export class GeneratedProjectWorldService {
         state: {
           currentView: worldView(state.currentView),
           selectedQuestId,
-          nextRecommendedQuestId: state.schemaVersion === 2
-            ? state.nextRecommendedQuestId
-            : roadmap.quests.find((quest) => quest.state === "available")?.questId ?? null,
+          nextRecommendedQuestId: projectModel.focus.nextRecommendedQuestId,
           repairNotice,
         },
         chronicle,

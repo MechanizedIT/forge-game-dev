@@ -15,9 +15,12 @@ export interface GeneratedQuestEligibility {
 }
 
 export interface GeneratedQuestRunSnapshot {
+  runId: string;
   projectId: string;
   questId: string;
   phase: GeneratedRunPhase;
+  createdAt: string;
+  updatedAt: string;
   contract: GeneratedQuestImplementationContract;
   progress: string[];
   proofs: GeneratedQuestProof;
