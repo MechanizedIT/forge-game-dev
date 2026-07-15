@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forge Alpha Proof-Game Journey</title>
+  <style>
+    :root { color-scheme: dark; --bg:#10141b; --panel:#171d27; --card:#202836; --ink:#f4f1e8; --muted:#aeb8c8; --line:#354154; --accent:#ff8a3d; --reuse:#56c7d9; --p0:#ff8a3d; --p1:#b49cff; --p2:#83d49a; --defer:#909aaa; }
+    * { box-sizing:border-box; }
+    html, body { max-width:100%; overflow-x:hidden; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:var(--reuse); }
+    header.page { padding:32px clamp(20px,5vw,72px) 22px; border-bottom:1px solid var(--line); background:var(--panel); }
+    h1 { font-size:clamp(30px,5vw,56px); line-height:1.05; margin:0 0 12px; max-width:900px; }
+    h2 { margin:0 0 8px; font-size:24px; }
+    h3 { margin:0 0 5px; font-size:17px; }
+    p { margin:0 0 8px; }
+    .lede { max-width:900px; color:var(--muted); font-size:18px; }
+    .legend { display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
+    .tag { display:inline-flex; align-items:center; border:1px solid currentColor; border-radius:999px; padding:3px 9px; font-size:12px; font-weight:700; letter-spacing:.04em; }
+    header.page > .tag { max-width:100%; white-space:normal; }
+    .reuse { color:var(--reuse); } .p0 { color:var(--p0); } .p1 { color:var(--p1); } .p2 { color:var(--p2); } .defer { color:var(--defer); }
+    nav { display:flex; gap:8px; flex-wrap:wrap; padding:12px clamp(20px,5vw,72px); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:3; background:color-mix(in srgb,var(--bg) 92%,transparent); backdrop-filter:blur(12px); }
+    nav a { color:var(--ink); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:7px 10px; }
+    main { min-width:0; max-width:100%; padding:28px clamp(20px,5vw,72px) 72px; }
+    .lane { min-width:0; max-width:100%; margin-bottom:46px; }
+    .lane-head { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px; align-items:end; margin-bottom:14px; }
+    .lane-head p { color:var(--muted); max-width:760px; }
+    .flow { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(270px,1fr); gap:20px; width:100%; max-width:100%; overflow-x:auto; padding:4px 2px 18px; scroll-snap-type:x proximity; }
+    .state { position:relative; min-height:330px; padding:16px; background:var(--panel); border:1px solid var(--line); border-top:4px solid var(--state); border-radius:12px; scroll-snap-align:start; display:flex; flex-direction:column; gap:10px; }
+    .state::after { content:"→"; position:absolute; right:-17px; top:47%; color:var(--muted); font-size:20px; z-index:2; }
+    .state:last-child::after { display:none; }
+    .state[data-status="reuse"] { --state:var(--reuse); } .state[data-status="p0"] { --state:var(--p0); } .state[data-status="p1"] { --state:var(--p1); } .state[data-status="p2"] { --state:var(--p2); } .state[data-status="defer"] { --state:var(--defer); }
+    .screen { flex:1; border:1px solid var(--line); border-radius:8px; padding:13px; background:var(--card); display:flex; flex-direction:column; gap:9px; }
+    .screen .top { display:flex; gap:8px; align-items:center; border-bottom:1px solid var(--line); padding-bottom:8px; font-size:12px; color:var(--muted); }
+    .screen .top strong { color:var(--ink); }
+    .box { border:1px solid var(--line); border-radius:7px; padding:9px; background:var(--panel); }
+    .choice { border-left:3px solid var(--state); padding-left:9px; }
+    .action { margin-top:auto; display:inline-block; align-self:flex-start; border:1px solid var(--state); border-radius:7px; padding:6px 9px; color:var(--ink); font-weight:700; }
+    .meta { color:var(--muted); font-size:13px; }
+    .architecture { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px; }
+    .architecture article { border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--panel); }
+    footer.page { padding:24px clamp(20px,5vw,72px); border-top:1px solid var(--line); color:var(--muted); }
+    code { color:var(--reuse); }
+    @media (max-width:800px) { .architecture { grid-template-columns:1fr; } .lane-head { grid-template-columns:1fr; } nav { position:static; } }
+    @media print { nav { display:none; } .flow { grid-auto-flow:row; grid-template-columns:repeat(2,1fr); overflow:visible; } .state::after { display:none; } body { color-scheme:light; --bg:#fff; --panel:#f6f7f8; --card:#fff; --ink:#111; --muted:#555; --line:#bbb; } }
+  </style>
+</head>
+<body>
+  <header class="page">
+    <p class="tag p0">Repository-owned planning artifact · no feature implementation</p>
+    <h1>Forge Alpha Proof-Game Journey</h1>
+    <p class="lede">A creator turns an ordinary idea into one honest Top-down Arena interpretation, approves a starter-aware roadmap, lets Codex change three exact files, sees independent proof, plays the result, and reopens a completed quest. Future idea, chat, and export states are shown only to make their boundaries reviewable.</p>
+    <div class="legend" aria-label="Capability legend"><span class="tag reuse">v0.2 reuse</span><span class="tag p0">P0 proof alpha</span><span class="tag p1">P1 stretch</span><span class="tag p2">P2 submission</span><span class="tag defer">Deferred</span></div>
+  </header>
+  <nav aria-label="Visual sections"><a href="#idea">Idea → roadmap</a><a href="#quest">Generated quest</a><a href="#future">Evolution boundaries</a><a href="#ownership">Ownership</a><a href="../README.md">Alpha docs</a></nav>
+  <main>
+    <section class="lane" id="idea">
+      <div class="lane-head"><div><h2>A · Ordinary idea to accepted project plan</h2><p>Task B makes one existing creative path honest and starter-aware. No project files exist until the separate creation confirmation.</p></div><span class="tag p0">Task B</span></div>
+      <div class="flow">
+        <article class="state" data-status="reuse"><span class="tag reuse">1 · v0.2 reuse</span><div class="screen"><div class="top"><strong>◇ Forge</strong> · New game</div><h3>What tiny game do you want to make?</h3><div class="box">Restore three signal relays in a small arena before time runs out.</div><span class="action">Find the safest starting point</span></div><p class="meta">Ordinary-language intake exists. Current example copy must stop implying more foundations than Forge supports.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">2 · P0</span><div class="screen"><div class="top"><strong>Supported interpretation</strong></div><h3>Recommended: Signal Sweep</h3><div class="choice"><strong>Top-down Arena · strong fit</strong><p>Keep the relay goal; use one safe bounded room.</p></div><div class="box">Alternatives: no timer · hold one beacon · something else</div><span class="action">Use this interpretation</span></div><p class="meta">Shows fit, mismatch/tradeoff, meaningful alternatives, revise and reject instead of silent coercion.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">3 · P0</span><div class="screen"><div class="top"><strong>Vision review</strong> · no files yet</div><h3>Wake every relay before the signal fades.</h3><div class="box"><strong>Action</strong><p>Move and activate visible relays.</p></div><div class="box"><strong>First playable</strong><p>One clear, one-time activation.</p></div><span class="action">Accept vision</span></div><p class="meta">Reuse current blueprint review; add bounded decision revision. Accepted blueprint remains immutable provenance.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">4 · P0</span><div class="screen"><div class="top"><strong>Roadmap review</strong></div><div class="box"><strong>Already playable</strong><p>Arena · player · movement · camera · objective placeholder</p></div><div class="choice"><strong>Planned deltas</strong><p>1 Relay → 3 Relays → Timer → Clarity</p></div><span class="action">Accept roadmap</span></div><p class="meta">Dependency-safe edits and explicit acceptance. The first eligible quest cannot duplicate the starter.</p></article>
+      </div>
+    </section>
+
+    <section class="lane" id="quest">
+      <div class="lane-head"><div><h2>B · One bounded generated quest</h2><p>Task A is the single critical path: exact approval, bounded source work, independent proof, creator authority, atomic completion, and restart.</p></div><span class="tag p0">Task A</span></div>
+      <div class="flow">
+        <article class="state" data-status="reuse"><span class="tag reuse">5 · v0.2 + P0 copy</span><div class="screen"><div class="top"><strong>Signal Sweep</strong> · Project World</div><div class="box"><strong>Currently playable</strong><p>Arena and movement.</p></div><div class="choice"><strong>Recommended</strong><p>Wake One Relay</p></div><span class="action">Review quest</span></div><p class="meta">Existing validated snapshot/selection. Dynamic quest counts and outcome-first recommendation replace stale Task copy.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">6 · P0</span><div class="screen"><div class="top"><strong>Quest 01</strong> · available</div><h3>Wake One Relay</h3><div class="box">Touch it once; state changes visibly; progress reports success.</div><div class="box">Proof: boundary · project · mechanic · your play</div><span class="action">Adjust · Build · Defer</span></div><p class="meta">The quest owns a narrow delta, not blueprint-global scope. Adjustment increments revision and invalidates old contracts.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">7 · P0</span><div class="screen"><div class="top"><strong>Implementation contract</strong></div><h3>Approve the exact boundary</h3><div class="box"><code>scenes/main.tscn</code><br><code>scripts/main.gd</code><br><code>scripts/objective_marker.gd</code></div><div class="box">No new files · no deletes · no dependencies · verifier not editable</div><span class="action">Approve and build</span></div><p class="meta">Forge assigns paths, commands, runtime, proof, state and Git; the model never does.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">8 · P0</span><div class="screen"><div class="top"><strong>Building</strong> · 3 approved files</div><div class="box">✓ Prepared focused context</div><div class="choice">Now: add one-time activation and visible feedback</div><div class="box">Next: review every changed path</div><span class="action">Cancel build</span></div><p class="meta">Forge stages are primary. Sanitized SDK/technical events remain available on demand.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">9 · P0</span><div class="screen"><div class="top"><strong>Automated proof</strong></div><div class="box">✓ Boundary: exactly 3 files</div><div class="box">✓ Project health: pinned Godot</div><div class="box">✓ Mechanic: Forge relay profile</div><span class="action">Play the result</span></div><p class="meta">Codex cannot edit the verifier. Automated green does not claim that the gameplay feels clear.</p></article>
+        <article class="state" data-status="reuse"><span class="tag reuse">10 · v0.2 reuse</span><div class="screen"><div class="top"><strong>Signal Sweep</strong> · Relays 0/1</div><div class="box" style="min-height:120px;display:grid;place-items:center"><strong>● player &nbsp;&nbsp;&nbsp; ◇ relay</strong></div><p>Move with WASD. Touch the relay once.</p></div><p class="meta">The existing pinned Play action now launches source changed through the generated quest contract.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">11 · P0</span><div class="screen"><div class="top"><strong>Your playtest</strong></div><h3>Did the relay activate clearly?</h3><div class="box">Worked · Did not work · Not ready · Play again · Cancel</div><span class="action">Worked</span></div><p class="meta">Only Worked can enter completion. Other outcomes keep the diff pending and expose retry/rollback.</p></article>
+        <article class="state" data-status="p0"><span class="tag p0">12 · P0</span><div class="screen"><div class="top"><strong>Quest completed</strong></div><h3>One relay now wakes.</h3><div class="box">✓ 3 proof layers + creator success</div><div class="box">Chronicle event · local Git commit · restart verified</div><span class="action">Next: Sweep Three Relays</span></div><p class="meta">One transaction aligns quest, roadmap, Chronicle, deterministic docs, provenance, Git receipt, and restored recommendation.</p></article>
+      </div>
+    </section>
+
+    <section class="lane" id="future">
+      <div class="lane-head"><div><h2>C · Project evolution and submission boundaries</h2><p>These states make future ownership visible. They are not reasons to delay the generated quest loop.</p></div><span class="tag defer">Mostly deferred</span></div>
+      <div class="flow">
+        <article class="state" data-status="defer"><span class="tag defer">13 · Deferred</span><div class="screen"><div class="top"><strong>Saved idea</strong> · not roadmap work</div><h3>Reveal a safe route after a relay.</h3><div class="box">Refine the player experience. No project mutation.</div><span class="action">Create proposal</span></div><p class="meta">Original seed remains immutable. Refinement gets stable proposal ID/revision/provenance.</p></article>
+        <article class="state" data-status="defer"><span class="tag defer">14 · Deferred</span><div class="screen"><div class="top"><strong>Quest proposal</strong> · revision 1</div><h3>Reveal a Temporary Route</h3><div class="box">Suggested after Sweep Three Relays.</div><div class="box">Roadmap and code unchanged.</div><span class="action">Reject · Revise · Accept</span></div><p class="meta">Only explicit acceptance transactionally promotes proposal to roadmap work.</p></article>
+        <article class="state" data-status="defer"><span class="tag defer">15 · Deferred</span><div class="screen"><div class="top"><strong>Forge Companion</strong></div><div class="box"><strong>You</strong><p>Why is this quest next?</p></div><div class="choice"><strong>Companion</strong><p>Because one relay is proven and three is the smallest accepted next step.</p></div><span class="action">Show roadmap evidence</span></div><p class="meta">Future structured explanation/proposals only. Chat has no hidden truth, shell, or direct mutation.</p></article>
+        <article class="state" data-status="p1"><span class="tag p1">16 · mixed reuse/P1</span><div class="screen"><div class="top"><strong>Project actions</strong></div><div class="box">Play game <span class="tag reuse">reuse</span></div><div class="box">Open in Godot <span class="tag p1">P1</span></div><div class="box">Open folder <span class="tag reuse">reuse</span></div></div><p class="meta">All accept only registered project ID. Forge resolves path, pinned executable, and fixed arguments.</p></article>
+        <article class="state" data-status="p2"><span class="tag p2">17 · P2/deferred</span><div class="screen"><div class="top"><strong>Export readiness</strong></div><div class="box"><strong>Ready:</strong> native gameplay capture</div><div class="box"><strong>Optional:</strong> matching Web templates + controlled preset + browser test</div><span class="action">Open capture checklist</span></div><p class="meta">One-hour readiness probe only. No account, credential, upload, or automatic public deployment.</p></article>
+        <article class="state" data-status="p2"><span class="tag p2">18 · P2 after freeze</span><div class="screen"><div class="top"><strong>Forge showcase</strong></div><h3>A real generated quest, bounded and completed.</h3><div class="box">Exact boundary · independent proof · creator play · persistent Git/restart</div><span class="action">Watch proof journey</span></div><p class="meta">One typed evidence refresh. Current/next/future remain distinct; showcase never owns live state.</p></article>
+      </div>
+    </section>
+
+    <section class="lane" id="ownership">
+      <div class="lane-head"><div><h2>Ownership below the screens</h2><p>The UI can compose the journey, but state and mutation remain in explicit domain boundaries.</p></div></div>
+      <div class="architecture">
+        <article><span class="tag reuse">Existing owners</span><h3>Planner · Creation · Project World</h3><p>Propose/approve, safely create/baseline/register, then validate and display project-local truth.</p></article>
+        <article><span class="tag p0">New sibling</span><h3>Generated quest runner</h3><p>Contract, context, SDK, boundary, proof, creator gate, rollback, completion, recovery.</p></article>
+        <article><span class="tag p0">Authoritative project</span><h3>JSON + deterministic Markdown + Git</h3><p>Quest/roadmap/Chronicle/project/provenance update once; actual commit SHA lives in an ignored receipt.</p></article>
+        <article><span class="tag p2">Derived public proof</span><h3>Showcase</h3><p>Sanitized, owner-reviewed evidence copied after freeze. It never reads or mutates the live project.</p></article>
+      </div>
+    </section>
+  </main>
+  <footer class="page">Static review artifact. Product-like controls illustrate proposed states and do not execute. Source: <code>plan.mdx</code> + <code>canvas.mdx</code>. No hosted plan data or third-party tooling is required.</footer>
+</body>
+</html>

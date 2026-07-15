@@ -1,0 +1,42 @@
+---
+title: "Forge Alpha Proof-Game Journey"
+brief: "Repository-owned visual review of the proposed creator flow, clearly separating v0.2 reuse, P0 proof-alpha work, P1 stretch, P2 submission work, and deferred capability."
+version: 1
+localOnly: true
+---
+
+## Outcome
+
+The visual shows the complete intended creator journey while keeping the pre-freeze implementation boundary narrow. The critical P0 sequence is recommendation → accepted starter-aware roadmap → bounded generated quest → independent proof → creator play/confirmation → atomic completion/restart. Idea promotion, Companion conversation, and Web export are visible as future states so their boundaries can be reviewed, not as implementation commitments.
+
+<Callout id="scope-decision" tone="decision">
+
+**Implement only the P0 spine before freeze.** Existing v0.2 surfaces are reused. Open in Godot is an optional P1 action. Export readiness and showcase refresh are P2 submission work. Idea refinement, proposal promotion, and Companion conversation remain deferred.
+
+</Callout>
+
+<Table
+  id="legend"
+  columns={["Label", "Meaning", "Pre-freeze action"]}
+  rows={[
+    ["v0.2 reuse", "Already implemented and protected", "Reuse without semantic expansion"],
+    ["P0", "Required to prove one fresh generated quest", "Task A or Task B"],
+    ["P1", "High-value only after P0 passes", "Cut if it delays proof"],
+    ["P2", "Evidence/submission work after freeze", "No product architecture change"],
+    ["Deferred", "Longer-term product evolution", "Do not implement before submission"],
+  ]}
+  density="compact"
+/>
+
+## Architecture and implementation detail
+
+See the repository documents beside this source:
+
+- `../ALPHA_ARCHITECTURE.md` for contracts, ownership, rollback, completion, Git, and context.
+- `../ALPHA_USER_JOURNEY.md` for creator choices and exact state language.
+- `../ALPHA_PROOF_GAME_ROADMAP.md` for the two-task boundary and freeze schedule.
+- `../PROOF_GAME_PLAN.md` for Signal Sweep and the Gravity Tap fallback.
+
+## Verification
+
+Review all 18 frames in `canvas.mdx` or the standalone `index.html`. Confirm the current/P0/P1/P2/deferred labels are outside product UI; the contract names exact files; verification and creator play are distinct; no deferred state appears to mutate current project truth; and Play/Open in Godot/Open Folder remain server-owned actions.
