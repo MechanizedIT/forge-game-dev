@@ -222,6 +222,21 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Focused and full checks pass, both browser suites pass, and live Gravity Tap plus Signal Sweep remain byte-identical after read-only reload.
 
+#### Alpha Pivot Milestone 4 — Open Idea to System Roadmap
+
+- [x] Start inside an existing Forge-owned Godot workspace and accept a free-form creator idea.
+- [x] Ask at most one round of three essential questions, then propose three to six broad systems.
+- [x] Let the creator repeatedly revise or exactly accept the complete roadmap.
+- [x] Persist accepted systems in one fixed Forge planning record while allowing systems with no quests.
+- [x] Preserve every quest, work session, result, history link, focus rule, runner boundary, and legacy read path.
+- [x] Prove safe failure, retry, cancellation, reload, responsive screens, exact Git status, and whole-project bytes with temporary copies.
+
+**Status:** `COMPLETE`. Any ordinary Godot game idea can become a visual system roadmap. Profiles, capabilities, starters, templates, and game types do not grant permission. The creator accepts one exact proposal, and Forge writes only `.forge/system-roadmap.json`.
+
+**Truth boundary:** This milestone shapes broad systems only. It does not invent quests, choose implementation files, prepare work orders, touch Godot files, or start Codex work.
+
+**Exit:** Focused, full, protected, build, context, and three browser suites pass. Live Gravity Tap and Signal Sweep remain byte-identical after read-only reload.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -256,12 +271,11 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Pivot Milestone 3 is complete. The next bounded product task is open system-roadmap
-planning inside an existing Forge-owned Godot workspace: discuss one free-form idea,
-ask only essential questions, propose three to six broad systems, let the creator revise
-or accept them, and persist only the accepted Forge planning records. Systems may remain
-empty until later quest refinement. Do not add project import, broad scanning, a new
-engine, collaboration, capability gates, or an orchestration framework.
+Alpha Pivot Milestone 4 is complete. The next bounded product task opens one system,
+discusses it in ordinary words, proposes a short ordered quest list, lets the creator
+revise or accept it, and prepares the first quest's plain work-order draft for exact
+one-to-four-file review before the existing contract path. Do not add generalized quest
+generation, file indexing, integrations, non-Godot engines, or multi-agent machinery.
 Submission actions remain owner-controlled: review public copy, supply the
 demo/live/Devpost URLs, select a license, deploy the static site, and push or submit
 only when authorized.

@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rename, rm, writeFile } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { gameBlueprintSchema, gitBaselineResultSchema, godotVerificationResultSchema, type GameBlueprint } from "../src/contracts/index.js";
+import { acceptedSystemRoadmapSchema, gameBlueprintSchema, gitBaselineResultSchema, godotVerificationResultSchema, type GameBlueprint } from "../src/contracts/index.js";
 import { fingerprintBlueprint } from "../src/blueprint-planner/service.js";
+import { fingerprintProjectStructure } from "../src/blueprint-planner/system-roadmap.js";
 import { createForgeDashboardServer } from "../src/dashboard-host/server.js";
 import type { ForgeDashboardService } from "../src/dashboard-host/service.js";
 import {
@@ -137,6 +138,95 @@ test("read-only Project World joins exact Task 5 artifacts without changing proj
     assert.ok(snapshot.quests.every((quest) => quest.implementation === "not_enabled"));
     assert.deepEqual(await Promise.all(watched.map(digest)), before);
   });
+});
+
+test("accepted open systems persist in one fixed Forge record while Godot and legacy planning bytes stay unchanged", async () => {
+  await withFixture(async ({ forgeHome, projectId, projectPath }) => {
+    const service = new GeneratedProjectWorldService({ forgeHome });
+    const before = await service.loadWorld(projectId);
+    const watched = [
+      path.join(forgeHome, "project-registry.json"),
+      path.join(projectPath, "project.godot"),
+      path.join(projectPath, ".forge", "project-manifest.json"),
+      path.join(projectPath, ".forge", "roadmap.json"),
+      path.join(projectPath, ".forge", "chronicle.json"),
+    ];
+    const hashes = await Promise.all(watched.map(digest));
+    const originalSystem = before.projectModel.systems[0]!;
+    const accepted = acceptedSystemRoadmapSchema.parse({
+      schemaVersion: 1,
+      projectId,
+      creatorIdea: "A free-form lighthouse game where storms threaten a harbor that remembers each night.",
+      sourceFingerprint: fingerprintProjectStructure(before.projectModel),
+      proposalFingerprint: "b".repeat(64),
+      acceptedAt: "2026-07-15T20:00:00.000Z",
+      systems: [
+        { systemId: originalSystem.systemId, title: "Lighthouse Care", outcome: "Keep the beacon bright through each storm.", questIds: originalSystem.questIds },
+        { systemId: "system-storm-pressure", title: "Storm Pressure", outcome: "Weather creates readable danger.", questIds: [] },
+        { systemId: "system-harbor-trust", title: "Harbor Trust", outcome: "The harbor reacts to each night.", questIds: [] },
+      ],
+    });
+    await service.saveSystemRoadmap(projectId, accepted);
+    const recordPath = path.join(projectPath, ".forge", "system-roadmap.json");
+    const recordHash = await digest(recordPath);
+    const reloaded = await service.loadWorld(projectId);
+    assert.deepEqual(reloaded.projectModel.project.systemIds, accepted.systems.map((system) => system.systemId));
+    assert.equal(reloaded.projectModel.systems[1]?.questIds.length, 0);
+    assert.deepEqual(reloaded.projectModel.quests.map((quest) => quest.questId), before.projectModel.quests.map((quest) => quest.questId));
+    assert.deepEqual(reloaded.projectModel.workSessions, before.projectModel.workSessions);
+    assert.deepEqual(reloaded.projectModel.results, before.projectModel.results);
+    assert.deepEqual(reloaded.projectModel.history, before.projectModel.history);
+    assert.deepEqual(await Promise.all(watched.map(digest)), hashes);
+    await service.loadWorld(projectId);
+    assert.equal(await digest(recordPath), recordHash, "read paths must not rewrite the accepted record");
+  });
+});
+
+test("system roadmap save rejects stale structure and an unsafe fixed target", async () => {
+  await withFixture(async ({ forgeHome, projectId, projectPath }) => {
+    const service = new GeneratedProjectWorldService({ forgeHome });
+    const world = await service.loadWorld(projectId);
+    const system = world.projectModel.systems[0]!;
+    const base = acceptedSystemRoadmapSchema.parse({
+      schemaVersion: 1, projectId,
+      creatorIdea: "A free-form game idea that is long enough for safe system planning.",
+      sourceFingerprint: "c".repeat(64), proposalFingerprint: "d".repeat(64), acceptedAt: "2026-07-15T20:00:00.000Z",
+      systems: [
+        { systemId: system.systemId, title: system.title, outcome: system.outcome, questIds: system.questIds },
+        { systemId: "system-two", title: "Second System", outcome: "A second broad outcome appears.", questIds: [] },
+        { systemId: "system-three", title: "Third System", outcome: "A third broad outcome appears.", questIds: [] },
+      ],
+    });
+    await assert.rejects(() => service.saveSystemRoadmap(projectId, base), /changed before/);
+    const target = path.join(projectPath, ".forge", "system-roadmap.json");
+    await mkdir(target);
+    await assert.rejects(() => service.saveSystemRoadmap(projectId, { ...base, sourceFingerprint: fingerprintProjectStructure(world.projectModel) }), /unsafe/);
+  });
+});
+
+test("system roadmap save rechecks unresolved work after loading the latest project state", async () => {
+  const fixture = await createSignalSweepFixture();
+  try {
+    const runner = new GeneratedQuestRunnerService({ forgeHome: fixture.forgeHome });
+    const service = new GeneratedProjectWorldService({ forgeHome: fixture.forgeHome, generatedRunner: runner });
+    const before = await service.loadWorld(fixture.projectId);
+    const system = before.projectModel.systems[0]!;
+    const accepted = acceptedSystemRoadmapSchema.parse({
+      schemaVersion: 1, projectId: fixture.projectId,
+      creatorIdea: "A free-form signal game with a readable relay and a calm recovery rhythm.",
+      sourceFingerprint: fingerprintProjectStructure(before.projectModel), proposalFingerprint: "e".repeat(64), acceptedAt: "2026-07-15T20:00:00.000Z",
+      systems: [
+        { systemId: system.systemId, title: system.title, outcome: system.outcome, questIds: system.questIds },
+        { systemId: "system-signal-rhythm", title: "Signal Rhythm", outcome: "The relay has a clear calm and active rhythm.", questIds: [] },
+        { systemId: "system-station-response", title: "Station Response", outcome: "The station visibly responds to each relay result.", questIds: [] },
+      ],
+    });
+    await runner.prepare(fixture.projectId, "q1-activate-the-signal-relay");
+    await assert.rejects(() => service.saveSystemRoadmap(fixture.projectId, accepted), /safely close the active work session/);
+    await assert.rejects(() => readFile(path.join(fixture.projectPath, ".forge", "system-roadmap.json")), { code: "ENOENT" });
+  } finally {
+    await fixture.cleanup();
+  }
 });
 
 test("fresh starter-aware Project World exposes accepted facts and honest quest eligibility without writes", async () => {

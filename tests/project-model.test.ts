@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { projectModelSchema } from "../src/contracts/index.js";
-import { deriveLegacyQuestStatus, deriveProjectSystemStatus } from "../src/generated-project-world/project-model.js";
+import { acceptedSystemRoadmapSchema, projectModelSchema } from "../src/contracts/index.js";
+import { applyAcceptedSystemRoadmap, deriveLegacyQuestStatus, deriveProjectSystemStatus } from "../src/generated-project-world/project-model.js";
 import { GeneratedProjectWorldService } from "../src/generated-project-world/service.js";
 import { GeneratedQuestRunnerService } from "../src/generated-quest-runner/service.js";
 import {
@@ -138,6 +138,48 @@ test("planned systems can wait for refinement with system-only focus and no ques
     selectedQuestId: null,
     nextRecommendedQuestId: null,
   });
+});
+
+test("an accepted open roadmap adds empty systems without changing quests, sessions, results, or history", () => {
+  const source = projectModelSchema.parse(openMechanicModel());
+  const accepted = acceptedSystemRoadmapSchema.parse({
+    schemaVersion: 1, projectId: source.project.projectId,
+    creatorIdea: "A branching story where each reply changes who trusts the player next.",
+    sourceFingerprint: "a".repeat(64), proposalFingerprint: "b".repeat(64), acceptedAt: fixtureTime,
+    systems: [
+      { systemId: "dialogue-system", title: "Living Dialogue", outcome: "Replies change the next conversation.", questIds: ["choose-a-reply"] },
+      { systemId: "trust-system", title: "Character Trust", outcome: "Characters remember how the player treats them.", questIds: [] },
+      { systemId: "story-rhythm", title: "Story Rhythm", outcome: "Quiet and tense moments alternate clearly.", questIds: [] },
+    ],
+  });
+  const next = applyAcceptedSystemRoadmap(source, accepted);
+  assert.deepEqual(next.systems.map((system) => system.systemId), ["dialogue-system", "trust-system", "story-rhythm"]);
+  assert.deepEqual(next.quests, source.quests);
+  assert.deepEqual(next.workSessions, source.workSessions);
+  assert.deepEqual(next.results, source.results);
+  assert.deepEqual(next.history, source.history);
+});
+
+test("an accepted roadmap preserves global quest order and cannot reorder populated system groups", () => {
+  const first = projectModelSchema.parse(openMechanicModel());
+  const source = projectModelSchema.parse({
+    ...first,
+    project: { ...first.project, systemIds: [first.systems[0]!.systemId, "ending-system"] },
+    systems: [...first.systems, { systemId: "ending-system", projectId: first.project.projectId, title: "Ending", outcome: "The story reaches a visible ending.", status: "active", questIds: ["reach-the-ending"] }],
+    quests: [...first.quests, { questId: "reach-the-ending", systemId: "ending-system", title: "Reach the Ending", playerVisibleOutcome: "The ending appears.", doneWhen: ["The ending is visible."], status: "available", dependsOn: [], workSessionIds: [], latestWorkSessionId: null, extraProof: null }],
+  });
+  const accepted = acceptedSystemRoadmapSchema.parse({
+    schemaVersion: 1, projectId: source.project.projectId, creatorIdea: "A branching story with one clear ending.",
+    sourceFingerprint: "a".repeat(64), proposalFingerprint: "b".repeat(64), acceptedAt: fixtureTime,
+    systems: [
+      { systemId: "ending-system", title: "Ending", outcome: "The story reaches a visible ending.", questIds: ["reach-the-ending"] },
+      { systemId: source.systems[0]!.systemId, title: source.systems[0]!.title, outcome: source.systems[0]!.outcome, questIds: source.systems[0]!.questIds },
+      { systemId: "empty-system", title: "World Mood", outcome: "The world reflects the story mood.", questIds: [] },
+    ],
+  });
+  assert.throws(() => applyAcceptedSystemRoadmap(source, accepted), /reordered existing quest groups/);
+  const safe = applyAcceptedSystemRoadmap(source, { ...accepted, systems: [accepted.systems[1]!, accepted.systems[2]!, accepted.systems[0]!] });
+  assert.deepEqual(safe.quests, source.quests);
 });
 
 test("legacy quest and system statuses follow the exact compatibility truth table", () => {

@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { lstat, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
@@ -7,6 +7,7 @@ import { z } from "zod";
 import {
   chronicleAnySchema,
   acceptedRoadmapProvenanceSchema,
+  acceptedSystemRoadmapSchema,
   chronicleV2Schema,
   creationProvenanceSchema,
   firstPlayableMilestoneSchema,
@@ -27,6 +28,7 @@ import {
   type GeneratedProjectStateAny,
   type GeneratedQuestArtifactV2,
   type IdeaSeed,
+  type AcceptedSystemRoadmap,
 } from "../contracts/index.js";
 import { resolveForgeHome } from "../demo/paths.js";
 import { ensurePinnedGodot } from "../godot/bootstrap.js";
@@ -43,9 +45,10 @@ import type {
   GeneratedWorldStateInput,
   GeneratedWorldView,
 } from "./shared.js";
-import { buildLegacyProjectModel } from "./project-model.js";
+import { applyAcceptedSystemRoadmap, buildLegacyProjectModel } from "./project-model.js";
 
 const ideaRelativePath = ".forge/idea-seeds.json";
+const systemRoadmapRelativePath = ".forge/system-roadmap.json";
 const generatedViews = new Set<GeneratedWorldView>(["project_world", "quest_brief", "chronicle", "documents"]);
 
 export class GeneratedProjectWorldNotFoundError extends Error {
@@ -187,6 +190,15 @@ export class GeneratedProjectWorldService {
     return artifact.seeds;
   }
 
+  private async optionalSystemRoadmap(projectPath: string, projectId: string): Promise<AcceptedSystemRoadmap | null> {
+    const target = path.join(projectPath, systemRoadmapRelativePath);
+    const info = await lstat(target).catch(() => null);
+    if (!info) return null;
+    const artifact = await readValidated(await this.ownedPath(projectPath, systemRoadmapRelativePath), acceptedSystemRoadmapSchema);
+    if (artifact.projectId !== projectId) throw new Error("The system roadmap belongs to another project.");
+    return artifact;
+  }
+
   async loadWorld(projectId: string): Promise<GeneratedProjectWorldSnapshot> {
     try {
       const { projectPath, entry } = await this.resolveProject(projectId);
@@ -254,7 +266,7 @@ export class GeneratedProjectWorldService {
       });
 
       const sessions = await this.sessionReader.listProjectSessions(projectId);
-      const projectModel = buildLegacyProjectModel({
+      const legacyProjectModel = buildLegacyProjectModel({
         manifest,
         vision,
         firstPlayable,
@@ -264,6 +276,10 @@ export class GeneratedProjectWorldService {
         chronicle,
         sessions,
       });
+      const acceptedSystemRoadmap = await this.optionalSystemRoadmap(projectPath, projectId);
+      const projectModel = acceptedSystemRoadmap
+        ? applyAcceptedSystemRoadmap(legacyProjectModel, acceptedSystemRoadmap)
+        : legacyProjectModel;
 
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
       const selectedIsValid = state.selectedQuestId !== null && roadmapIds.includes(state.selectedQuestId);
@@ -377,6 +393,52 @@ export class GeneratedProjectWorldService {
     const snapshot = await this.loadWorld(projectId);
     const opened = await this.registry.markOpened(projectId);
     return { ...snapshot, project: { ...snapshot.project, lastOpenedAt: opened.lastOpenedAt } };
+  }
+
+  async saveSystemRoadmap(projectId: string, roadmapValue: AcceptedSystemRoadmap): Promise<void> {
+    const roadmap = acceptedSystemRoadmapSchema.parse(roadmapValue);
+    if (roadmap.projectId !== projectId) throw new GeneratedProjectWorldConflictError("The system roadmap belongs to another project.");
+    const current = await this.loadWorld(projectId);
+    const unresolvedWork = current.projectModel.workSessions.some((session) =>
+      ["contract_review", "approved", "implementing", "scope_review", "verifying", "waiting_for_playtest", "completion_pending", "failed", "interrupted"].includes(session.phase)
+      || (session.phase === "cancelled" && (session.recovery.action === "rollback" || session.recovery.action === "manual")));
+    if (unresolvedWork) {
+      throw new GeneratedProjectWorldConflictError("Finish or safely close the active work session before saving systems.");
+    }
+    const structure = {
+      projectId: current.projectModel.project.projectId,
+      systems: current.projectModel.systems.map((system) => ({ systemId: system.systemId, questIds: system.questIds })),
+    };
+    const currentFingerprint = createHash("sha256").update(JSON.stringify(structure), "utf8").digest("hex");
+    if (roadmap.sourceFingerprint !== currentFingerprint) {
+      throw new GeneratedProjectWorldConflictError("The project plan changed before the system roadmap could be saved.");
+    }
+    const currentById = new Map(current.projectModel.systems.map((system) => [system.systemId, system.questIds]));
+    for (const [systemId, questIds] of currentById) {
+      const accepted = roadmap.systems.find((system) => system.systemId === systemId);
+      if (!accepted || !sameList(accepted.questIds, questIds)) {
+        throw new GeneratedProjectWorldConflictError("The system roadmap must preserve every existing system and its quests.");
+      }
+    }
+    const currentPopulatedOrder = current.projectModel.systems.filter((system) => system.questIds.length > 0).map((system) => system.systemId);
+    const acceptedPopulatedOrder = roadmap.systems.filter((system) => system.questIds.length > 0).map((system) => system.systemId);
+    if (!sameList(currentPopulatedOrder, acceptedPopulatedOrder)) {
+      throw new GeneratedProjectWorldConflictError("The system roadmap must preserve the order of existing quest groups.");
+    }
+    const currentQuestIds = current.projectModel.quests.map((quest) => quest.questId);
+    const acceptedQuestIds = roadmap.systems.flatMap((system) => system.questIds);
+    if (currentQuestIds.length !== acceptedQuestIds.length || currentQuestIds.some((questId) => !acceptedQuestIds.includes(questId)) || new Set(acceptedQuestIds).size !== acceptedQuestIds.length) {
+      throw new GeneratedProjectWorldConflictError("The system roadmap must preserve every quest exactly once.");
+    }
+    const { projectPath } = await this.resolveProject(projectId);
+    const forgeDirectory = await this.ownedPath(projectPath, ".forge", "directory");
+    const target = path.join(forgeDirectory, "system-roadmap.json");
+    const info = await lstat(target).catch(() => null);
+    if (info && (info.isSymbolicLink() || !info.isFile())) {
+      throw new GeneratedProjectWorldConflictError("The system roadmap target is unsafe.");
+    }
+    if (info) await this.ownedPath(projectPath, systemRoadmapRelativePath);
+    await writeJsonAtomic(target, roadmap);
   }
 
   async saveState(projectId: string, input: GeneratedWorldStateInput): Promise<GeneratedProjectWorldSnapshot> {

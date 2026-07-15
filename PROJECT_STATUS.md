@@ -2,11 +2,16 @@
 
 **Last updated:** 2026-07-15
 
-**Current milestone:** `Alpha Pivot Milestone 3 — Connected Workspace Shell`
+**Current milestone:** `Alpha Pivot Milestone 4 — Open Idea to System Roadmap`
 
-**Overall state:** `ALPHA PIVOT MILESTONE 3 COMPLETE` — Opening a generated project now shows one connected workspace. Systems and quests form the main roadmap. Forgie explains the selected item. Play, Open Folder, and Toolbox stay close by. Exact work approval and all runner safety remain unchanged.
+**Overall state:** `ALPHA PIVOT MILESTONE 4 COMPLETE` — Inside an existing Forge-owned project, a creator can describe any game idea, answer only essential questions, revise three to six broad systems, and save the exact accepted roadmap. Planning changes no Godot file and starts no work.
 
 ## What works now
+
+- **Shape systems** opens inside the connected Roadmap shell. The creator writes an idea in ordinary words; no game type, capability, starter, template, profile, or verifier decides whether it is allowed.
+- Forge asks at most one short round of up to three questions, then shows three to six broad systems. The creator can revise repeatedly, cancel safely, retry the exact failed step, or accept the exact fingerprinted proposal.
+- Accepted systems persist in `.forge/system-roadmap.json`. Empty systems remain real. Existing quests keep their system, global order, sessions, results, history, and focus meaning. Missing records keep exact old behavior with no on-read rewrite.
+- Start, acceptance, and the final save reject unresolved work. The fixed target, canonical project, exact quest membership, populated-system order, and project fingerprint all fail closed when stale or unsafe.
 
 - Generated projects open into one persistent shell with Roadmap, History, Project files, quest review, and work-session views.
 - The roadmap reads systems and quests from the open Project Model. An empty system remains visible without a fake quest or fake action.
@@ -62,9 +67,16 @@
 - Independent read-only review found and verified fixes for project-wide active locks, active-quest focus, duplicate locked actions, Toolbox focus return, narrow dock clipping, and missing active/pre-approval browser evidence.
 - Live read-only reload kept the registry at `a23042ae97c706285780d91642faed0a0e29261ab04b4feb2b6f75c840f06b86`. Gravity Tap bytes stayed `79dcb02744d4070cd71f4d3d42a333ce84315316c056445be5162efee9f2f56c` at Git `f4cbba5928e22c0a3471239d7b67b490c7649a56`; Signal Sweep bytes stayed `31d5d1acab8e31c5ae2b1ae1a110f68c55fcad2fe30225b87b413e36ef71e86e` at Git `a0ad834d6c1f98a51b63c7313564acb1af274e41`.
 
+## Alpha Pivot Milestone 4 evidence
+
+- Focused checks pass 45/45. The full suite passes 145/145. Protected v0.1 passes 38/38 with a production build. Context validation reports 11 subsystems, 10 change routes, 255 path references, and 68 test references.
+- The new Edge review passes 9 idea, clarification, proposal, revision, acceptance, reload, failure, mobile, and reduced-motion states with zero issues. Existing 15-state workspace and 12-state runner reviews also pass.
+- The temporary project's real Git status changed from clean to only `?? .forge/system-roadmap.json`. A recursive audit proved every other project file and the temporary registry stayed byte-identical.
+- Live read-only reload kept registry hash `a23042ae97c706285780d91642faed0a0e29261ab04b4feb2b6f75c840f06b86`. Gravity Tap stayed clean at Git `f4cbba5928e22c0a3471239d7b67b490c7649a56` with tree digest `155d08c1581c1adbb71f2456eef2993656bd1bc17bb208aec9b77e3a6a7342e5`. Signal Sweep stayed clean at Git `a0ad834d6c1f98a51b63c7313564acb1af274e41` with tree digest `d6125f1b31626e57cfaabfbb86eac98228562ce6310251f61a542d9c300988bf`. Both still have no remotes.
+
 ## How to test this milestone
 
-Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run forge`. Open a recent generated project to inspect the connected workspace. For automated proof, run `npm run check`, then `npm run check:v0.1`, `npm run visual:review:v0.2:project-world`, and `npm run visual:review:alpha:generated-quest`. Browser proof uses temporary copies.
+Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run forge`. Open a recent generated project, choose **Roadmap**, then **Shape systems**. Use a temporary project for acceptance tests. For automated proof, run `npm test`, `npm run check:v0.1`, `npm run visual:review:alpha:system-roadmap`, `npm run visual:review:v0.2:project-world`, and `npm run visual:review:alpha:generated-quest`.
 
 ## Alpha Task B implementation evidence
 
@@ -95,6 +107,6 @@ Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run fo
 2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
 3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-The open project model, profile-free runner boundary, and connected workspace shell are complete. Forge still lacks open conversational system planning, creator-facing quest refinement, and work-order authoring. External import, broad scanning, and non-Godot engines remain deferred. Signal Sweep remains unapproved and unimplemented. The next recommended milestone is the smallest free-form idea-to-system-roadmap path inside an existing Forge-owned project. It must change Forge planning records only.
+The open project model, profile-free runner boundary, connected workspace shell, and open system planning are complete. Forge still lacks creator-facing system-to-quest refinement and work-order authoring. External import, broad scanning, and non-Godot engines remain deferred. Signal Sweep remains unapproved and unimplemented. The next recommended milestone opens one system, accepts a short quest list, and prepares the first plain-language work order for exact file-scope review.
 
-See the [Alpha Pivot Milestone 3 review](docs/reviews/2026-07-15-alpha-pivot-workspace-shell-review.md), [Alpha Pivot Milestone 2 review](docs/reviews/2026-07-15-alpha-pivot-work-sessions-review.md), [Alpha Pivot Milestone 1 review](docs/reviews/2026-07-15-alpha-pivot-project-model-review.md), and [judge guide](docs/JUDGE_GUIDE.md).
+See the [Alpha Pivot Milestone 4 review](docs/reviews/2026-07-15-alpha-pivot-open-roadmap-planning-review.md), [Alpha Pivot Milestone 3 review](docs/reviews/2026-07-15-alpha-pivot-workspace-shell-review.md), and [judge guide](docs/JUDGE_GUIDE.md).

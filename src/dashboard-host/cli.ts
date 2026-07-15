@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { OfficialBlueprintModelExecutor } from "../blueprint-planner/sdk.js";
 import { BlueprintPlanningService } from "../blueprint-planner/service.js";
+import { SystemRoadmapPlanningService } from "../blueprint-planner/system-roadmap.js";
 import { repositoryRoot } from "../demo/paths.js";
 import { launchPreparedGame } from "../godot/run-fixture.js";
 import { OfficialCodexExecutor } from "../quest-runner/sdk.js";
@@ -56,6 +57,9 @@ const generatedRunner = new GeneratedQuestRunnerService({
 });
 await generatedRunner.recoverActiveRuns();
 const generatedWorldService = new GeneratedProjectWorldService({ generatedRunner });
+const systemRoadmapPlanningService = new SystemRoadmapPlanningService(
+  new OfficialBlueprintModelExecutor(repositoryRoot),
+);
 const server = createForgeDashboardServer(
   service,
   path.join(repositoryRoot, "dist", "dashboard"),
@@ -63,6 +67,7 @@ const server = createForgeDashboardServer(
   creationService,
   generatedWorldService,
   generatedRunner,
+  systemRoadmapPlanningService,
 );
 
 server.once("error", (error: NodeJS.ErrnoException) => {

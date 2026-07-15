@@ -11,6 +11,10 @@ import type {
 import type { ClarificationTopic } from "../contracts/index.js";
 import type { RoadmapEdit } from "../blueprint-planner/starter-catalog.js";
 import type {
+  SystemRoadmapPlanningEvent,
+  SystemRoadmapPlanningSnapshot,
+} from "../blueprint-planner/system-roadmap.js";
+import type {
   CreatedProjectSummary,
   ProjectCreationEvent,
   ProjectCreationStateResponse,
@@ -241,6 +245,49 @@ export function openCreatedProjectFolder(projectId: string): Promise<{ opened: t
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ projectId }),
   });
+}
+
+function systemPlanningUrl(projectId: string, action: string): string {
+  return `/api/projects/${encodeURIComponent(projectId)}/system-planning/${action}`;
+}
+
+export function loadSystemRoadmapPlanning(projectId: string): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "state"));
+}
+
+export function startSystemRoadmapPlanning(projectId: string, idea: string): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "start"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ idea }) });
+}
+
+export function answerSystemRoadmapPlanning(projectId: string, answers: Array<{ questionId: string; answer: string }>): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "answers"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ answers }) });
+}
+
+export function reviseSystemRoadmapPlanning(projectId: string, revision: string): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "revise"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ request: revision }) });
+}
+
+export function retrySystemRoadmapPlanning(projectId: string): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "retry"), { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+}
+
+export function acceptSystemRoadmapPlanning(projectId: string, fingerprint: string): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "accept"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "ACCEPT SYSTEM ROADMAP", fingerprint }) });
+}
+
+export function cancelSystemRoadmapPlanning(projectId: string): Promise<SystemRoadmapPlanningSnapshot> {
+  return request(systemPlanningUrl(projectId, "cancel"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "CANCEL SYSTEM PLANNING" }) });
+}
+
+export function subscribeToSystemRoadmapPlanning(
+  projectId: string,
+  onEvent: (event: SystemRoadmapPlanningEvent) => void,
+  onDisconnect: () => void,
+): () => void {
+  const stream = new EventSource(systemPlanningUrl(projectId, "events"));
+  stream.onmessage = (message) => onEvent(JSON.parse(message.data) as SystemRoadmapPlanningEvent);
+  stream.onerror = onDisconnect;
+  return () => stream.close();
 }
 
 function generatedQuestUrl(projectId: string, questId: string, action: string): string {

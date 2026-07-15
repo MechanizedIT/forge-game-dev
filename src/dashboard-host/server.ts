@@ -10,6 +10,10 @@ import {
   BlueprintPlanningConflictError,
   BlueprintPlanningService,
 } from "../blueprint-planner/service.js";
+import {
+  SystemRoadmapPlanningConflictError,
+  SystemRoadmapPlanningService,
+} from "../blueprint-planner/system-roadmap.js";
 import type { CreatorConfirmation, DashboardEvent } from "../dashboard/shared.js";
 import { DashboardConflictError, ForgeDashboardService } from "./service.js";
 import {
@@ -163,6 +167,20 @@ function openProjectCreationEventStream(
   });
 }
 
+function openSystemRoadmapEventStream(
+  request: IncomingMessage,
+  response: ServerResponse,
+  planningService: SystemRoadmapPlanningService,
+): void {
+  response.writeHead(200, {
+    "content-type": "text/event-stream", "cache-control": "no-cache, no-transform", connection: "keep-alive",
+  });
+  response.write(`data: ${JSON.stringify({ type: "refresh" })}\n\n`);
+  const unsubscribe = planningService.subscribe((event) => response.write(`data: ${JSON.stringify(event)}\n\n`));
+  const heartbeat = setInterval(() => response.write(": keep-alive\n\n"), 15_000);
+  request.on("close", () => { clearInterval(heartbeat); unsubscribe(); });
+}
+
 function openGeneratedRunEventStream(
   request: IncomingMessage,
   response: ServerResponse,
@@ -227,8 +245,24 @@ export function createForgeDashboardServer(
   creationService?: ProjectCreationService,
   generatedWorldService?: GeneratedProjectWorldService,
   generatedRunner?: GeneratedQuestRunnerHost,
+  systemRoadmapPlanningService?: SystemRoadmapPlanningService,
 ): Server {
   const resolvedStaticRoot = path.resolve(staticRoot);
+  const projectMutationTails = new Map<string, Promise<void>>();
+  const withProjectMutation = async <T>(projectId: string, mutation: () => Promise<T>): Promise<T> => {
+    const previous = projectMutationTails.get(projectId) ?? Promise.resolve();
+    let release!: () => void;
+    const current = new Promise<void>((resolve) => { release = resolve; });
+    const tail = previous.then(() => current);
+    projectMutationTails.set(projectId, tail);
+    await previous;
+    try {
+      return await mutation();
+    } finally {
+      release();
+      if (projectMutationTails.get(projectId) === tail) projectMutationTails.delete(projectId);
+    }
+  };
   let creationMutationToken = randomBytes(32).toString("hex");
   const creationState = async () => ({
     creation: creationService?.getSnapshot(),
@@ -309,7 +343,7 @@ export function createForgeDashboardServer(
         }
         if (action === "prepare") {
           requireExactKeys(body, [], "Prepare accepts no browser-supplied authority values.");
-          sendJson(response, 201, await generatedRunner.prepare(projectId, questId));
+          sendJson(response, 201, await withProjectMutation(projectId, () => generatedRunner.prepare(projectId, questId)));
           return;
         }
         if (action === "approve") {
@@ -414,6 +448,75 @@ export function createForgeDashboardServer(
         creationService.cancelCreation();
         sendJson(response, 202, await creationState());
         return;
+      }
+      const systemPlanningRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/system-planning\/(state|events|start|answers|revise|retry|accept|cancel)$/u);
+      if (systemPlanningRoute && systemRoadmapPlanningService && generatedWorldService) {
+        const projectId = safePathId(systemPlanningRoute[1], "project ID");
+        const action = systemPlanningRoute[2]!;
+        const planningSnapshot = systemRoadmapPlanningService.getSnapshot();
+        const planningProjectId = planningSnapshot.projectId;
+        if (planningProjectId && planningProjectId !== projectId && !["accepted", "cancelled"].includes(planningSnapshot.phase)) {
+          throw new SystemRoadmapPlanningConflictError("System planning is open for another project.");
+        }
+        if (request.method === "GET" && action === "state") {
+          sendJson(response, 200, systemRoadmapPlanningService.getSnapshotForProject(projectId));
+          return;
+        }
+        if (request.method === "GET" && action === "events") {
+          openSystemRoadmapEventStream(request, response, systemRoadmapPlanningService);
+          return;
+        }
+        if (request.method !== "POST") { sendJson(response, 404, { error: "Not found" }); return; }
+        requireSameOrigin(request);
+        const body = await readJsonBody(request);
+        if (action === "start") {
+          requireExactKeys(body, ["idea"], "System planning accepts only the creator idea.");
+          if (typeof body.idea !== "string") throw new Error("A creator idea is required.");
+          const world = await generatedWorldService.loadWorld(projectId);
+          systemRoadmapPlanningService.begin(world.projectModel, body.idea);
+          sendJson(response, 202, systemRoadmapPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "answers") {
+          requireExactKeys(body, ["answers"], "System planning answers accept only the shown answers.");
+          if (!Array.isArray(body.answers) || body.answers.some((answer) => !answer || typeof answer !== "object" || Array.isArray(answer) || Object.keys(answer).sort().join(",") !== "answer,questionId" || typeof (answer as Record<string, unknown>).questionId !== "string" || typeof (answer as Record<string, unknown>).answer !== "string")) {
+            throw new Error("System planning answers must match the shown questions.");
+          }
+          systemRoadmapPlanningService.submitAnswers(body.answers as Array<{ questionId: string; answer: string }>);
+          sendJson(response, 202, systemRoadmapPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "revise") {
+          requireExactKeys(body, ["request"], "System roadmap revision accepts only the creator request.");
+          if (typeof body.request !== "string") throw new Error("A revision request is required.");
+          systemRoadmapPlanningService.revise(body.request);
+          sendJson(response, 202, systemRoadmapPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "retry") {
+          requireExactKeys(body, [], "System planning retry accepts no authority values.");
+          systemRoadmapPlanningService.retry();
+          sendJson(response, 202, systemRoadmapPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "accept") {
+          requireExactKeys(body, ["decision", "fingerprint"], "System roadmap acceptance accepts only the exact decision and fingerprint.");
+          if (body.decision !== "ACCEPT SYSTEM ROADMAP" || typeof body.fingerprint !== "string") throw new Error("System roadmap acceptance requires the exact decision and current fingerprint.");
+          const fingerprint = body.fingerprint;
+          await withProjectMutation(projectId, async () => {
+            const current = await generatedWorldService.loadWorld(projectId);
+            await systemRoadmapPlanningService.accept("ACCEPT SYSTEM ROADMAP", fingerprint, current.projectModel, (roadmap) => generatedWorldService.saveSystemRoadmap(projectId, roadmap));
+          });
+          sendJson(response, 200, systemRoadmapPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "cancel") {
+          requireExactKeys(body, ["decision"], "System planning cancellation accepts only the exact decision.");
+          if (body.decision !== "CANCEL SYSTEM PLANNING") throw new Error("System planning cancellation requires the exact decision.");
+          systemRoadmapPlanningService.cancel("CANCEL SYSTEM PLANNING");
+          sendJson(response, 200, systemRoadmapPlanningService.getSnapshot());
+          return;
+        }
       }
       if (request.method === "POST" && url.pathname === "/api/projects/create/reset" && creationService) {
         consumeCreationToken(request);
@@ -565,7 +668,7 @@ export function createForgeDashboardServer(
     } catch (error) {
       const status = error instanceof GeneratedProjectWorldNotFoundError || error instanceof GeneratedQuestRunNotFoundError
         ? 404
-        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError || error instanceof GeneratedQuestRunConflictError
+        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof SystemRoadmapPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError || error instanceof GeneratedQuestRunConflictError
           ? 409
           : 400;
       sendJson(response, status, {

@@ -5,6 +5,7 @@ import {
   gameVisionSchema,
   projectModelSchema,
   type ChronicleV2,
+  type AcceptedSystemRoadmap,
   type GeneratedProjectManifest,
   type GeneratedProjectStateAny,
   type GeneratedQuestArtifactV2,
@@ -159,5 +160,64 @@ export function buildLegacyProjectModel(inputs: LegacyProjectModelInputs): Proje
       workSessionId: entry.type === "quest_completed" ? entry.runId : null,
     })),
     focus: { selectedSystemId: systemId, selectedQuestId, nextRecommendedQuestId },
+  });
+}
+
+export function applyAcceptedSystemRoadmap(model: ProjectModel, roadmap: AcceptedSystemRoadmap): ProjectModel {
+  if (roadmap.projectId !== model.project.projectId) throw new Error("The saved system roadmap belongs to another project.");
+  const currentQuestIds = model.quests.map((quest) => quest.questId);
+  const acceptedQuestIds = roadmap.systems.flatMap((system) => system.questIds);
+  if (currentQuestIds.length !== acceptedQuestIds.length || new Set(acceptedQuestIds).size !== acceptedQuestIds.length) {
+    throw new Error("The saved system roadmap does not contain every current quest exactly once.");
+  }
+  if (currentQuestIds.some((questId) => !acceptedQuestIds.includes(questId))) {
+    throw new Error("The saved system roadmap is missing a current quest.");
+  }
+
+  const originalSystemByQuest = new Map(model.quests.map((quest) => [quest.questId, quest.systemId]));
+  for (const originalSystem of model.systems) {
+    const accepted = roadmap.systems.find((system) => system.systemId === originalSystem.systemId);
+    if (!accepted) throw new Error("The saved system roadmap removed an existing system.");
+    const expected = originalSystem.questIds;
+    if (expected.length !== accepted.questIds.length || expected.some((questId, index) => accepted.questIds[index] !== questId)) {
+      throw new Error("The saved system roadmap changed existing quest membership.");
+    }
+  }
+
+  const acceptedSystemByQuest = new Map(roadmap.systems.flatMap((system) => system.questIds.map((questId) => [questId, system.systemId] as const)));
+  for (const quest of model.quests) {
+    if (acceptedSystemByQuest.get(quest.questId) !== originalSystemByQuest.get(quest.questId)) {
+      throw new Error("The saved system roadmap moved an existing quest.");
+    }
+  }
+  const currentPopulatedOrder = model.systems.filter((system) => system.questIds.length > 0).map((system) => system.systemId);
+  const acceptedPopulatedOrder = roadmap.systems.filter((system) => system.questIds.length > 0).map((system) => system.systemId);
+  if (currentPopulatedOrder.some((systemId, index) => acceptedPopulatedOrder[index] !== systemId)) {
+    throw new Error("The saved system roadmap reordered existing quest groups.");
+  }
+  const selectedQuestId = model.focus.selectedQuestId;
+  const selectedSystemId = selectedQuestId
+    ? acceptedSystemByQuest.get(selectedQuestId) ?? roadmap.systems[0]!.systemId
+    : roadmap.systems.some((system) => system.systemId === model.focus.selectedSystemId)
+      ? model.focus.selectedSystemId
+      : roadmap.systems[0]!.systemId;
+
+  return projectModelSchema.parse({
+    ...model,
+    project: {
+      ...model.project,
+      vision: roadmap.creatorIdea,
+      systemIds: roadmap.systems.map((system) => system.systemId),
+    },
+    systems: roadmap.systems.map((system) => ({
+      systemId: system.systemId,
+      projectId: model.project.projectId,
+      title: system.title,
+      outcome: system.outcome,
+      status: deriveProjectSystemStatus(system.questIds.map((questId) => model.quests.find((quest) => quest.questId === questId)!.status)),
+      questIds: system.questIds,
+    })),
+    quests: model.quests,
+    focus: { ...model.focus, selectedSystemId },
   });
 }

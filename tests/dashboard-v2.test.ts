@@ -113,10 +113,11 @@ test("real sample adapter distinguishes fresh, preserved, active, and completed 
 });
 
 test("v0.2 source connects the protected sample API and real blueprint planning", async () => {
-  const [app, newGame, generatedWorld, generatedShared, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, generatedQuestVisualReview, planningSdk, planningService, server] = await Promise.all([
+  const [app, newGame, generatedWorld, systemPlanning, generatedShared, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, generatedQuestVisualReview, systemRoadmapVisualReview, planningSdk, planningService, server] = await Promise.all([
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "App.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "NewGameFlow.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "GeneratedProjectWorld.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "SystemRoadmapPlanning.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "generated-project-world", "shared.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "blueprint-planner", "shared.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "sample-workflow.ts"), "utf8"),
@@ -126,6 +127,7 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
     readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2-blueprint.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2-generated-quest.ts"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2-system-roadmap.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "blueprint-planner", "sdk.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "blueprint-planner", "service.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-host", "server.ts"), "utf8"),
@@ -176,6 +178,13 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(generatedWorld, /Play Game/);
   assert.match(generatedWorld, /Open Folder/);
   assert.match(generatedWorld, /No quests yet/);
+  assert.match(generatedWorld, /Shape systems/);
+  assert.match(systemPlanning, /What should this game become\?/);
+  assert.match(systemPlanning, /A few answers will help/);
+  assert.match(systemPlanning, /Revise roadmap/);
+  assert.match(systemPlanning, /Accept systems/);
+  assert.match(systemPlanning, /No game file is changing/);
+  assert.doesNotMatch(systemPlanning, /capability|supported game type|verification profile/i);
   assert.doesNotMatch(generatedWorld, /Blender|GIMP|Unity|capability/i);
   assert.match(generatedShared, /Generated intended outcome/);
   assert.match(generatedShared, /GeneratedQuestRunSnapshot/);
@@ -235,6 +244,10 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(generatedQuestVisualReview, /generated-proof-playtest-desktop/);
   assert.match(generatedQuestVisualReview, /generated-complete-desktop/);
   assert.match(generatedQuestVisualReview, /generated-safe-rollback-desktop/);
+  assert.match(systemRoadmapVisualReview, /channel: "msedge"/);
+  assert.match(systemRoadmapVisualReview, /clarification-tablet/);
+  assert.match(systemRoadmapVisualReview, /failure-retry-desktop/);
+  assert.match(systemRoadmapVisualReview, /system-roadmap\.json/);
 
   const packageJson = JSON.parse(packageJsonText) as {
     scripts: Record<string, string>;
@@ -246,6 +259,7 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.equal(packageJson.scripts["visual:review:v0.2"], "npm run dashboard:build && tsx src/visual-review/v0.2.ts");
   assert.equal(packageJson.scripts["visual:review:v0.2:blueprint"], "npm run dashboard:build && tsx src/visual-review/v0.2-blueprint.ts");
   assert.equal(packageJson.scripts["visual:review:alpha:generated-quest"], "npm run dashboard:build && tsx src/visual-review/v0.2-generated-quest.ts");
+  assert.equal(packageJson.scripts["visual:review:alpha:system-roadmap"], "npm run dashboard:build && tsx src/visual-review/v0.2-system-roadmap.ts");
   assert.match(visualReview, /spawn\(process\.execPath, \[tsxCli, "src\/dashboard-host\/cli\.ts", "--v0\.2"\]/);
   assert.match(visualReview, /FORGE_REVIEW_EVIDENCE_ROOT/);
   assert.equal(packageJson.devDependencies["@playwright/test"], "1.61.1");
