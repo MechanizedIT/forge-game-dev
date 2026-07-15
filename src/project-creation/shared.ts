@@ -1,4 +1,4 @@
-import type { GameBlueprint } from "../contracts/index.js";
+import type { AcceptedRoadmap, BlueprintProposal, GameBlueprint } from "../contracts/index.js";
 import type { BlueprintProvenance } from "../blueprint-planner/shared.js";
 
 export const projectCreationStages = [
@@ -16,7 +16,10 @@ export type ProjectCreationPhase = "idle" | "creating" | "created" | "failed";
 
 export interface ApprovedBlueprintEnvelope {
   blueprint: GameBlueprint;
+  proposal?: BlueprintProposal;
+  acceptedRoadmap?: AcceptedRoadmap;
   blueprintSha256: string;
+  acceptedRoadmapSha256?: string;
   approvedAt: string;
   provenance: BlueprintProvenance;
 }

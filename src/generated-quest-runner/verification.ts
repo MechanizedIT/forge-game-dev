@@ -2,10 +2,12 @@ import {
   generatedQuestProofSchema,
   type GeneratedQuestProof,
   type GeneratedQuestRunJournal,
+  type GeneratedVerificationProfile,
 } from "../contracts/index.js";
 import { createTopDownArenaVerifier } from "../project-creation/godot-verifier.js";
-import { verifyGravityOrbPresence } from "../godot/generated-quest-verification.js";
+import { verifyGravityOrbPresence, verifyRelayActivation } from "../godot/generated-quest-verification.js";
 import { reviewBoundary } from "./boundary.js";
+import { generatedProfileCatalog } from "./profiles.js";
 
 export interface GeneratedProofDependencies {
   projectHealth?: (input: { projectPath: string; projectId: string; forgeHome: string; verifiedAt: string }) => Promise<{ output: string; godotVersion: string }>;
@@ -16,11 +18,12 @@ function pending(summary: string) {
   return { result: "pending" as const, summary, evidence: [], verifiedAt: null };
 }
 
-export function createPendingGeneratedProof(): GeneratedQuestProof {
+export function createPendingGeneratedProof(profileId: GeneratedVerificationProfile = "gravity_orb_presence_v1"): GeneratedQuestProof {
+  const profile = generatedProfileCatalog[profileId];
   return generatedQuestProofSchema.parse({
     boundary: pending("Waiting for exact file-boundary review."),
     projectHealth: pending("Waiting for controlled starter health verification."),
-    mechanic: pending("Waiting for the Forge-owned gravity orb proof."),
+    mechanic: pending(profile.pendingProofSummary),
     creator: pending("Waiting for the creator to play the real game."),
   });
 }
@@ -34,10 +37,12 @@ export async function runGeneratedAutomatedProof(options: {
   journal: GeneratedQuestRunJournal;
   forgeHome: string;
   now: () => Date;
+  verificationProfile: GeneratedVerificationProfile;
   dependencies?: GeneratedProofDependencies;
 }): Promise<GeneratedQuestProof> {
   const verifiedAt = options.now().toISOString();
-  const proof = createPendingGeneratedProof();
+  const profile = generatedProfileCatalog[options.verificationProfile];
+  const proof = createPendingGeneratedProof(options.verificationProfile);
   const boundary = await reviewBoundary({
     projectPath: options.journal.canonicalProjectPath,
     startHead: options.journal.startHead,
@@ -91,10 +96,12 @@ export async function runGeneratedAutomatedProof(options: {
   try {
     const mechanic = options.dependencies?.mechanic
       ? await options.dependencies.mechanic({ projectPath: options.journal.canonicalProjectPath, forgeHome: options.forgeHome })
-      : await verifyGravityOrbPresence({ projectPath: options.journal.canonicalProjectPath, forgeHome: options.forgeHome });
+      : options.verificationProfile === "relay_activation_v1"
+        ? await verifyRelayActivation({ projectPath: options.journal.canonicalProjectPath, forgeHome: options.forgeHome })
+        : await verifyGravityOrbPresence({ projectPath: options.journal.canonicalProjectPath, forgeHome: options.forgeHome });
     proof.mechanic = {
       result: "passed",
-      summary: "Forge found exactly one visible gravity orb through its repository-owned profile.",
+      summary: profile.mechanicProofSummary,
       evidence: [`Godot ${mechanic.godotVersion}`, mechanic.output.slice(-2_000)],
       verifiedAt,
     };

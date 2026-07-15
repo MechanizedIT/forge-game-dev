@@ -4,17 +4,23 @@ import type { z } from "zod";
 
 import {
   chronicleSchema,
+  chronicleV2Schema,
+  acceptedRoadmapProvenanceSchema,
   firstPlayableMilestoneSchema,
   gameBlueprintSchema,
   gameVisionSchema,
   generatedProjectManifestSchema,
   generatedProjectStateSchema,
+  generatedProjectStateV2Schema,
   generatedQuestArtifactSchema,
+  generatedQuestArtifactV2Schema,
+  generatedRoadmapV2Schema,
   planningProvenanceSchema,
   roadmapSchema,
   topDownArenaStarterManifestSchema,
   type GameBlueprint,
   type GeneratedQuestArtifact,
+  type GeneratedQuestArtifactV2,
   type TopDownArenaStarterManifest,
 } from "../contracts/index.js";
 import { writeJsonAtomic, writeTextAtomic } from "../quest-runner/artifacts.js";
@@ -69,6 +75,39 @@ function renderQuestMarkdown(quest: GeneratedQuestArtifact): string {
   return `# ${quest.title}\n\n${quest.visibleOutcome}\n\n## Scope\n\nIncluded:\n${quest.scope.included.map((item) => `- ${item}`).join("\n")}\n\nExcluded:\n${quest.scope.excluded.map((item) => `- ${item}`).join("\n")}\n\n## Acceptance and proof\n\n${quest.acceptanceCriteria.map((criterion) => `- **${criterion.id}:** ${criterion.criterion}\n  - Proof: ${criterion.verificationIds.join(", ")}`).join("\n")}\n\nImplementation is not enabled in Task 5.\n`;
 }
 
+function questArtifactV2(
+  envelope: ApprovedBlueprintEnvelope,
+  projectId: string,
+  referenceMap: ReadonlyMap<string, string>,
+  index: number,
+): GeneratedQuestArtifactV2 {
+  const accepted = envelope.acceptedRoadmap!;
+  const quest = accepted.quests[index]!;
+  return generatedQuestArtifactV2Schema.parse({
+    schemaVersion: 2,
+    projectId,
+    questId: referenceMap.get(quest.reference)!,
+    revision: 1,
+    sequence: index + 1,
+    title: quest.title,
+    visibleOutcome: quest.visibleOutcome,
+    whyItMatters: quest.whyItMatters,
+    currentPlayableFacts: quest.currentPlayableFacts,
+    dependsOn: quest.dependsOn.map((reference) => referenceMap.get(reference)!),
+    state: index === 0 ? "available" : "blocked",
+    scope: quest.scope,
+    acceptanceCriteria: quest.acceptanceCriteria,
+    verificationIdeas: quest.verificationIdeas,
+    editableFileRoles: quest.editableFileRoles,
+    verificationProfile: quest.verificationProfile,
+    implementation: "not_enabled",
+  });
+}
+
+function renderQuestMarkdownV2(quest: GeneratedQuestArtifactV2): string {
+  return `# ${quest.title}\n\n${quest.visibleOutcome}\n\n## Why it matters\n\n${quest.whyItMatters}\n\n## Already playable\n\n${quest.currentPlayableFacts.map((item) => `- ${item}`).join("\n")}\n\n## Delta scope\n\nIncluded:\n${quest.scope.included.map((item) => `- ${item}`).join("\n")}\n\nExcluded:\n${quest.scope.excluded.map((item) => `- ${item}`).join("\n")}\n\n## Acceptance and proof ideas\n\n${quest.acceptanceCriteria.map((criterion) => `- **${criterion.id}:** ${criterion.criterion}\n  - Proof idea: ${criterion.verificationIds.join(", ")}`).join("\n")}\n\nImplementation readiness: ${quest.verificationProfile ? `registered existing-file profile \`${quest.verificationProfile}\`` : "planned; no registered verifier"}.\n`;
+}
+
 export async function writeGeneratedProjectArtifacts(options: {
   projectPath: string;
   projectId: string;
@@ -79,8 +118,12 @@ export async function writeGeneratedProjectArtifacts(options: {
   const { projectPath, projectId, envelope, starter, createdAt } = options;
   const blueprint = gameBlueprintSchema.parse(envelope.blueprint);
   const forge = path.join(projectPath, ".forge");
-  const referenceMap = new Map(blueprint.quests.map((quest, index) => [quest.reference, questId(quest.title, index)]));
-  const quests = blueprint.quests.map((_, index) => questArtifact(blueprint, projectId, referenceMap, index));
+  const starterAware = envelope.acceptedRoadmap !== undefined;
+  const planningQuests = starterAware ? envelope.acceptedRoadmap!.quests : blueprint.quests;
+  const referenceMap = new Map(planningQuests.map((quest, index) => [quest.reference, questId(quest.title, index)]));
+  const quests = starterAware
+    ? planningQuests.map((_, index) => questArtifactV2(envelope, projectId, referenceMap, index))
+    : blueprint.quests.map((_, index) => questArtifact(blueprint, projectId, referenceMap, index));
   const questIds = quests.map((quest) => quest.questId);
   const jsonFiles: Array<[string, z.ZodType<unknown>, unknown]> = [
     [".forge/approved-game-blueprint.json", gameBlueprintSchema, blueprint],
@@ -92,24 +135,23 @@ export async function writeGeneratedProjectArtifacts(options: {
     [".forge/first-playable.json", firstPlayableMilestoneSchema, {
       schemaVersion: 1, projectId, title: "First Playable", outcome: blueprint.firstPlayableMilestone, questIds,
     }],
-    [".forge/roadmap.json", roadmapSchema, {
-      schemaVersion: 1,
-      projectId,
-      updatedAt: createdAt,
+    [".forge/roadmap.json", starterAware ? generatedRoadmapV2Schema : roadmapSchema, {
+      schemaVersion: starterAware ? 2 : 1,
+      projectId, updatedAt: createdAt,
       quests: quests.map((quest, index) => ({
         questId: quest.questId,
-        title: quest.title,
-        summary: quest.visibleOutcome,
-        state: index === 0 ? "available" : "locked",
-        dependsOn: quest.dependsOn,
-        position: { column: index, row: 0 },
+        ...(starterAware ? { revision: 1 } : {}),
+        title: quest.title, summary: quest.visibleOutcome,
+        state: index === 0 ? "available" : starterAware ? "blocked" : "locked",
+        dependsOn: quest.dependsOn, position: { column: index, row: 0 },
       })),
     }],
-    [".forge/project-state.json", generatedProjectStateSchema, {
-      schemaVersion: 1, projectId, currentView: "project_created", selectedQuestId: questIds[0] ?? null, lastOpenedAt: createdAt,
+    [".forge/project-state.json", starterAware ? generatedProjectStateV2Schema : generatedProjectStateSchema, {
+      schemaVersion: starterAware ? 2 : 1, projectId, currentView: "project_created", selectedQuestId: questIds[0] ?? null,
+      ...(starterAware ? { nextRecommendedQuestId: questIds[0] ?? null } : {}), lastOpenedAt: createdAt,
     }],
-    [".forge/chronicle.json", chronicleSchema, {
-      schemaVersion: 1,
+    [".forge/chronicle.json", starterAware ? chronicleV2Schema : chronicleSchema, {
+      schemaVersion: starterAware ? 2 : 1,
       projectId,
       entries: [{ entryId: "project-created-1", type: "project_created", occurredAt: createdAt, summary: blueprint.initialChronicleSummary }],
     }],
@@ -124,6 +166,11 @@ export async function writeGeneratedProjectArtifacts(options: {
       attempts: envelope.provenance.attempts,
       blueprintSha256: envelope.blueprintSha256,
       approvedAt: envelope.approvedAt,
+      ...(envelope.proposal ? {
+        originalIdea: envelope.proposal.originalIdea,
+        recommendedInterpretation: envelope.proposal.recommendedInterpretation,
+        foundationFit: envelope.proposal.foundationFit,
+      } : {}),
     }],
     [".forge/starter-manifest.json", topDownArenaStarterManifestSchema, starter],
     [".forge/project-manifest.json", generatedProjectManifestSchema, {
@@ -136,6 +183,7 @@ export async function writeGeneratedProjectArtifacts(options: {
       starter: { id: starter.starterId, version: starter.version, manifest: ".forge/starter-manifest.json" },
       artifacts: {
         approvedBlueprint: ".forge/approved-game-blueprint.json",
+        ...(starterAware ? { acceptedRoadmap: ".forge/accepted-roadmap-provenance.json" } : {}),
         vision: ".forge/game-vision.json",
         firstPlayable: ".forge/first-playable.json",
         roadmap: ".forge/roadmap.json",
@@ -149,15 +197,18 @@ export async function writeGeneratedProjectArtifacts(options: {
       },
     }],
   ];
-  for (const quest of quests) jsonFiles.push([`.forge/quests/${quest.questId}.json`, generatedQuestArtifactSchema, quest]);
+  if (starterAware) jsonFiles.push([".forge/accepted-roadmap-provenance.json", acceptedRoadmapProvenanceSchema, {
+    schemaVersion: 1, projectId, acceptedRoadmap: envelope.acceptedRoadmap,
+  }]);
+  for (const quest of quests) jsonFiles.push([`.forge/quests/${quest.questId}.json`, starterAware ? generatedQuestArtifactV2Schema : generatedQuestArtifactSchema, quest]);
   for (const [relative, schema, value] of jsonFiles) await writeValidated(path.join(projectPath, relative), schema, value);
 
   await writeTextAtomic(path.join(projectPath, "PROJECT.md"), `# ${blueprint.projectName}\n\n${blueprint.vision}\n\n## First playable\n\n${blueprint.firstPlayableMilestone}\n\n## Foundation\n\nGodot 4 · 2D · GDScript · Top-down Arena · code-native visuals\n`);
   await writeTextAtomic(path.join(forge, "docs", "game-vision.md"), `# Game Vision\n\n${blueprint.vision}\n\n- **Core action:** ${blueprint.coreAction}\n- **Fun target:** ${blueprint.funTarget}\n- **Smallest playable result:** ${blueprint.smallestPlayableResult}\n`);
   await writeTextAtomic(path.join(forge, "docs", "first-playable.md"), `# First Playable\n\n${blueprint.firstPlayableMilestone}\n\nQuests: ${questIds.join(" → ")}\n`);
-  await writeTextAtomic(path.join(forge, "docs", "roadmap.md"), `# Roadmap\n\n${quests.map((quest, index) => `${index + 1}. **${quest.title}** — ${quest.visibleOutcome}`).join("\n")}\n`);
+  await writeTextAtomic(path.join(forge, "docs", "roadmap.md"), `# Roadmap\n\n${starterAware ? `## Already playable\n\n${envelope.acceptedRoadmap!.alreadyPlayable.map((fact) => `- ${fact.statement}`).join("\n")}\n\n## Planned changes\n\n` : ""}${quests.map((quest, index) => `${index + 1}. **${quest.title}** — ${quest.visibleOutcome}`).join("\n")}\n`);
   await writeTextAtomic(path.join(forge, "docs", "chronicle.md"), `# Chronicle\n\n- ${createdAt} — ${blueprint.initialChronicleSummary}\n`);
-  for (const quest of quests) await writeTextAtomic(path.join(forge, "docs", "quests", `${quest.questId}.md`), renderQuestMarkdown(quest));
+  for (const quest of quests) await writeTextAtomic(path.join(forge, "docs", "quests", `${quest.questId}.md`), starterAware ? renderQuestMarkdownV2(quest as GeneratedQuestArtifactV2) : renderQuestMarkdown(quest as GeneratedQuestArtifact));
 
   return { questIds, portableJsonPaths: jsonFiles.map(([relative]) => relative) };
 }

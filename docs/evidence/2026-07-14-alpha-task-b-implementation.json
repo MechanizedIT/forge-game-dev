@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "alpha-task-b-starter-aware-planning",
+  "date": "2026-07-14",
+  "result": "IMPLEMENTED_LIVE_REHEARSAL_PENDING",
+  "verification": {
+    "fullCheck": "PASS 113/113",
+    "protectedV01": "PASS 38/38 plus dashboard build",
+    "showcaseCheck": "PASS 5/5 plus build and validation",
+    "contextCheck": "PASS 11 subsystems, 10 routes, 255 paths, 68 tests",
+    "browserReview": "PASS 10 states, 0 issues",
+    "diffCheck": "PASS"
+  },
+  "drySignalSweep": {
+    "planning": "deterministic fake model boundary",
+    "creation": "controlled Godot boundary and real local Git baseline in temporary test roots",
+    "restart": true,
+    "projectWorld": true,
+    "questId": "q1-activate-the-signal-relay",
+    "questRevision": 1,
+    "verificationProfile": "relay_activation_v1",
+    "allowedFiles": [
+      "scenes/main.tscn",
+      "scripts/main.gd",
+      "scripts/objective_marker.gd"
+    ],
+    "sdkInvoked": false,
+    "gameplayClaimed": false,
+    "questCompleted": false
+  },
+  "protected": {
+    "taskAGravityRegression": "PASS",
+    "sampleRegression": "PASS",
+    "legacyGeneratedProjectReadCompatibility": "PASS",
+    "showcase": "PASS",
+    "v0.2.0TagObject": "cad4d690b4f667f051d9113a416525b16eec5dbe"
+  },
+  "pending": [
+    "Clean rerun of the already accepted live Signal Sweep planning/creation path",
+    "Real pinned-Godot/Git/registry restart rehearsal and dry contract inspection"
+  ]
+}

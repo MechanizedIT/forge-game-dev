@@ -1,0 +1,29 @@
+{
+  "date": "2026-07-14",
+  "states": [
+    "unsupported-recommendation-desktop",
+    "unsupported-recommendation-narrow",
+    "vision-review-desktop",
+    "starter-aware-roadmap-desktop",
+    "starter-aware-roadmap-narrow",
+    "roadmap-edit-error-desktop",
+    "accepted-roadmap-creation-review",
+    "creation-failure-retry-desktop",
+    "fresh-project-world-desktop",
+    "fresh-project-world-narrow"
+  ],
+  "screenshots": [
+    "unsupported-recommendation-desktop.png",
+    "unsupported-recommendation-narrow.png",
+    "vision-review-desktop.png",
+    "starter-aware-roadmap-desktop.png",
+    "starter-aware-roadmap-narrow.png",
+    "roadmap-edit-error-desktop.png",
+    "accepted-roadmap-creation-review.png",
+    "creation-failure-retry-desktop.png",
+    "fresh-project-world-desktop.png",
+    "fresh-project-world-narrow.png"
+  ],
+  "issues": [],
+  "result": "PASS"
+}

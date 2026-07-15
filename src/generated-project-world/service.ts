@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import {
   chronicleAnySchema,
+  acceptedRoadmapProvenanceSchema,
   chronicleV2Schema,
   creationProvenanceSchema,
   firstPlayableMilestoneSchema,
@@ -196,6 +197,9 @@ export class GeneratedProjectWorldService {
       const starter = await readValidated(await this.ownedPath(projectPath, manifest.starter.manifest), topDownArenaStarterManifestSchema);
       if (starter.version !== manifest.starter.version) throw new Error("Starter manifest version does not match the project manifest.");
       const approvedBlueprint = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.approvedBlueprint), gameBlueprintSchema);
+      const acceptedRoadmapProvenance = manifest.artifacts.acceptedRoadmap
+        ? await readValidated(await this.ownedPath(projectPath, manifest.artifacts.acceptedRoadmap), acceptedRoadmapProvenanceSchema)
+        : null;
       const vision = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.vision), gameVisionSchema);
       const firstPlayable = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.firstPlayable), firstPlayableMilestoneSchema);
       const roadmap = normalizeGeneratedRoadmap(await readValidated(
@@ -230,6 +234,7 @@ export class GeneratedProjectWorldService {
       const owned = [vision, firstPlayable, roadmap, state, chronicle, godot, planning, creation, git, ...quests];
       if (owned.some((artifact) => artifact.projectId !== projectId)) throw new Error("One or more Project World artifacts belong to another project.");
       if (approvedBlueprint.projectName !== manifest.displayName || approvedBlueprint.foundation !== manifest.foundation) throw new Error("Approved blueprint identity does not match the project manifest.");
+      if (acceptedRoadmapProvenance && (acceptedRoadmapProvenance.projectId !== projectId || acceptedRoadmapProvenance.acceptedRoadmap.fingerprint !== creation.acceptedRoadmapSha256 || !acceptedRoadmapProvenance.acceptedRoadmap.acceptedAt)) throw new Error("Accepted-roadmap provenance does not match creation authority.");
       if (creation.starterVersion !== starter.version || creation.godotSuccessMarker !== godot.successMarker || creation.gitCommitSha !== git.commitSha) throw new Error("Creation evidence does not match the verified starter and Git baseline.");
       const roadmapIds = roadmap.quests.map((quest) => quest.questId);
       if (!sameList(firstPlayable.questIds, roadmapIds)) throw new Error("First Playable quest order does not match the roadmap.");
@@ -309,17 +314,24 @@ export class GeneratedProjectWorldService {
           lastOpenedAt: entry.lastOpenedAt,
         },
         vision,
+        starterAwarePlanning: {
+          accepted: acceptedRoadmapProvenance !== null,
+          acceptedRoadmapFingerprint: acceptedRoadmapProvenance?.acceptedRoadmap.fingerprint ?? null,
+          alreadyPlayable: acceptedRoadmapProvenance?.acceptedRoadmap.alreadyPlayable.map((fact) => fact.statement) ?? [],
+        },
         playable: {
           previewLabel: "Playable-state preview",
           layoutLabel: "Verified starter layout",
           summary: "The verified starter loads a bounded arena with a keyboard-controlled player and an objective relay.",
-          facts: [
+          facts: acceptedRoadmapProvenance?.acceptedRoadmap.alreadyPlayable.map((fact) => fact.statement) ?? [
             "Godot loaded the code-native project and main scene.",
             "The bounded arena, player, camera, and objective marker are present.",
             "WASD and arrow-key movement passed the starter smoke check.",
             "Required GDScript files loaded without external resources.",
           ],
-          plannedNotPlayable: ["Enemy approach remains planned.", "The Space-key push pulse remains planned."],
+          plannedNotPlayable: acceptedRoadmapProvenance
+            ? acceptedRoadmapProvenance.acceptedRoadmap.quests.slice(1).map((quest) => `${quest.title}: ${quest.visibleOutcome}`)
+            : ["Enemy approach remains planned.", "The Space-key push pulse remains planned."],
           godotVersion: godot.godotVersion,
           verifiedAt: godot.verifiedAt,
           successMarker: godot.successMarker,

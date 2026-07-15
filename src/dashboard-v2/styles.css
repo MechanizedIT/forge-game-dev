@@ -807,6 +807,17 @@ p { color: var(--secondary); line-height: 1.55; }
 .blueprint-validation p { margin: .15rem 0 0; font-size: .65rem; }
 .blueprint-validation small { color: var(--muted); font: .55rem "Cascadia Code", monospace; }
 .blueprint-actions { position: sticky; z-index: 5; bottom: 0; padding: .8rem 0; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 92%, transparent); backdrop-filter: blur(10px); }
+.blueprint-roadmap-review:has(> .roadmap-edit-card) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; overflow: visible; }
+.blueprint-quest-step.roadmap-edit-card { display: flex; min-width: 0; flex-direction: column; align-items: stretch; gap: .55rem; padding: .9rem; border: 1px solid #45535f; border-radius: 7px; background: #151e25; }
+.roadmap-edit-card > span { color: #78bad2; font: 700 .55rem "Cascadia Code", monospace; text-transform: uppercase; }
+.roadmap-edit-card label { display: grid; gap: .3rem; color: var(--muted); font: 700 .56rem "Cascadia Code", monospace; text-transform: uppercase; }
+.roadmap-edit-card input, .roadmap-edit-card textarea { width: 100%; padding: .55rem; border: 1px solid #52616d; border-radius: 4px; color: var(--paper); background: #0d141a; font: 500 .75rem/1.35 Inter, sans-serif; text-transform: none; }
+.roadmap-edit-card textarea { min-height: 78px; resize: vertical; }
+.blueprint-quest-step.roadmap-edit-card p { margin: 0; color: #c0cad2; font-size: .7rem; line-height: 1.45; }
+.blueprint-quest-step.roadmap-edit-card small { margin-top: auto; color: #78bad2; font-size: .58rem; line-height: 1.4; }
+.roadmap-edit-card > div { display: flex; flex-wrap: wrap; gap: .4rem; }
+.roadmap-edit-card > div button { min-height: 32px; padding: .35rem .5rem; border: 1px solid #52616d; border-radius: 4px; color: #cbd5dc; background: #111a21; }
+.blueprint-review:has(.roadmap-edit-card) .blueprint-actions { position: static; }
 
 .ready-panel { min-height: calc(100vh - 70px); display: grid; align-content: center; justify-items: center; max-width: 980px; margin: 0 auto; padding: 2rem; text-align: center; }
 .ready-core { width: 120px; height: 120px; display: grid; place-items: center; position: relative; margin-bottom: 1.2rem; border: 1px solid rgba(104,205,160,.3); transform: rotate(45deg); background: rgba(104,205,160,.035); }
@@ -1010,6 +1021,7 @@ p { color: var(--secondary); line-height: 1.55; }
   .blueprint-validation { grid-template-columns: 1fr; }
   .blueprint-validation small { grid-column: auto; }
   .blueprint-actions { position: static; }
+  .blueprint-roadmap-review:has(> .roadmap-edit-card) { grid-template-columns: 1fr; }
   .ready-panel { padding-inline: 0; }
   .ready-panel h1 { font-size: 3rem; }
   .ready-summary { grid-template-columns: 1fr; }

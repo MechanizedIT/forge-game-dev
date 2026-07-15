@@ -1,6 +1,9 @@
 import type {
   ClarificationQuestion,
   ClarificationTopic,
+  AcceptedRoadmap,
+  BlueprintProposal,
+  CreatorRevisionEvent,
   GameBlueprint,
 } from "../contracts/index.js";
 
@@ -17,6 +20,7 @@ export type BlueprintPlanningPhase =
   | "planning"
   | "clarification"
   | "review"
+  | "roadmap_review"
   | "ready"
   | "failed"
   | "cancelled";
@@ -47,6 +51,9 @@ export interface BlueprintPlanningSnapshot {
   completedStages: BlueprintPlanningStage[];
   clarificationQuestions: ClarificationQuestion[];
   blueprint: GameBlueprint | null;
+  proposal: BlueprintProposal | null;
+  acceptedRoadmap: AcceptedRoadmap | null;
+  revisionEvents: CreatorRevisionEvent[];
   provenance: BlueprintProvenance;
   validationPassed: boolean;
   validationProblems: string[];
@@ -54,6 +61,7 @@ export interface BlueprintPlanningSnapshot {
   approval: {
     blueprintSha256: string;
     approvedAt: string;
+    roadmapFingerprint: string | null;
   } | null;
   effects: {
     projectFilesWritten: 0;

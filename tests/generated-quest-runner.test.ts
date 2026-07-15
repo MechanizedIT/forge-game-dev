@@ -14,14 +14,51 @@ import {
   GeneratedQuestRunnerService,
 } from "../src/generated-quest-runner/service.js";
 import { ProjectRegistryStore } from "../src/project-creation/registry.js";
+import { verifyRelayActivation } from "../src/godot/generated-quest-verification.js";
 import {
   applyOrbChange,
   approvedAdjustment,
   createGeneratedQuestFixture,
+  createSignalSweepFixture,
   fixtureTime,
   MutatingCodexExecutor,
   passingProofDependencies,
 } from "./helpers/generated-quest-fixture.js";
+
+test("relay verifier owns the Godot script and exact success marker", async () => {
+  let args: string[] = [];
+  const result = await verifyRelayActivation({
+    projectPath: path.resolve("controlled-signal-project"),
+    forgeHome: path.resolve("controlled-forge-home"),
+    resolveGodot: async () => ({ executable: "godot-test", version: "4.7.stable.test", source: "cache" as const }),
+    run: (_executable, received) => { args = received; return { status: 0, output: "FORGE_RELAY_ACTIVATION_V1_OK count=1 role=signal_relay before=inactive after=activated" }; },
+  });
+  assert.equal(result.profile, "relay_activation_v1");
+  assert.match(args.at(-1)!, /relay_activation_v1\.gd$/u);
+  assert.deepEqual(args.slice(0, 4), ["--headless", "--path", path.resolve("controlled-signal-project"), "--script"]);
+});
+
+test("accepted Signal Sweep Quest 1 prepares the relay profile without adjustment or SDK execution", async () => {
+  const fixture = await createSignalSweepFixture();
+  try {
+    const service = new GeneratedQuestRunnerService({ forgeHome: fixture.forgeHome, now: () => new Date(fixtureTime), randomId: () => "22222222-2222-2222-2222-222222222222" });
+    const firstQuestId = "q1-activate-the-signal-relay";
+    const summary = await service.getSummary(fixture.projectId, firstQuestId);
+    assert.equal(summary.eligibility.eligible, true, summary.eligibility.reason ?? "");
+    assert.equal(summary.eligibility.revision, 1);
+    const prepared = await service.prepare(fixture.projectId, firstQuestId);
+    assert.equal(prepared.phase, "contract_review");
+    assert.equal(prepared.contract.verificationProfile, "relay_activation_v1");
+    assert.deepEqual(prepared.contract.allowedFiles.map((item) => item.relativePath), ["scenes/main.tscn", "scripts/main.gd", "scripts/objective_marker.gd"]);
+    assert.match(prepared.contract.creatorPlaySteps.join(" "), /signal relay/i);
+    assert.match(prepared.contract.risksAndAssumptions.join(" "), /No new relay/i);
+    assert.equal(runGit(fixture.projectPath, ["status", "--porcelain"]), "");
+
+    const later = await service.getSummary(fixture.projectId, "q2-carry-the-signal-response");
+    assert.equal(later.eligibility.eligible, false);
+    assert.match(later.eligibility.reason ?? "", /no registered existing-file verifier/i);
+  } finally { await fixture.cleanup(); }
+});
 
 test("one adjusted generated quest completes through contract, SDK, proof, creator play, Git, and fresh reload", async () => {
   const fixture = await createGeneratedQuestFixture();

@@ -9,6 +9,7 @@ import type {
   BlueprintPlanningSnapshot,
 } from "../blueprint-planner/shared.js";
 import type { ClarificationTopic } from "../contracts/index.js";
+import type { RoadmapEdit } from "../blueprint-planner/starter-catalog.js";
 import type {
   CreatedProjectSummary,
   ProjectCreationEvent,
@@ -117,15 +118,35 @@ export function submitBlueprintAnswers(
 }
 
 export function reviseBlueprintIdea(): Promise<BlueprintPlanningSnapshot> {
-  return request<BlueprintPlanningSnapshot>("/api/planning/revise", { method: "POST" });
+  return request<BlueprintPlanningSnapshot>("/api/planning/revise", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "REVISE" }) });
 }
 
 export function cancelBlueprintPlanning(): Promise<BlueprintPlanningSnapshot> {
-  return request<BlueprintPlanningSnapshot>("/api/planning/cancel", { method: "POST" });
+  return request<BlueprintPlanningSnapshot>("/api/planning/cancel", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "CANCEL" }) });
 }
 
 export function approveBlueprint(): Promise<BlueprintPlanningSnapshot> {
-  return request<BlueprintPlanningSnapshot>("/api/planning/approve", { method: "POST" });
+  return request<BlueprintPlanningSnapshot>("/api/planning/approve", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "ACCEPT INTERPRETATION" }),
+  });
+}
+
+export function reviseAcceptedRoadmap(edit: RoadmapEdit): Promise<BlueprintPlanningSnapshot> {
+  return request<BlueprintPlanningSnapshot>("/api/planning/roadmap/edit", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(edit),
+  });
+}
+
+export function acceptBlueprintRoadmap(fingerprint: string): Promise<BlueprintPlanningSnapshot> {
+  return request<BlueprintPlanningSnapshot>("/api/planning/roadmap/accept", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "ACCEPT ROADMAP", fingerprint }),
+  });
+}
+
+export function rejectBlueprintPlan(): Promise<BlueprintPlanningSnapshot> {
+  return request<BlueprintPlanningSnapshot>("/api/planning/reject", {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "REJECT PLAN" }),
+  });
 }
 
 export function subscribeToBlueprintPlanning(
@@ -161,6 +182,17 @@ export function cancelProjectCreation(mutationToken: string): Promise<ProjectCre
       "x-forge-mutation-token": mutationToken,
     },
     body: JSON.stringify({ action: "CANCEL CREATE" }),
+  });
+}
+
+export function resetFailedProjectCreation(mutationToken: string): Promise<ProjectCreationStateResponse> {
+  return request<ProjectCreationStateResponse>("/api/projects/create/reset", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-forge-mutation-token": mutationToken,
+    },
+    body: JSON.stringify({ action: "RESET FAILED CREATION" }),
   });
 }
 

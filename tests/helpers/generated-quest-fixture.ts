@@ -10,6 +10,7 @@ import {
   type GameBlueprint,
 } from "../../src/contracts/index.js";
 import { fingerprintBlueprint } from "../../src/blueprint-planner/service.js";
+import { acceptRoadmap, buildBlueprintProposal, createSignalSweepRoadmap } from "../../src/blueprint-planner/starter-catalog.js";
 import { ProjectCreationService } from "../../src/project-creation/service.js";
 import type { ApprovedBlueprintEnvelope } from "../../src/project-creation/shared.js";
 import type { CodexExecutor, CodexRunRequest, CodexRunSession } from "../../src/quest-runner/types.js";
@@ -70,6 +71,22 @@ function envelope(): ApprovedBlueprintEnvelope {
   };
 }
 
+function signalEnvelope(): ApprovedBlueprintEnvelope {
+  const value = gameBlueprintSchema.parse({
+    ...blueprint(),
+    projectName: "Signal Sweep",
+    vision: "A compact top-down arena where the player activates one signal relay.",
+    coreAction: "Move into the existing relay to activate it.",
+    smallestPlayableResult: "The player moves into one relay and sees a clear activation response.",
+    firstPlayableMilestone: "Activate one relay and read its response in the bounded arena.",
+  });
+  const blueprintSha256 = fingerprintBlueprint(value);
+  const proposal = buildBlueprintProposal("A top-down Signal Sweep arena where the player activates one relay.", value);
+  const draft = createSignalSweepRoadmap(blueprintSha256, value);
+  const acceptedRoadmap = acceptRoadmap(draft, draft.fingerprint, fixtureTime);
+  return { ...envelope(), blueprint: value, blueprintSha256, proposal, acceptedRoadmap, acceptedRoadmapSha256: acceptedRoadmap.fingerprint };
+}
+
 function ids(...values: string[]): () => string {
   let index = 0;
   return () => values[Math.min(index++, values.length - 1)]!;
@@ -87,6 +104,7 @@ export async function createGeneratedQuestFixture(): Promise<GeneratedQuestFixtu
   const root = await mkdtemp(path.join(os.tmpdir(), "forge-generated-quest-test-"));
   const forgeHome = path.join(root, "Forge");
   const service = new ProjectCreationService({
+    allowLegacyPlanningEnvelopes: true,
     forgeHome,
     now: () => new Date(fixtureTime),
     randomId: ids(
@@ -116,6 +134,28 @@ export async function createGeneratedQuestFixture(): Promise<GeneratedQuestFixtu
     projectPath: created.projectLocation,
     cleanup: () => rm(root, { recursive: true, force: true }),
   };
+}
+
+export async function createSignalSweepFixture(): Promise<GeneratedQuestFixture> {
+  const root = await mkdtemp(path.join(os.tmpdir(), "forge-signal-sweep-test-"));
+  const forgeHome = path.join(root, "Forge");
+  const service = new ProjectCreationService({
+    forgeHome,
+    now: () => new Date(fixtureTime),
+    randomId: ids("dddddddd-dddd-dddd-dddd-dddddddddddd", "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+    verifyGodot: async ({ projectId, verifiedAt }) => godotVerificationResultSchema.parse({
+      schemaVersion: 1, projectId, status: "passed", godotVersion: "4.7.stable.test",
+      arguments: ["--headless", "--path", ".", "--script", "res://scripts/verify_project.gd"],
+      successMarker: "FORGE_TOP_DOWN_ARENA_VERIFY_OK",
+      output: "FORGE_TOP_DOWN_ARENA_VERIFY_OK main=pass player=pass input=pass movement=pass objective=pass scripts=pass external=none",
+      verifiedAt,
+    }),
+  });
+  service.beginCreation(signalEnvelope());
+  await service.waitForIdle();
+  const created = service.getSnapshot().createdProject;
+  assert.ok(created, service.getSnapshot().error ?? "Signal Sweep fixture creation failed.");
+  return { root, forgeHome, projectId: created.projectId, projectPath: created.projectLocation, cleanup: () => rm(root, { recursive: true, force: true }) };
 }
 
 export const passingProofDependencies = {

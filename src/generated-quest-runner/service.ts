@@ -68,6 +68,7 @@ import {
   runGeneratedAutomatedProof,
   type GeneratedProofDependencies,
 } from "./verification.js";
+import { generatedProfileCatalog, profileForQuest } from "./profiles.js";
 
 const activeLockSchema = z.object({
   schemaVersion: z.literal(1),
@@ -323,8 +324,10 @@ export class GeneratedQuestRunnerService {
     const project = await this.loadProject(projectId, questId);
     const lock = await this.readLock(project.projectPath);
     let reason: string | null = null;
-    if (project.quest.questId !== "q1-enter-the-arena") reason = "Task A supports only the prepared first generated quest.";
-    else if (project.quest.revision < 2) reason = "Adjust this outcome to the bounded gravity-orb quest before Build.";
+    const registered = project.quest.verificationProfile ? generatedProfileCatalog[project.quest.verificationProfile] : null;
+    if (!registered) reason = "This quest is planned, but Forge has no registered existing-file verifier for it.";
+    else if ((registered.preparedQuestId !== null && project.quest.questId !== registered.preparedQuestId) || project.quest.sequence !== 1) reason = "This quest does not match its Forge-owned prepared profile.";
+    else if (project.quest.revision < registered.minimumRevision) reason = "Adjust this outcome to the bounded gravity-orb quest before Build.";
     else if (project.quest.implementation !== "not_enabled") reason = "This quest is already completed.";
     else if (project.quest.state !== "available") reason = `This quest is ${project.quest.state}.`;
     else if (lock && lock.questId !== questId) reason = "Another generated quest run owns the project lock.";
@@ -357,7 +360,7 @@ export class GeneratedQuestRunnerService {
     const project = await this.loadProject(projectId, questId);
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("Adjust is unavailable while a generated run owns the project lock.");
     inspectCleanGitStart(project.projectPath, project.baselineHead);
-    if (questId !== "q1-enter-the-arena" || project.quest.sequence !== 1) throw new GeneratedQuestRunConflictError("Task A adjustment supports only the first Gravity Tap quest.");
+    if (project.quest.verificationProfile !== "gravity_orb_presence_v1" || questId !== "q1-enter-the-arena" || project.quest.sequence !== 1) throw new GeneratedQuestRunConflictError("Adjustment remains the protected Gravity Tap revision ceremony; accepted relay roadmaps do not use it.");
     if (project.quest.revision !== input.expectedRevision) throw new GeneratedQuestRunConflictError("The quest revision changed; reopen the brief before adjusting it.");
     const visibleOutcome = z.string().trim().min(20).max(280).parse(input.visibleOutcome);
     const includedScope = z.array(z.string().trim().min(3).max(180)).min(1).max(4).parse(input.includedScope);
@@ -431,7 +434,8 @@ export class GeneratedQuestRunnerService {
   async prepare(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
     const project = await this.loadProject(projectId, questId);
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("This project already has an active generated quest run.");
-    if (project.quest.revision < 2) throw new GeneratedQuestRunConflictError("Adjust and accept the bounded gravity-orb outcome before Build.");
+    const profile = profileForQuest(project.quest);
+    if (!profile) throw new GeneratedQuestRunConflictError("This planned quest has no currently eligible Forge-owned existing-file profile.");
     const git = inspectCleanGitStart(project.projectPath, project.baselineHead);
     const startInventory = await captureControlledInventory(project.projectPath);
     const contract = await buildGeneratedQuestContract({
@@ -462,7 +466,7 @@ export class GeneratedQuestRunnerService {
       observedPostHashes: {},
       changedFiles: [],
       progress: ["Prepared the bounded quest contract for creator review."],
-      proofs: createPendingGeneratedProof(),
+      proofs: createPendingGeneratedProof(contract.verificationProfile),
       creatorResult: null,
       codexThreadId: null,
       error: null,
@@ -589,6 +593,7 @@ export class GeneratedQuestRunnerService {
       journal,
       forgeHome: this.forgeHome,
       now: this.now,
+      verificationProfile: contract.verificationProfile,
       ...(this.proofDependencies ? { dependencies: this.proofDependencies } : {}),
     });
     const verifiedBoundary = await reviewBoundary({
@@ -674,7 +679,7 @@ export class GeneratedQuestRunnerService {
       creatorResult: "worked",
       proofs: {
         ...run.journal.proofs,
-        creator: { result: "passed", summary: "The creator confirmed the visible gravity orb in the real game.", evidence: [`Creator chose worked at ${confirmedAt}.`], verifiedAt: confirmedAt },
+        creator: { result: "passed", summary: generatedProfileCatalog[run.contract.verificationProfile].creatorSuccessSummary, evidence: [`Creator chose worked at ${confirmedAt}.`], verifiedAt: confirmedAt },
       },
       recovery: { action: "none", message: "Forge is rerunning proof before the atomic completion transaction.", concurrentPaths: [] },
     }, "Creator confirmed the visible result. Forge is rerunning all automated proof."));
@@ -682,6 +687,7 @@ export class GeneratedQuestRunnerService {
       journal,
       forgeHome: this.forgeHome,
       now: this.now,
+      verificationProfile: run.contract.verificationProfile,
       ...(this.proofDependencies ? { dependencies: this.proofDependencies } : {}),
     });
     rerun.creator = journal.proofs.creator;

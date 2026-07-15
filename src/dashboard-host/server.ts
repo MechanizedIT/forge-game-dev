@@ -5,6 +5,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import path from "node:path";
 
 import type { ClarificationTopic } from "../contracts/index.js";
+import type { RoadmapEdit } from "../blueprint-planner/starter-catalog.js";
 import {
   BlueprintPlanningConflictError,
   BlueprintPlanningService,
@@ -414,6 +415,15 @@ export function createForgeDashboardServer(
         sendJson(response, 202, await creationState());
         return;
       }
+      if (request.method === "POST" && url.pathname === "/api/projects/create/reset" && creationService) {
+        consumeCreationToken(request);
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["action"], "Failed creation reset accepts only the exact action.");
+        if (body.action !== "RESET FAILED CREATION") throw new Error("Failed creation reset requires RESET FAILED CREATION.");
+        creationService.resetFailure();
+        sendJson(response, 200, await creationState());
+        return;
+      }
       if (request.method === "GET" && url.pathname.startsWith("/api/projects/") && creationService) {
         const projectId = decodeURIComponent(url.pathname.slice("/api/projects/".length));
         if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
@@ -430,6 +440,7 @@ export function createForgeDashboardServer(
       }
       if (request.method === "POST" && url.pathname === "/api/planning/start" && planningService) {
         const body = await readJsonBody(request);
+        requireExactKeys(body, ["idea"], "Planning intake accepts only the creator idea.");
         if (typeof body.idea !== "string") throw new Error("A game idea is required.");
         planningService.beginIdea(body.idea);
         sendJson(response, 202, planningService.getSnapshot());
@@ -437,6 +448,7 @@ export function createForgeDashboardServer(
       }
       if (request.method === "POST" && url.pathname === "/api/planning/answers" && planningService) {
         const body = await readJsonBody(request);
+        requireExactKeys(body, ["answers"], "Clarification accepts only the answers object.");
         if (!body.answers || typeof body.answers !== "object" || Array.isArray(body.answers)) {
           throw new Error("Clarification answers must be a JSON object.");
         }
@@ -445,17 +457,55 @@ export function createForgeDashboardServer(
         return;
       }
       if (request.method === "POST" && url.pathname === "/api/planning/revise" && planningService) {
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["action"], "Planning revision accepts only the exact action.");
+        if (body.action !== "REVISE") throw new Error("Planning revision requires REVISE.");
         planningService.reviseIdea();
         sendJson(response, 200, planningService.getSnapshot());
         return;
       }
       if (request.method === "POST" && url.pathname === "/api/planning/cancel" && planningService) {
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["action"], "Planning cancellation accepts only the exact action.");
+        if (body.action !== "CANCEL") throw new Error("Planning cancellation requires CANCEL.");
         planningService.cancel();
         sendJson(response, 200, planningService.getSnapshot());
         return;
       }
       if (request.method === "POST" && url.pathname === "/api/planning/approve" && planningService) {
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["decision"], "Interpretation approval accepts only the exact decision.");
+        if (body.decision !== "ACCEPT INTERPRETATION") throw new Error("Interpretation approval requires ACCEPT INTERPRETATION.");
         planningService.approveBlueprint();
+        sendJson(response, 200, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/roadmap/edit" && planningService) {
+        const body = await readJsonBody(request);
+        const kind = body.kind;
+        if (kind === "quest_title_changed") requireExactKeys(body, ["kind", "reference", "title"], "Title edits accept only kind, reference, and title.");
+        else if (kind === "quest_outcome_changed") requireExactKeys(body, ["kind", "reference", "visibleOutcome"], "Outcome edits accept only kind, reference, and visibleOutcome.");
+        else if (kind === "quest_removed") requireExactKeys(body, ["kind", "reference"], "Removal accepts only kind and reference.");
+        else if (kind === "quest_reordered") requireExactKeys(body, ["kind", "references"], "Reorder accepts only kind and references.");
+        else if (kind === "optional_delta_added") requireExactKeys(body, ["kind", "deltaId"], "Optional additions accept only kind and deltaId.");
+        else throw new Error("Unknown roadmap edit kind.");
+        planningService.reviseRoadmap(body as unknown as RoadmapEdit);
+        sendJson(response, 200, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/roadmap/accept" && planningService) {
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["decision", "fingerprint"], "Roadmap acceptance accepts only the decision and current fingerprint.");
+        if (body.decision !== "ACCEPT ROADMAP" || typeof body.fingerprint !== "string") throw new Error("Roadmap acceptance requires ACCEPT ROADMAP and its current fingerprint.");
+        planningService.acceptRoadmap(body.fingerprint);
+        sendJson(response, 200, planningService.getSnapshot());
+        return;
+      }
+      if (request.method === "POST" && url.pathname === "/api/planning/reject" && planningService) {
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["decision"], "Plan rejection accepts only the exact decision.");
+        if (body.decision !== "REJECT PLAN") throw new Error("Plan rejection requires REJECT PLAN.");
+        planningService.cancel();
         sendJson(response, 200, planningService.getSnapshot());
         return;
       }

@@ -12,10 +12,12 @@ import {
   type Roadmap,
 } from "../contracts/index.js";
 import { readContainedUtf8File } from "./boundary.js";
+import { profileForQuest } from "./profiles.js";
 
 const roleCatalog = {
   "top-down-arena@1.0.0": {
     main_scene: "scenes/main.tscn",
+    main_script: "scripts/main.gd",
     objective_visual: "scripts/objective_marker.gd",
   },
 } as const;
@@ -101,15 +103,13 @@ export async function buildGeneratedQuestContract(options: {
   dependencyStates: Map<string, GeneratedQuestPlanState>;
 }): Promise<GeneratedQuestImplementationContract> {
   const { quest } = options;
-  if (quest.questId !== "q1-enter-the-arena" || quest.sequence !== 1) {
-    throw new Error("Task A supports only the prepared first Gravity Tap quest.");
-  }
+  const profile = profileForQuest(quest);
+  if (!profile) throw new Error("This planned quest has no registered Forge existing-file implementation profile.");
   if (quest.state !== "available") throw new Error("Only an available generated quest can be prepared.");
   if (quest.implementation !== "not_enabled") throw new Error("The generated quest already has implementation provenance.");
   for (const dependency of quest.dependsOn) {
     if (options.dependencyStates.get(dependency) !== "completed") throw new Error(`Quest dependency is incomplete: ${dependency}`);
   }
-  if (quest.verificationProfile !== "gravity_orb_presence_v1") throw new Error("The quest verification profile is not registered for Task A.");
   const catalog = roleCatalog[`${options.starterId}@${options.starterVersion}` as keyof typeof roleCatalog];
   if (!catalog) throw new Error("The starter version has no Forge-owned editable-file role catalog.");
   const allowedFiles = await Promise.all(quest.editableFileRoles.map(async (role) => {
@@ -126,43 +126,13 @@ export async function buildGeneratedQuestContract(options: {
     visibleOutcome: quest.visibleOutcome,
     whyItMatters: quest.whyItMatters,
     currentPlayableFacts: quest.currentPlayableFacts,
-    steps: [
-      {
-        id: "STEP-1",
-        summary: "Make the existing objective unmistakably read as one gravity orb while preserving the controlled starter structure.",
-        fileRoles: quest.editableFileRoles,
-      },
-      {
-        id: "STEP-2",
-        summary: "Expose the stable Forge gravity-orb observable used by the repository-owned mechanic proof.",
-        fileRoles: quest.editableFileRoles,
-      },
-    ],
+    steps: profile.steps.map((step) => ({ ...step, fileRoles: quest.editableFileRoles })),
     allowedFiles,
     excludedScope: quest.scope.excluded,
-    acceptanceCriteria: [
-      {
-        id: "AC-1",
-        criterion: "The opening arena visibly contains exactly one clearly identifiable gravity orb.",
-        proofReferences: ["boundary", "mechanic", "creator"],
-      },
-      {
-        id: "AC-2",
-        criterion: "The controlled arena, player, keyboard movement, and project load remain healthy.",
-        proofReferences: ["project_health", "creator"],
-      },
-    ],
+    acceptanceCriteria: profile.acceptanceCriteria,
     verificationProfile: quest.verificationProfile,
-    creatorPlaySteps: [
-      "Launch the real game from Forge.",
-      "Confirm the opening arena contains one obvious gravity orb.",
-      "Move the player and confirm the starter still behaves normally.",
-      "Return to Forge and choose the truthful result.",
-    ],
-    risksAndAssumptions: [
-      "The objective node name remains stable so the controlled starter verifier is not weakened.",
-      "No gravity interaction, scoring, new file, dependency, or external asset is part of this quest.",
-    ],
+    creatorPlaySteps: profile.creatorPlaySteps,
+    risksAndAssumptions: profile.risksAndAssumptions,
     fingerprint: "0".repeat(64),
   });
   const { fingerprint: _placeholder, ...withoutFingerprint } = parsedWithPlaceholder;

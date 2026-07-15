@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "task": "alpha-task-b-live-rehearsal",
+  "date": "2026-07-15",
+  "result": "PASS",
+  "planning": {
+    "originalIdeaPreserved": true,
+    "planningTurns": 3,
+    "supportedInterpretationReviewed": true,
+    "foundationFit": "partial",
+    "visionAccepted": true,
+    "roadmapAccepted": true,
+    "filesystemConfirmationAccepted": true,
+    "blueprintSha256": "218504a6acabe8f121f11378c5a5d90659c86581742498864fe4c8c2ca014b80",
+    "acceptedRoadmapSha256": "71d5248ec548a7dbcbd9ecbbd3ee3c5955b74348abb583953cdce03cbde8a0e0"
+  },
+  "creation": {
+    "projectId": "signal-sweep-f49fc33f38",
+    "transactionId": "create-da185a4251",
+    "registered": true,
+    "questCount": 3,
+    "starterVersion": "1.0.0",
+    "godotVersion": "4.7.stable.official.5b4e0cb0f",
+    "godotSuccessMarker": "FORGE_TOP_DOWN_ARENA_VERIFY_OK",
+    "gitCommitSha": "a0ad834d6c1f98a51b63c7313564acb1af274e41",
+    "cleanWorktree": true,
+    "remotes": 0,
+    "modelCommandsExecuted": 0,
+    "modelSourceFilesExecuted": 0
+  },
+  "restart": {
+    "fullHostRestarted": true,
+    "projectAvailable": true,
+    "projectWorldReloaded": true,
+    "selectedQuestId": "q1-activate-the-signal-relay",
+    "questState": "available"
+  },
+  "contract": {
+    "phase": "contract_review",
+    "fingerprint": "f368d661cff834ace9437d51fce3c79e47f0dd85a6dfc558b49d5eec30b73e53",
+    "verificationProfile": "relay_activation_v1",
+    "allowedFiles": [
+      "scenes/main.tscn",
+      "scripts/main.gd",
+      "scripts/objective_marker.gd"
+    ],
+    "changedFiles": [],
+    "runId": null,
+    "approvalAvailable": true,
+    "startAvailable": false
+  },
+  "boundaries": {
+    "contractApproved": false,
+    "sdkInvoked": false,
+    "gameplayClaimed": false,
+    "questCompleted": false
+  },
+  "verification": {
+    "fullCheck": "PASS 114/114",
+    "protectedV01": "PASS 38/38 plus dashboard build",
+    "diffCheck": "PASS"
+  }
+}

@@ -18,6 +18,8 @@ import {
 } from "../src/generated-project-world/service.js";
 import { ProjectCreationService } from "../src/project-creation/service.js";
 import type { ApprovedBlueprintEnvelope } from "../src/project-creation/shared.js";
+import { GeneratedQuestRunnerService } from "../src/generated-quest-runner/service.js";
+import { createSignalSweepFixture } from "./helpers/generated-quest-fixture.js";
 
 const createdAt = "2026-07-14T18:00:00.000Z";
 const openedAt = "2026-07-14T19:00:00.000Z";
@@ -79,6 +81,7 @@ function ids(...values: string[]): () => string {
 async function createFixture(root: string): Promise<{ forgeHome: string; projectId: string; projectPath: string }> {
   const forgeHome = path.join(root, "Forge");
   const service = new ProjectCreationService({
+    allowLegacyPlanningEnvelopes: true,
     forgeHome,
     now: () => new Date(createdAt),
     randomId: ids("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
@@ -129,6 +132,26 @@ test("read-only Project World joins exact Task 5 artifacts without changing proj
     assert.ok(snapshot.quests.every((quest) => quest.implementation === "not_enabled"));
     assert.deepEqual(await Promise.all(watched.map(digest)), before);
   });
+});
+
+test("fresh starter-aware Project World exposes accepted facts and honest quest eligibility without writes", async () => {
+  const fixture = await createSignalSweepFixture();
+  try {
+    const manifestPath = path.join(fixture.projectPath, ".forge/project-manifest.json");
+    const roadmapPath = path.join(fixture.projectPath, ".forge/roadmap.json");
+    const registryPath = path.join(fixture.forgeHome, "project-registry.json");
+    const before = [await digest(manifestPath), await digest(roadmapPath), await digest(registryPath)];
+    const runner = new GeneratedQuestRunnerService({ forgeHome: fixture.forgeHome });
+    const snapshot = await new GeneratedProjectWorldService({ forgeHome: fixture.forgeHome, generatedRunner: runner }).loadWorld(fixture.projectId);
+    assert.equal(snapshot.starterAwarePlanning.accepted, true);
+    assert.equal(snapshot.starterAwarePlanning.alreadyPlayable.length, 3);
+    assert.equal(snapshot.quests[0]?.verificationProfile, "relay_activation_v1");
+    assert.equal(snapshot.quests[0]?.eligibility.eligible, true);
+    assert.equal(snapshot.quests[1]?.verificationProfile, null);
+    assert.equal(snapshot.quests[1]?.eligibility.eligible, false);
+    assert.match(snapshot.quests[1]?.eligibility.reason ?? "", /no registered existing-file verifier/i);
+    assert.deepEqual([await digest(manifestPath), await digest(roadmapPath), await digest(registryPath)], before);
+  } finally { await fixture.cleanup(); }
 });
 
 test("explicit open validates first and changes only registry recency", async () => {

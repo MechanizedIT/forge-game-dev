@@ -10,6 +10,7 @@ import {
   gitBaselineResultSchema,
   godotVerificationResultSchema,
   roadmapSchema,
+  generatedRoadmapV2Schema,
   type CreationProvenance,
   type GitBaselineResult,
   type GodotVerificationResult,
@@ -17,6 +18,7 @@ import {
 import { resolveForgeHome } from "../demo/paths.js";
 import { writeJsonAtomic } from "../quest-runner/artifacts.js";
 import { fingerprintBlueprint } from "../blueprint-planner/service.js";
+import { validateAcceptedRoadmap } from "../blueprint-planner/starter-catalog.js";
 import {
   assertNoAbsolutePathsInPortableArtifacts,
   expectedBaselineFiles,
@@ -116,6 +118,7 @@ export interface ProjectCreationServiceOptions {
   createGitBaseline?: GitBaselineCreator;
   openFolder?: (projectPath: string) => void;
   requireCleanGit?: (projectPath: string) => void;
+  allowLegacyPlanningEnvelopes?: boolean;
 }
 
 export class ProjectCreationService {
@@ -132,6 +135,7 @@ export class ProjectCreationService {
   private readonly registry: ProjectRegistryStore;
   private readonly openFolder: (projectPath: string) => void;
   private readonly requireCleanGit: (projectPath: string) => void;
+  private readonly allowLegacyPlanningEnvelopes: boolean;
 
   constructor(options: ProjectCreationServiceOptions = {}) {
     this.forgeHome = path.resolve(options.forgeHome ?? resolveForgeHome());
@@ -156,6 +160,7 @@ export class ProjectCreationService {
     });
     this.registry = new ProjectRegistryStore(this.forgeHome, this.now);
     this.requireCleanGit = options.requireCleanGit ?? requireCleanGeneratedProjectGit;
+    this.allowLegacyPlanningEnvelopes = options.allowLegacyPlanningEnvelopes ?? false;
   }
 
   getSnapshot(): ProjectCreationSnapshot {
@@ -216,6 +221,14 @@ export class ProjectCreationService {
     this.cancellationRequested = true;
   }
 
+  resetFailure(): void {
+    if (this.activeCreation || this.snapshot.phase !== "failed") {
+      throw new ProjectCreationConflictError("Only a finished failed project creation can be reset.");
+    }
+    this.snapshot = blankSnapshot();
+    this.emit();
+  }
+
   async waitForIdle(): Promise<void> {
     await this.activeCreation;
   }
@@ -258,7 +271,7 @@ export class ProjectCreationService {
     if (!entry) throw new Error(`Project ${projectId} is not registered.`);
     const projectFile = await stat(path.join(entry.canonicalPath, "project.godot")).catch(() => null);
     if (!projectFile?.isFile()) throw new Error(`Project ${projectId} is missing locally.`);
-    const roadmap = roadmapSchema.parse(JSON.parse(await readFile(path.join(entry.canonicalPath, ".forge", "roadmap.json"), "utf8")) as unknown);
+    const roadmap = roadmapSchema.or(generatedRoadmapV2Schema).parse(JSON.parse(await readFile(path.join(entry.canonicalPath, ".forge", "roadmap.json"), "utf8")) as unknown);
     const godot = godotVerificationResultSchema.parse(JSON.parse(await readFile(path.join(entry.canonicalPath, ".forge", "local", "godot-verification.json"), "utf8")) as unknown);
     const git = gitBaselineResultSchema.parse(JSON.parse(await readFile(path.join(entry.canonicalPath, ".forge", "local", "git-baseline.json"), "utf8")) as unknown);
     return {
@@ -334,6 +347,17 @@ export class ProjectCreationService {
       if (fingerprintBlueprint(blueprint) !== envelope.blueprintSha256) {
         throw new Error("The approved blueprint changed after creator approval. Review and approve it again.");
       }
+      if (!envelope.proposal || !envelope.acceptedRoadmap || !envelope.acceptedRoadmapSha256) {
+        if (!this.allowLegacyPlanningEnvelopes) throw new Error("Project creation requires the current approved blueprint and accepted-roadmap fingerprints.");
+      } else {
+        const acceptedRoadmap = validateAcceptedRoadmap(envelope.acceptedRoadmap, envelope.blueprintSha256);
+        if (!acceptedRoadmap.acceptedAt || acceptedRoadmap.fingerprint !== envelope.acceptedRoadmapSha256) {
+          throw new Error("The accepted roadmap changed after creator approval. Review and accept it again.");
+        }
+        if (envelope.proposal.blueprint.projectName !== blueprint.projectName || fingerprintBlueprint(envelope.proposal.blueprint) !== envelope.blueprintSha256) {
+          throw new Error("The immutable planning proposal no longer matches the approved blueprint.");
+        }
+      }
       await this.rejectPersistedDuplicate(envelope.blueprintSha256);
       this.requireNotCancelled();
 
@@ -391,6 +415,7 @@ export class ProjectCreationService {
         projectId,
         transactionId,
         blueprintSha256: envelope.blueprintSha256,
+        ...(envelope.acceptedRoadmapSha256 ? { acceptedRoadmapSha256: envelope.acceptedRoadmapSha256 } : {}),
         starterId: starter.starterId,
         starterVersion: starter.version,
         createdAt,

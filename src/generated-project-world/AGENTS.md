@@ -10,11 +10,17 @@ Project creation, registry identity/location writes except explicit open recency
 
 ## Start here
 
-Read `service.ts`, `shared.ts`, `../contracts/generated-project.ts`, and `../../docs/REPOSITORY_GUIDE.md`.
+Read `../../docs/PRODUCT_VISION.md`, `service.ts`, `shared.ts`,
+`../contracts/generated-project.ts`, and `../../docs/REPOSITORY_GUIDE.md`.
 
 ## Invariants
 
 GET is byte-for-byte read-only; registry paths and manifest artifacts are containment-checked; idea saves do not rewrite Chronicle or roadmap; preview and implementation claims remain truthful.
+
+The Project World should present creator-owned systems, quests, progress, and
+one clear next action. Capability eligibility, starter reconciliation,
+fingerprints, hashes, and proof taxonomy are compatibility or technical details,
+not the primary product hierarchy.
 
 ## Required checks
 

@@ -1,5 +1,6 @@
 import type { GeneratedQuestImplementationContract } from "../contracts/index.js";
 import { readContainedUtf8File } from "./boundary.js";
+import { generatedProfileCatalog } from "./profiles.js";
 
 export const GENERATED_CONTEXT_CHARACTER_LIMIT = 40_000;
 
@@ -27,6 +28,7 @@ export async function buildGeneratedQuestContext(
     return { allowed, ...file };
   }));
   const scene = contents.find((item) => item.allowed.role === "main_scene");
+  const profile = generatedProfileCatalog[contract.verificationProfile];
   const sceneNodes = scene ? sceneNodeSummary(scene.contents) : [];
   const prompt = [
     "Implement one approved Forge generated quest now. Do not propose another plan.",
@@ -36,8 +38,7 @@ export async function buildGeneratedQuestContext(
     "Do not create, delete, rename, move, or link files. Do not edit .forge, .git, .godot, dependencies, caches, project settings, verifier code, or another project.",
     "Do not run Godot, Git, package managers, downloads, or network commands. Forge owns verification and Git outside your sandbox.",
     "Preserve the node name ObjectiveMarker and its existing script path so the controlled starter verifier remains valid.",
-    "Expose exactly one stable mechanic observable by adding metadata forge_role = \"gravity_orb\" to the existing ObjectiveMarker node.",
-    "Make the visible objective copy and code-native drawing clearly describe one gravity orb. Do not add gravity interaction in this quest.",
+    ...profile.contextInstructions,
     "Finish with a concise implementation summary; your summary is not proof.",
     "",
     "APPROVED CONTRACT",

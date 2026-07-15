@@ -8,4 +8,5 @@ export * from "./quest.js";
 export * from "./quest-completion.js";
 export * from "./review-result.js";
 export * from "./roadmap.js";
+export * from "./starter-aware-planning.js";
 export * from "./workflow.js";

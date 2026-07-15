@@ -69,6 +69,11 @@ export interface GeneratedProjectWorldSnapshot {
     inputMode: string;
     smallestPlayableResult: string;
   };
+  starterAwarePlanning: {
+    accepted: boolean;
+    acceptedRoadmapFingerprint: string | null;
+    alreadyPlayable: string[];
+  };
   playable: GeneratedPlayableTruth;
   firstPlayable: {
     title: "First Playable";

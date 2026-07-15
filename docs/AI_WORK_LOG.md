@@ -473,3 +473,77 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact SHA reported in the task response
 - **Session ID:** Current Codex task; primary submission `/feedback` ID remains pending
 - **Next step:** Begin failure-first contract/planner implementation from the approved `docs/plans/2026-07-14-alpha-task-b-starter-aware-planning.md` and retain the later human pauses for live Signal Sweep planning and exact project creation.
+
+---
+
+## 2026-07-14 — Implement honest starter-aware intake and relay contract preparation
+
+- **Actor/model surface:** Codex desktop repository implementation; deterministic fake blueprint model boundary for automated/browser review; controlled Godot verification boundary; real temporary local Git baselines; Playwright with installed Microsoft Edge/Chrome fallback
+- **Workflow stage:** Implement / Review / Document; live rehearsal and Complete remain pending
+- **Human decisions:** Approved all seven Task B decisions, including one `relay_activation_v1` profile beside protected Gravity behavior; required failure-first contract/planner tests; prohibited live Signal Sweep SDK implementation and any gameplay-completion claim; required preservation of Task A, legacy generated projects, sample, showcase, and `v0.2.0`.
+- **AI contribution:** Added strict proposal, fit, alternative, creator-revision, accepted-roadmap, starter-fact, and delta contracts; deterministic reconciliation/fingerprinting/edit rules; exact planning APIs; three-stage review UI; dual-fingerprint creation validation; immutable accepted-roadmap provenance and native v2 artifacts; compatible legacy reads; honest generated-world eligibility; a closed Gravity/relay profile catalog, main-script role, relay context/contract/proof copy, and repository-owned relay verifier; focused failure, compatibility, restart, dry-contract, and browser tests.
+- **Files changed:** Planner contracts/service/catalog/prompt-facing snapshot; generated-project schemas; creation artifacts/service/envelope; host/API and v0.2 UI/styles; generated-world adapter; generated-runner contract/context/profile/verification dispatch; relay Godot profile; focused tests/helpers; Task B visual harness/evidence; repository guide, roadmap, project status, review, handoff, and this work log. No starter fixture, sample fixture, showcase source, generated user project, package dependency, release tag, or Task A evidence was changed.
+- **Verification:** Failure-first tests recorded the missing proposal/roadmap exports and provenance. Final `npm run check` passed 110/110; `npm run check:v0.1` passed 38/38 plus dashboard build; `npm run showcase:check` passed 5/5 plus build/validation; context validation passed; the nine-state Task B browser review passed with zero issues; deterministic Signal Sweep creation/restart/Project World/dry-contract tests passed with no SDK invocation; Gravity completion/recovery regressions passed; `v0.2.0` remained `cad4d690b4f667f051d9113a416525b16eec5dbe`.
+- **Known limitation:** The live official GPT planning, creator roadmap acceptance, exact project-creation confirmation, and real pinned-Godot restart rehearsal remain pending. The relay mechanic was not implemented, played, or completed.
+- **Commit:** Not created in this implementation turn; the reviewed working tree remains available for creator inspection
+- **Session ID:** Current Codex task; no Signal Sweep SDK thread exists; primary submission `/feedback` ID remains pending
+- **Next step:** Run only the creator-gated live planning/creation rehearsal, inspect the prepared Quest 1 contract, and stop before SDK execution or gameplay proof.
+
+---
+
+## 2026-07-15 — Repair the first Alpha Task B live-rehearsal failure
+
+- **Actor/model surface:** Creator-run Forge dashboard with live GPT-5.6 planning; Codex desktop diagnosis and repository repair; controlled Node/TypeScript and Playwright regression review
+- **Workflow stage:** Implement / Review / Document; clean live rehearsal rerun and Complete remain pending
+- **Human decisions:** The creator completed the live Signal Sweep planning screens, accepted the vision and roadmap, explicitly confirmed filesystem creation, supplied fourteen sequential screenshots, and approved fixing the observed failure. The creator did not authorize Signal Sweep SDK implementation, gameplay proof, completion, push, deployment, or release-tag mutation.
+- **AI contribution:** Traced the saved failure record and confirmed no project directory or registry entry survived; reproduced the valid automatic-repair → clarification → final-answer sequence; raised the bounded planning-provenance limit from two to four turns; added an exact same-origin reset action for finished failed creations; connected Return and Review/Retry to clear the trap safely; moved raw validation output behind technical disclosure; added friendly stage-specific failure copy; and extended the Task B browser review through failure and successful retry.
+- **Files changed:** Planning provenance contract; project-creation service; host/API/UI failure recovery; planner, creation, and exact-route regressions; Task B visual harness/evidence; roadmap, project status, review, handoff, and this work log. No generated user project, starter/sample fixture, showcase source, Task A project/evidence, SDK implementation, package dependency, or release tag was changed.
+- **Verification:** Failure-first creation tests failed on the exact `attempts <= 2` rejection and missing reset method before implementation. Final `npm run check` passed 113/113; `npm run check:v0.1` passed 38/38 plus dashboard build; the ten-state Task B browser review passed with zero issues and visually confirmed friendly failure/retry. All nine creator retry records for this defect report `registered: false` and `stagingRemoved: true`; none of their project IDs exists in the registry or projects directory.
+- **Known limitation:** The repaired path has not yet completed one clean creator-gated real Godot/Git creation, restart, Project World reopen, and dry relay contract inspection.
+- **Commit:** Not created in this repair turn; the reviewed working tree remains available for creator inspection
+- **Session ID:** Current Codex task; live planning run visible in creator screenshots; no Signal Sweep SDK implementation thread exists
+- **Next step:** Restart Forge from the repaired working tree, repeat the Signal Sweep creation path, reopen it after restart, inspect Quest 1's relay contract, and stop before approval/start.
+
+---
+
+## 2026-07-15 — Make the creator vision and plain-language handoff rules mandatory
+
+- **Actor/model surface:** Codex desktop repository documentation update
+- **Workflow stage:** Document / Review / Complete
+- **Human decisions:** The owner defined Forge as an open-ended visual game-project organizer and AI-work translation layer, requested a mandatory product-fit check for every task, required fast-track alpha planning without overengineering, and required completion guidance in very simple language with one exact next action.
+- **AI contribution:** Added one concise product-vision authority; made it required root context; replaced the capability-gated product contract with Project → System → Quest → Work Session → Result; added a fast-alpha decision filter and mandatory owner briefing format; updated planner, creation, generated-world, and runner subsystem instructions so current Task A/B gates are compatibility constraints rather than product goals.
+- **Files changed:** `docs/PRODUCT_VISION.md`, root `AGENTS.md`, and the four relevant subsystem `AGENTS.md` files; this work-log entry. Active Task B implementation, evidence, roadmap, status, source, and tests were not changed by this task.
+- **Verification:** `npm run context:check` passed with 11 subsystems, 10 routes, 255 path references, and 68 test references. Focused `git diff --check` passed. All required product-vision links and communication rules were found from root and subsystem instructions.
+- **Commit:** Not created in this task.
+- **Session ID:** Current Codex task
+- **Next step:** Finish and commit the separate Task B rehearsal checkpoint, then start a new alpha-pivot planning task that follows `docs/PRODUCT_VISION.md`.
+
+---
+
+## 2026-07-15 — Repair the Task B Windows registry lock
+
+- **Actor/model surface:** Creator-run Forge dashboard; Codex desktop diagnosis and bounded repository repair; local Windows filesystem; Node/TypeScript tests
+- **Workflow stage:** Implement / Review / Document; creator retry and Task B completion remain pending
+- **Human decisions:** Reported the second controlled Signal Sweep creation failure and directed Codex to finish only the existing Task B checkpoint under the new product vision. No new capability, profile, template, SDK game implementation, gameplay claim, push, deployment, or release change was authorized.
+- **AI contribution:** Read the live creation state and safe failure record; confirmed Godot verification and the clean Git baseline had passed; identified a transient Windows `EPERM` during the final atomic registry replacement; added a short bounded retry for only `EACCES`, `EBUSY`, and `EPERM` replacement locks while preserving immediate failure for every other error.
+- **Files changed:** Shared atomic artifact writer; one failure-first project-creation regression; this work-log entry. No product workflow, planning capability, profile, template, starter, generated project, sample, showcase, dependency, or release tag changed.
+- **Verification:** The failure-first test initially showed zero retry attempts. After the repair, focused creation tests passed 20/20, type checking passed, `npm run check` passed 114/114, `npm run check:v0.1` passed 38/38 with the production dashboard build, and `git diff --check` passed. Failure `create-c4df8290e5` reports `registered: false` and `stagingRemoved: true`; the two prior projects remain registered and available. Forge restarted with creation state `idle`.
+- **Known limitation:** The creator must repeat the approved Signal Sweep creation flow. Restart and first-contract inspection still remain before Task B can close.
+- **Commit:** Not created; the Task B checkpoint remains in the existing reviewed working tree.
+- **Session ID:** Current Codex task; no Signal Sweep SDK implementation thread exists.
+- **Next step:** Repeat the Signal Sweep planning and creation flow, open Project World, then stop for the required restart and dry first-contract inspection.
+
+---
+
+## 2026-07-15 — Close Alpha Task B after the live creator rehearsal
+
+- **Actor/model surface:** Creator-run Forge dashboard with live GPT-5.6 planning; Codex desktop read-only evidence inspection and documentation closeout; pinned Godot 4.7; local Git
+- **Workflow stage:** Review / Document / Complete
+- **Human decisions:** The creator accepted the supported Signal Sweep interpretation, roadmap, and exact creation action; opened the created Project World; returned after a full host restart; selected Quest 1; prepared and visibly inspected the exact contract; and stopped before contract approval. No SDK build, gameplay result, completion, push, deployment, release change, new capability, profile, template, or product expansion was authorized.
+- **AI contribution:** Verified the registered project, persisted planning and creation provenance, restart restoration, clean baseline, no remotes, available first quest, exact three-file contract, zero changed files, absent run ID, and disabled Start action; recorded sanitized evidence and closed only the approved Task B checkpoint.
+- **Files changed:** Task B roadmap/status, review, handoff, closeout, sanitized live evidence, and this work-log entry. No gameplay source, generated project file, profile, template, starter, sample, showcase, dependency, or release tag changed during closeout.
+- **Verification:** Live project `signal-sweep-f49fc33f38` registered with three quests; Godot emitted `FORGE_TOP_DOWN_ARENA_VERIFY_OK`; clean no-remote baseline is `a0ad834d6c1f98a51b63c7313564acb1af274e41`; a full Forge restart restored Project World and Quest 1; contract `f368d661cff834ace9437d51fce3c79e47f0dd85a6dfc558b49d5eec30b73e53` is in `contract_review`, permits only three named existing files, has no run ID, and reports zero changed files. Repository checks pass 114/114; protected v0.1 checks pass 38/38 plus build; `git diff --check` passes.
+- **Protected boundaries:** Signal Sweep remains unimplemented and incomplete. Task A, legacy generated projects, sample path, showcase, and `v0.2.0` remain protected.
+- **Commit:** Not created; the completed Task B working tree remains available for owner review.
+- **Session ID:** Current Codex task; sanitized live planning thread only; no Signal Sweep SDK implementation thread exists.
+- **Next step:** Nothing. Task B is closed. Start any new product-direction work only in a separate owner-approved task.

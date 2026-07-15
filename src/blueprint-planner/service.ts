@@ -6,6 +6,7 @@ import {
   gameBlueprintPlanningResultSchema,
   type ClarificationTopic,
   type GameBlueprintPlanningResult,
+  type CreatorRevisionEvent,
 } from "../contracts/index.js";
 import { buildBlueprintPrompt, buildRepairPrompt } from "./prompt.js";
 import {
@@ -17,6 +18,13 @@ import {
 } from "./shared.js";
 import type { BlueprintModelExecutor, BlueprintModelSession, BlueprintModelTurn } from "./types.js";
 import type { ApprovedBlueprintEnvelope } from "../project-creation/shared.js";
+import {
+  acceptRoadmap,
+  buildBlueprintProposal,
+  createSignalSweepRoadmap,
+  reviseAcceptedRoadmap,
+  type RoadmapEdit,
+} from "./starter-catalog.js";
 
 type Subscriber = (event: BlueprintPlanningEvent) => void;
 
@@ -34,6 +42,9 @@ function blankSnapshot(): BlueprintPlanningSnapshot {
     completedStages: [],
     clarificationQuestions: [],
     blueprint: null,
+    proposal: null,
+    acceptedRoadmap: null,
+    revisionEvents: [],
     provenance: {
       model: "gpt-5.6",
       reasoningEffort: "high",
@@ -121,6 +132,8 @@ export class BlueprintPlanningService {
   private session: BlueprintModelSession | null = null;
   private abortController: AbortController | null = null;
   private generation = 0;
+  private originalIdea: string | null = null;
+  private pendingInterpretationRevision: { priorFingerprint: string; target: string } | null = null;
 
   constructor(
     private readonly executor: BlueprintModelExecutor,
@@ -153,7 +166,8 @@ export class BlueprintPlanningService {
     if (idea.length < 12 || idea.length > 1_500) throw new Error("Describe the game idea in 12 to 1,500 characters.");
     this.generation += 1;
     const generation = this.generation;
-    this.snapshot = { ...blankSnapshot(), phase: "planning", idea };
+    if (!this.originalIdea) this.originalIdea = idea;
+    this.snapshot = { ...blankSnapshot(), phase: "planning", idea, revisionEvents: [...this.snapshot.revisionEvents] };
     this.session = this.executor.start();
     this.abortController = new AbortController();
     this.activeRun = this.generate(generation).finally(() => {
@@ -194,7 +208,12 @@ export class BlueprintPlanningService {
   reviseIdea(): void {
     if (this.activeRun) throw new BlueprintPlanningConflictError("Wait for planning to stop before revising the idea.");
     const idea = this.snapshot.idea;
-    this.snapshot = { ...blankSnapshot(), idea };
+    if (this.snapshot.revisionEvents.length >= 3) throw new BlueprintPlanningConflictError("The three permitted pre-creation revisions have already been used.");
+    this.pendingInterpretationRevision = {
+      priorFingerprint: fingerprintBlueprint(this.snapshot.proposal ?? { idea }),
+      target: "supported interpretation",
+    };
+    this.snapshot = { ...blankSnapshot(), idea, revisionEvents: [...this.snapshot.revisionEvents] };
     this.session = null;
     this.emit();
   }
@@ -205,30 +224,64 @@ export class BlueprintPlanningService {
     this.abortController = null;
     this.activeRun = null;
     this.session = null;
+    this.originalIdea = null;
+    this.pendingInterpretationRevision = null;
     this.snapshot = { ...blankSnapshot(), phase: "cancelled" };
     this.emit();
   }
 
   approveBlueprint(): void {
-    if (this.snapshot.phase !== "review" || !this.snapshot.blueprint || !this.snapshot.validationPassed) {
+    if (this.snapshot.phase !== "review" || !this.snapshot.blueprint || !this.snapshot.proposal || !this.snapshot.validationPassed) {
       throw new BlueprintPlanningConflictError("Only a validated blueprint can be approved.");
     }
+    const blueprintSha256 = fingerprintBlueprint(this.snapshot.blueprint);
+    const approvedAt = new Date(this.now()).toISOString();
+    const acceptedRoadmap = createSignalSweepRoadmap(blueprintSha256, this.snapshot.blueprint, this.snapshot.revisionEvents);
     this.snapshot = {
       ...this.snapshot,
-      phase: "ready",
+      phase: "roadmap_review",
+      acceptedRoadmap,
       approval: {
-        blueprintSha256: fingerprintBlueprint(this.snapshot.blueprint),
-        approvedAt: new Date(this.now()).toISOString(),
+        blueprintSha256,
+        approvedAt,
+        roadmapFingerprint: null,
       },
     };
     this.emit();
   }
 
+  reviseRoadmap(edit: RoadmapEdit): void {
+    if (this.snapshot.phase !== "roadmap_review" || !this.snapshot.acceptedRoadmap) throw new BlueprintPlanningConflictError("There is no starter-aware roadmap to revise.");
+    const acceptedRoadmap = reviseAcceptedRoadmap(this.snapshot.acceptedRoadmap, edit, new Date(this.now()).toISOString());
+    this.snapshot = {
+      ...this.snapshot,
+      acceptedRoadmap,
+      revisionEvents: acceptedRoadmap.revisionEvents,
+      validationProblems: [],
+    };
+    this.emit();
+  }
+
+  acceptRoadmap(expectedFingerprint: string): void {
+    if (this.snapshot.phase !== "roadmap_review" || !this.snapshot.acceptedRoadmap || !this.snapshot.approval) throw new BlueprintPlanningConflictError("There is no starter-aware roadmap to accept.");
+    const acceptedRoadmap = acceptRoadmap(this.snapshot.acceptedRoadmap, expectedFingerprint, new Date(this.now()).toISOString());
+    this.snapshot = {
+      ...this.snapshot,
+      phase: "ready",
+      acceptedRoadmap,
+      approval: { ...this.snapshot.approval, roadmapFingerprint: acceptedRoadmap.fingerprint },
+    };
+    this.emit();
+  }
+
   getApprovedBlueprint(): ApprovedBlueprintEnvelope | null {
-    if (this.snapshot.phase !== "ready" || !this.snapshot.blueprint || !this.snapshot.approval) return null;
+    if (this.snapshot.phase !== "ready" || !this.snapshot.blueprint || !this.snapshot.proposal || !this.snapshot.acceptedRoadmap || !this.snapshot.approval?.roadmapFingerprint) return null;
     return structuredClone({
       blueprint: this.snapshot.blueprint,
+      proposal: this.snapshot.proposal,
+      acceptedRoadmap: this.snapshot.acceptedRoadmap,
       blueprintSha256: this.snapshot.approval.blueprintSha256,
+      acceptedRoadmapSha256: this.snapshot.approval.roadmapFingerprint,
       approvedAt: this.snapshot.approval.approvedAt,
       provenance: this.snapshot.provenance,
     });
@@ -306,12 +359,29 @@ export class BlueprintPlanningService {
 
       this.setStage("Preparing the blueprint");
       if (!parsed.result.blueprint) throw new Error("The validated planning result did not contain a blueprint.");
+      const proposal = buildBlueprintProposal(this.originalIdea ?? this.snapshot.idea, parsed.result.blueprint);
+      let revisionEvents = this.snapshot.revisionEvents;
+      if (this.pendingInterpretationRevision) {
+        const event: CreatorRevisionEvent = {
+          kind: "interpretation_revised",
+          target: this.pendingInterpretationRevision.target,
+          priorFingerprint: this.pendingInterpretationRevision.priorFingerprint,
+          newFingerprint: fingerprintBlueprint(proposal),
+          occurredAt: new Date(this.now()).toISOString(),
+          actor: "creator",
+        };
+        revisionEvents = [...revisionEvents, event];
+        this.pendingInterpretationRevision = null;
+      }
       this.snapshot = {
         ...this.snapshot,
         phase: "review",
         stage: null,
         completedStages: [...blueprintPlanningStages],
         blueprint: parsed.result.blueprint,
+        proposal,
+        acceptedRoadmap: null,
+        revisionEvents,
         clarificationQuestions: [],
         validationPassed: true,
         validationProblems: [],

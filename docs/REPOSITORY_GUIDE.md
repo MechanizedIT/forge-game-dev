@@ -126,14 +126,14 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 ### generated-project-world — Generated Project World
 
 - **Purpose:** Reopen a registered generated project by joining its strict project-local artifacts into a truthful, restart-safe Project World.
-- **Owns:** Validated cross-artifact join, read-only snapshot, in-memory stale-selection repair, explicit selection persistence, atomic idea seeds plus derived activity, and bounded launch/folder actions.
+- **Owns:** Validated cross-artifact join, read-only snapshot, starter-aware accepted facts and quest eligibility presentation, in-memory stale-selection repair, explicit selection persistence, atomic idea seeds plus derived activity, and bounded launch/folder actions.
 - **Does not own:** Registry identity/location, project creation, authoritative roadmap/Chronicle mutation, starter verification truth, or generated-quest implementation.
-- **Start:** [world service](../src/generated-project-world/service.ts), [transport types](../src/generated-project-world/shared.ts), [world UI](../src/dashboard-v2/GeneratedProjectWorld.tsx), and [generated-project contracts](../src/contracts/generated-project.ts).
-- **Contracts and artifacts:** Project-local `.forge/project-manifest.json` points to identity/vision/first-playable/roadmap/quests/state/Chronicle/provenance/verification artifacts; `.forge/idea-seeds.json` alone owns saved ideas and their derived activity notes.
+- **Start:** [world service](../src/generated-project-world/service.ts), [transport types](../src/generated-project-world/shared.ts), [world UI](../src/dashboard-v2/GeneratedProjectWorld.tsx), [generated-project contracts](../src/contracts/generated-project.ts), and the closed [generated-quest profile catalog](../src/generated-quest-runner/profiles.ts).
+- **Contracts and artifacts:** Project-local `.forge/project-manifest.json` points to identity/vision/first-playable/roadmap/quests/state/Chronicle/provenance/verification artifacts, including optional immutable accepted-roadmap provenance for starter-aware v2 projects; `.forge/idea-seeds.json` alone owns saved ideas and their derived activity notes.
 - **Consumers:** Host generated-project routes, v0.2 Launchpad/World, project-world rehearsal, and visual review.
-- **Tests:** [generated Project World tests](../tests/generated-project-world.test.ts), [project creation tests](../tests/project-creation.test.ts), and [v0.2 tests](../tests/dashboard-v2.test.ts).
-- **Decisions:** [Task 6 closeout](closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md) and [Task 6 review](reviews/2026-07-14-v0.2-task-6-generated-project-world-review.md).
-- **Protect:** GET remains byte-for-byte read-only; Chronicle/roadmap remain unchanged by idea saves; generated quests remain `not_enabled`; starter visuals remain labelled preview rather than captured gameplay.
+- **Tests:** [generated Project World tests](../tests/generated-project-world.test.ts), [generated quest runner tests](../tests/generated-quest-runner.test.ts), [project creation tests](../tests/project-creation.test.ts), and [v0.2 tests](../tests/dashboard-v2.test.ts).
+- **Decisions:** [Task 6 closeout](closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md), [Task 6 review](reviews/2026-07-14-v0.2-task-6-generated-project-world-review.md), and the approved [Alpha Task B plan](plans/2026-07-14-alpha-task-b-starter-aware-planning.md).
+- **Protect:** GET remains byte-for-byte read-only; Chronicle/roadmap remain unchanged by idea saves; legacy and unregistered quests remain ineligible, while only Forge-owned closed profiles may enable preparation; starter visuals remain labelled preview rather than captured gameplay.
 
 <!-- forge-subsystem:public-showcase -->
 ### public-showcase — Static public showcase and guided replay

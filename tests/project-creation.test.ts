@@ -7,16 +7,23 @@ import type { AddressInfo } from "node:net";
 
 import {
   creationProvenanceSchema,
+  acceptedRoadmapProvenanceSchema,
   gameBlueprintSchema,
   generatedProjectManifestSchema,
+  generatedQuestArtifactV2Schema,
+  generatedRoadmapV2Schema,
   gitBaselineResultSchema,
   godotVerificationResultSchema,
+  planningProvenanceSchema,
   projectRegistrySchema,
   roadmapSchema,
   type GameBlueprint,
 } from "../src/contracts/index.js";
 import { fingerprintBlueprint } from "../src/blueprint-planner/service.js";
+import { acceptRoadmap, buildBlueprintProposal, createSignalSweepRoadmap, reviseAcceptedRoadmap } from "../src/blueprint-planner/starter-catalog.js";
 import type { BlueprintPlanningService } from "../src/blueprint-planner/service.js";
+import { writeJsonAtomic } from "../src/quest-runner/artifacts.js";
+import { GeneratedQuestRunnerService } from "../src/generated-quest-runner/service.js";
 import { createForgeDashboardServer } from "../src/dashboard-host/server.js";
 import type { ForgeDashboardService } from "../src/dashboard-host/service.js";
 import {
@@ -97,6 +104,22 @@ function envelope(blueprint = validBlueprint()): ApprovedBlueprintEnvelope {
   };
 }
 
+function starterAwareEnvelope(): ApprovedBlueprintEnvelope {
+  const blueprint = validBlueprint({
+    projectName: "Signal Sweep",
+    vision: "A compact top-down arena where the player activates one signal relay.",
+    coreAction: "Move into one signal relay to activate it.",
+    smallestPlayableResult: "The player moves into one relay and sees it activate.",
+    firstPlayableMilestone: "Activate one relay and read its code-native response.",
+  });
+  const blueprintSha256 = fingerprintBlueprint(blueprint);
+  const proposal = buildBlueprintProposal("A top-down Signal Sweep arena where the player activates one relay.", blueprint);
+  const draft = createSignalSweepRoadmap(blueprintSha256, blueprint);
+  const titled = reviseAcceptedRoadmap(draft, { kind: "quest_title_changed", reference: "Q1", title: "Wake the Signal Relay" }, fixedTime);
+  const acceptedRoadmap = acceptRoadmap(titled, titled.fingerprint, fixedTime);
+  return { ...envelope(blueprint), proposal, acceptedRoadmap, acceptedRoadmapSha256: acceptedRoadmap.fingerprint };
+}
+
 function idQueue(...values: string[]): () => string {
   let index = 0;
   return () => values[Math.min(index++, values.length - 1)]!;
@@ -143,6 +166,7 @@ async function withRoot(run: (root: string) => Promise<void>): Promise<void> {
 
 function createService(forgeHome: string, overrides: ConstructorParameters<typeof ProjectCreationService>[0] = {}) {
   return new ProjectCreationService({
+    allowLegacyPlanningEnvelopes: true,
     forgeHome,
     now: () => new Date(fixedTime),
     randomId: idQueue("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "cccccccc-cccc-cccc-cccc-cccccccccccc"),
@@ -179,6 +203,87 @@ test("a validated approved blueprint creates the controlled project tree and rou
     const registry = projectRegistrySchema.parse(JSON.parse(await readFile(path.join(forgeHome, "project-registry.json"), "utf8")) as unknown);
     assert.equal(registry.projects[0]?.projectId, snapshot.projectId);
     assert.deepEqual(await readdir(path.join(forgeHome, "projects", ".staging")), []);
+  });
+});
+
+test("starter-aware creation requires both current approvals and writes authoritative v2 artifacts", async () => {
+  await withRoot(async (root) => {
+    const forgeHome = path.join(root, "Forge");
+    const service = createService(forgeHome, { allowLegacyPlanningEnvelopes: false });
+    const approved = starterAwareEnvelope();
+    approved.provenance.attempts = 3;
+    service.beginCreation(approved);
+    await service.waitForIdle();
+    const created = service.getSnapshot().createdProject;
+    assert.ok(created, service.getSnapshot().error ?? "Task B creation failed");
+    const manifest = generatedProjectManifestSchema.parse(JSON.parse(await readFile(path.join(created.projectLocation, ".forge/project-manifest.json"), "utf8")) as unknown);
+    assert.equal(manifest.artifacts.acceptedRoadmap, ".forge/accepted-roadmap-provenance.json");
+    const provenance = acceptedRoadmapProvenanceSchema.parse(JSON.parse(await readFile(path.join(created.projectLocation, manifest.artifacts.acceptedRoadmap!), "utf8")) as unknown);
+    assert.equal(provenance.acceptedRoadmap.acceptedAt, fixedTime);
+    const planningProvenance = planningProvenanceSchema.parse(JSON.parse(await readFile(path.join(created.projectLocation, ".forge/planning-provenance.json"), "utf8")) as unknown);
+    assert.equal(planningProvenance.attempts, 3);
+    assert.equal(planningProvenance.blueprintSha256, approved.blueprintSha256);
+    const roadmap = generatedRoadmapV2Schema.parse(JSON.parse(await readFile(path.join(created.projectLocation, manifest.artifacts.roadmap), "utf8")) as unknown);
+    assert.equal(roadmap.schemaVersion, 2);
+    const first = generatedQuestArtifactV2Schema.parse(JSON.parse(await readFile(path.join(created.projectLocation, manifest.artifacts.questsDirectory, `${roadmap.quests[0]!.questId}.json`), "utf8")) as unknown);
+    const later = generatedQuestArtifactV2Schema.parse(JSON.parse(await readFile(path.join(created.projectLocation, manifest.artifacts.questsDirectory, `${roadmap.quests[1]!.questId}.json`), "utf8")) as unknown);
+    assert.deepEqual(first.editableFileRoles, ["main_scene", "main_script", "objective_visual"]);
+    assert.equal(first.verificationProfile, "relay_activation_v1");
+    assert.equal(first.title, "Wake the Signal Relay");
+    assert.equal(later.verificationProfile, null);
+    assert.equal(later.state, "blocked");
+    const eligibility = await new GeneratedQuestRunnerService({ forgeHome }).getSummary(created.projectId, first.questId);
+    assert.equal(eligibility.eligibility.eligible, true, eligibility.eligibility.reason ?? "");
+  });
+});
+
+test("a failed creation can be cleared and retried without trapping the approved plan", async () => {
+  await withRoot(async (root) => {
+    let godotAttempts = 0;
+    const service = createService(path.join(root, "Forge"), {
+      verifyGodot: async (options) => {
+        godotAttempts += 1;
+        if (godotAttempts === 1) throw new Error("controlled first-attempt failure");
+        return mockGodot()(options);
+      },
+    });
+    const approved = starterAwareEnvelope();
+    approved.provenance.attempts = 3;
+
+    service.beginCreation(approved);
+    await service.waitForIdle();
+    assert.equal(service.getSnapshot().phase, "failed");
+    assert.ok(service.getSnapshot().failureEvidence);
+
+    service.resetFailure();
+    assert.deepEqual(service.getSnapshot(), {
+      phase: "idle", stage: null, completedStages: [], startedAt: null, displayName: null,
+      foundation: null, projectId: null, relativeProjectIdentifier: null, questCount: null,
+      explanation: null, createdProject: null, error: null, failureEvidence: null,
+    });
+
+    service.beginCreation(approved);
+    await service.waitForIdle();
+    assert.equal(service.getSnapshot().phase, "created", service.getSnapshot().error ?? "");
+  });
+});
+
+test("missing or stale accepted-roadmap approval fails before project allocation", async () => {
+  await withRoot(async (root) => {
+    const forgeHome = path.join(root, "Forge");
+    const missing = createService(forgeHome, { allowLegacyPlanningEnvelopes: false });
+    missing.beginCreation(envelope());
+    await missing.waitForIdle();
+    assert.match(missing.getSnapshot().error!, /accepted-roadmap fingerprints/i);
+    assert.equal((await new ProjectRegistryStore(forgeHome).load()).projects.length, 0);
+
+    const staleValue = starterAwareEnvelope();
+    staleValue.acceptedRoadmapSha256 = "f".repeat(64);
+    const stale = createService(forgeHome, { allowLegacyPlanningEnvelopes: false });
+    stale.beginCreation(staleValue);
+    await stale.waitForIdle();
+    assert.match(stale.getSnapshot().error!, /changed after creator approval/i);
+    assert.equal((await new ProjectRegistryStore(forgeHome).load()).projects.length, 0);
   });
 });
 
@@ -356,6 +461,36 @@ test("the registry reloads, reports missing projects, and recovers malformed JSO
   });
 });
 
+test("atomic registry writes retry a bounded transient Windows replacement lock", async () => {
+  await withRoot(async (root) => {
+    const target = path.join(root, "project-registry.json");
+    await writeFile(target, '{"schemaVersion":1,"projects":[]}\n', "utf8");
+    let attempts = 0;
+    const delays: number[] = [];
+
+    await writeJsonAtomic(target, { schemaVersion: 1, projects: [{ projectId: "signal-sweep" }] }, {
+      renameFile: async (from, to) => {
+        attempts += 1;
+        if (attempts < 3) {
+          const error = new Error("temporarily locked") as NodeJS.ErrnoException;
+          error.code = "EPERM";
+          throw error;
+        }
+        const { rename } = await import("node:fs/promises");
+        await rename(from, to);
+      },
+      wait: async (milliseconds) => { delays.push(milliseconds); },
+    });
+
+    assert.equal(attempts, 3);
+    assert.deepEqual(delays, [25, 75]);
+    assert.deepEqual(JSON.parse(await readFile(target, "utf8")), {
+      schemaVersion: 1,
+      projects: [{ projectId: "signal-sweep" }],
+    });
+  });
+});
+
 test("the fixed Godot verifier owns arguments and sanitizes the real staging path", async () => {
   await withRoot(async (root) => {
     const captured: Array<{ args: string[]; cwd: string }> = [];
@@ -462,6 +597,49 @@ test("the creation endpoint requires same-origin, exact confirmation, and a one-
       });
       assert.equal(replay.status, 400);
       assert.equal(starts, 1);
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  });
+});
+
+test("the failed-creation reset endpoint requires exact creator intent and clears the loop", async () => {
+  await withRoot(async (root) => {
+    let resets = 0;
+    const creationSnapshot: ProjectCreationSnapshot = {
+      phase: "failed", stage: "Writing project records", completedStages: [], startedAt: fixedTime,
+      displayName: "Signal Sweep", foundation: "top_down_arena", projectId: "signal-sweep-failed",
+      relativeProjectIdentifier: null, questCount: 3, explanation: "Forge stopped safely.", createdProject: null,
+      error: "controlled failure", failureEvidence: "evidence/creation-failures/controlled.json",
+    };
+    const creationStub = {
+      getSnapshot: () => creationSnapshot,
+      listRecentProjects: async () => [],
+      resetFailure: () => { resets += 1; creationSnapshot.phase = "idle"; },
+      subscribe: () => () => {},
+    } as unknown as ProjectCreationService;
+    const server = createForgeDashboardServer({} as ForgeDashboardService, root, undefined, creationStub);
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+      const address = server.address() as AddressInfo;
+      const base = `http://127.0.0.1:${address.port}`;
+      const initial = await (await fetch(`${base}/api/projects/state`)).json() as { mutationToken: string };
+      const invalid = await fetch(`${base}/api/projects/create/reset`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: base, "x-forge-mutation-token": initial.mutationToken },
+        body: JSON.stringify({ action: "RETRY" }),
+      });
+      assert.equal(invalid.status, 400);
+      assert.equal(resets, 0);
+
+      const refreshed = await (await fetch(`${base}/api/projects/state`)).json() as { mutationToken: string };
+      const accepted = await fetch(`${base}/api/projects/create/reset`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: base, "x-forge-mutation-token": refreshed.mutationToken },
+        body: JSON.stringify({ action: "RESET FAILED CREATION" }),
+      });
+      assert.equal(accepted.status, 200);
+      assert.equal(resets, 1);
     } finally {
       await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     }

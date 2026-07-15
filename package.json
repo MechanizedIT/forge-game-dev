@@ -35,6 +35,7 @@
     "visual:review:v0.2:creation": "npm run dashboard:build && tsx src/visual-review/v0.2-creation.ts",
     "visual:review:v0.2:project-world": "npm run dashboard:build && tsx src/visual-review/v0.2-project-world.ts",
     "visual:review:alpha:generated-quest": "npm run dashboard:build && tsx src/visual-review/v0.2-generated-quest.ts",
+    "visual:review:alpha:task-b": "npm run dashboard:build && tsx src/visual-review/alpha-task-b.ts",
     "blueprint:rehearse": "tsx src/blueprint-planner/rehearsal.ts",
     "project:create:rehearse": "tsx src/project-creation/rehearsal.ts",
     "project:world:rehearse": "tsx src/generated-project-world/rehearsal.ts",

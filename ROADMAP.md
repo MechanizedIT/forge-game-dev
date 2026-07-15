@@ -165,14 +165,14 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 #### Alpha Task B — Honest Starter-Aware Intake and Roadmap Review
 
-- [ ] Show one explicit Top-down Arena interpretation with fit, tradeoffs, alternatives, revise, and reject instead of silently coercing the idea.
-- [ ] Separate immutable approved-blueprint provenance from a fingerprinted accepted roadmap that labels starter facts and planned deltas.
-- [ ] Support bounded roadmap title/outcome, optional-delta, removal, and dependency-safe reorder decisions before creation.
-- [ ] Persist new projects directly with truthful v2 roadmap/quest artifacts while keeping existing generated projects read-only and compatible.
-- [ ] Register one Forge-owned `relay_activation_v1` profile so fresh Signal Sweep Quest 1 is genuinely eligible under the Task A boundary.
-- [ ] Rehearse live Signal Sweep planning and controlled creation, reopen it, and inspect the exact first contract without running Codex or claiming completion.
+- [x] Show one explicit Top-down Arena interpretation with fit, tradeoffs, alternatives, revise, and reject instead of silently coercing the idea.
+- [x] Separate immutable approved-blueprint provenance from a fingerprinted accepted roadmap that labels starter facts and planned deltas.
+- [x] Support bounded roadmap title/outcome, optional-delta, removal, and dependency-safe reorder decisions before creation.
+- [x] Persist new projects directly with truthful v2 roadmap/quest artifacts while keeping existing generated projects read-only and compatible.
+- [x] Register one Forge-owned `relay_activation_v1` profile so fresh Signal Sweep Quest 1 is genuinely eligible under the Task A boundary.
+- [x] Rehearse live Signal Sweep planning and controlled creation, reopen it, and inspect the exact first contract without running Codex or claiming completion.
 
-**Status:** `APPROVED / IMPLEMENTATION READY`. The creator-approved plan is recorded in
+**Status:** `COMPLETE`. The creator-gated rerun preserved the three-turn live planning record, accepted the supported interpretation and roadmap, created and registered Signal Sweep, passed pinned Godot and clean local Git checks, survived a full Forge restart, reopened Project World, and prepared the exact three-existing-file relay contract. The contract remains unapproved in `contract_review`; no SDK build, gameplay proof, or quest completion occurred. The creator-approved plan is recorded in
 [`docs/plans/2026-07-14-alpha-task-b-starter-aware-planning.md`](docs/plans/2026-07-14-alpha-task-b-starter-aware-planning.md).
 
 **Exit:** One fresh idea has an honestly supported interpretation, an explicitly accepted non-duplicative roadmap, and one clean created project whose first quest has a registered existing-file contract. Real relay implementation and completion remain a separate creator-gated proof run.
@@ -211,7 +211,7 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Task A is merged into `main`. Task B's approved implementation plan is the next
-bounded action. Submission actions remain
+Alpha Task A is merged into `main`, and the approved Task B checkpoint is complete.
+Any alpha-pivot work under `docs/PRODUCT_VISION.md` must begin as a separate owner-approved task. Submission actions remain
 owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a
 license, deploy the static site, and push or submit only when authorized.

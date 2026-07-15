@@ -2,10 +2,11 @@
 
 ## Owns
 
-Generated-quest eligibility, adjustment, contract fingerprinting, exclusive run
-lock and journal, bounded context, official SDK orchestration, sanitized progress,
-independent proof, creator confirmation, exact rollback, completion Git transaction,
-receipt repair, recovery, and generated-run evidence.
+Current generated-quest preparation plus the future general work-session boundary:
+approval, exclusive run lock and journal, bounded context, official SDK
+orchestration, sanitized progress, baseline and optional proof, creator
+confirmation, exact rollback, completion Git transaction, receipt repair,
+recovery, and run evidence.
 
 ## Does not own
 
@@ -16,13 +17,25 @@ presentation layout.
 ## Invariants
 
 - Resolve only registered canonical direct-child projects.
-- Codex may edit only one to four Forge-resolved existing UTF-8 game files.
 - Inventory and hashes govern the boundary; Git status alone is insufficient.
 - GET and status reads never mutate project artifacts.
 - Only `worked` may enter completion, and automated proof reruns afterward.
 - Rollback writes no path until every touched path matches its observed posthash.
 - Completion stages and commits an exact manifest once; recovery never broad-resets.
 - Never fabricate creator play, Codex execution, or verification evidence.
+
+## Product direction and current compatibility
+
+Read `../../docs/PRODUCT_VISION.md` before planning runner changes. A verification
+profile may add evidence, but it must not decide whether a creator's quest is a
+valid idea. The target work-session model allows creator-approved existing and
+new UTF-8 game files, pauses when the agent needs undeclared scope, runs baseline
+Godot health checks, and keeps exact undo.
+
+Until that migration is explicitly planned and implemented, preserve Task A's
+current one-to-four-existing-file/profile boundary for existing projects and
+tests. Do not expand the closed profile catalog as a substitute for the general
+work-session model.
 
 ## Required checks
 

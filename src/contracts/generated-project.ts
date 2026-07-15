@@ -7,6 +7,7 @@ import {
   slugSchema,
   timestampSchema,
 } from "./shared.js";
+import { acceptedRoadmapSchema, foundationFitSchema } from "./starter-aware-planning.js";
 
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/u, "Expected a SHA-256 digest");
 const gitShaSchema = z.string().regex(/^[a-f0-9]{40,64}$/u, "Expected a Git commit SHA");
@@ -60,6 +61,7 @@ export const generatedProjectManifestSchema = z.object({
   }).strict(),
   artifacts: z.object({
     approvedBlueprint: relativePathSchema,
+    acceptedRoadmap: relativePathSchema.optional(),
     vision: relativePathSchema,
     firstPlayable: relativePathSchema,
     roadmap: relativePathSchema,
@@ -124,8 +126,8 @@ export const GENERATED_QUEST_PLAN_STATES = [
 ] as const;
 
 export const generatedQuestPlanStateSchema = z.enum(GENERATED_QUEST_PLAN_STATES);
-export const generatedEditableFileRoleSchema = z.enum(["main_scene", "objective_visual"]);
-export const generatedVerificationProfileSchema = z.literal("gravity_orb_presence_v1");
+export const generatedEditableFileRoleSchema = z.enum(["main_scene", "main_script", "objective_visual"]);
+export const generatedVerificationProfileSchema = z.enum(["gravity_orb_presence_v1", "relay_activation_v1"]);
 
 const generatedQuestImplementationSchema = z.union([
   z.literal("not_enabled"),
@@ -165,10 +167,17 @@ export const generatedQuestArtifactV2Schema = z.object({
     id: z.string().regex(/^V-[1-9][0-9]*$/u),
     idea: nonEmptyStringSchema,
   }).strict()).min(1).max(8),
-  editableFileRoles: z.array(generatedEditableFileRoleSchema).min(1).max(4),
-  verificationProfile: generatedVerificationProfileSchema,
+  editableFileRoles: z.array(generatedEditableFileRoleSchema).max(4),
+  verificationProfile: generatedVerificationProfileSchema.nullable(),
   implementation: generatedQuestImplementationSchema,
-}).strict();
+}).strict().superRefine((quest, context) => {
+  if ((quest.verificationProfile === null) !== (quest.editableFileRoles.length === 0)) {
+    context.addIssue({ code: "custom", message: "A registered verification profile and editable roles must be assigned together", path: ["verificationProfile"] });
+  }
+  if (quest.implementation !== "not_enabled" && quest.verificationProfile !== quest.implementation.verificationProfile) {
+    context.addIssue({ code: "custom", message: "Completion provenance must match the quest verification profile", path: ["implementation", "verificationProfile"] });
+  }
+});
 
 export const generatedQuestArtifactAnySchema = z.union([
   generatedQuestArtifactV2Schema,
@@ -282,9 +291,20 @@ export const planningProvenanceSchema = z.object({
   sandbox: z.literal("read-only"),
   network: z.literal("disabled"),
   sanitizedThreadId: z.string().nullable(),
-  attempts: z.number().int().min(1).max(2),
+  // One planning request may need one repair, then one clarification response may
+  // also need one repair. All four turns remain inside the same bounded session.
+  attempts: z.number().int().min(1).max(4),
   blueprintSha256: sha256Schema,
   approvedAt: timestampSchema,
+  originalIdea: z.string().trim().min(1).max(1_500).optional(),
+  recommendedInterpretation: nonEmptyStringSchema.optional(),
+  foundationFit: foundationFitSchema.optional(),
+}).strict();
+
+export const acceptedRoadmapProvenanceSchema = z.object({
+  schemaVersion: z.literal(1),
+  projectId: slugSchema,
+  acceptedRoadmap: acceptedRoadmapSchema,
 }).strict();
 
 export const godotVerificationResultSchema = z.object({
@@ -320,6 +340,7 @@ export const creationProvenanceSchema = z.object({
   projectId: slugSchema,
   transactionId: slugSchema,
   blueprintSha256: sha256Schema,
+  acceptedRoadmapSha256: sha256Schema.optional(),
   starterId: z.literal("top-down-arena"),
   starterVersion: nonEmptyStringSchema,
   createdAt: timestampSchema,
@@ -370,6 +391,7 @@ export type GeneratedQuestArtifact = z.infer<typeof generatedQuestArtifactSchema
 export type GeneratedQuestArtifactV2 = z.infer<typeof generatedQuestArtifactV2Schema>;
 export type GeneratedQuestArtifactAny = z.infer<typeof generatedQuestArtifactAnySchema>;
 export type GeneratedQuestPlanState = z.infer<typeof generatedQuestPlanStateSchema>;
+export type GeneratedVerificationProfile = z.infer<typeof generatedVerificationProfileSchema>;
 export type GeneratedRoadmapV2 = z.infer<typeof generatedRoadmapV2Schema>;
 export type GeneratedProjectState = z.infer<typeof generatedProjectStateSchema>;
 export type GeneratedProjectStateV2 = z.infer<typeof generatedProjectStateV2Schema>;

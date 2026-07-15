@@ -5,7 +5,9 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  acceptedRoadmapSchema,
   assertWorkflowTransition,
+  blueprintProposalSchema,
   implementationHandoffSchema,
   implementationPlanSchema,
   projectManifestSchema,
@@ -20,6 +22,11 @@ import {
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const templatesDirectory = path.join(repositoryRoot, "docs", "templates");
+
+test("Task B exposes strict proposal and accepted-roadmap contracts", () => {
+  assert.equal(blueprintProposalSchema.safeParse({}).success, false);
+  assert.equal(acceptedRoadmapSchema.safeParse({}).success, false);
+});
 
 async function loadTemplate(name: string): Promise<unknown> {
   const contents = await readFile(path.join(templatesDirectory, name), "utf8");
