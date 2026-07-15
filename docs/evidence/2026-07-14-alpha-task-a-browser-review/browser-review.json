@@ -1,0 +1,42 @@
+{
+  "date": "2026-07-14",
+  "browser": "Microsoft Edge",
+  "browserVersion": "150.0.4078.65",
+  "channel": "msedge",
+  "states": [
+    "generated-outcome-desktop",
+    "generated-outcome-adjusted-desktop",
+    "generated-contract-desktop",
+    "generated-contract-mobile",
+    "generated-approved-desktop",
+    "generated-progress-desktop",
+    "generated-proof-playtest-desktop",
+    "generated-not-ready-desktop",
+    "generated-complete-desktop",
+    "generated-roadmap-complete-desktop",
+    "generated-safe-rollback-desktop",
+    "generated-rollback-complete-desktop"
+  ],
+  "screenshots": [
+    "generated-outcome-desktop.png",
+    "generated-outcome-adjusted-desktop.png",
+    "generated-contract-desktop.png",
+    "generated-contract-mobile.png",
+    "generated-approved-desktop.png",
+    "generated-progress-desktop.png",
+    "generated-proof-playtest-desktop.png",
+    "generated-not-ready-desktop.png",
+    "generated-complete-desktop.png",
+    "generated-roadmap-complete-desktop.png",
+    "generated-safe-rollback-desktop.png",
+    "generated-rollback-complete-desktop.png"
+  ],
+  "visualStateSource": "Temporary isolated Git checkout of the registered Gravity Tap Arena verified baseline.",
+  "injectedBoundaries": [
+    "Deterministic fake Codex event stream editing the same Forge-approved existing scene file.",
+    "Deterministic passing project-health and gravity-orb profile outputs.",
+    "No-op visible-game launcher for browser-only UI review."
+  ],
+  "issues": [],
+  "result": "PASS"
+}

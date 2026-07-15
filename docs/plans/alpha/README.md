@@ -1,6 +1,6 @@
 # Forge Alpha Proof-Game Plan
 
-Status: planning proposal only. No alpha feature in these documents is approved, implemented, or part of the `v0.2.0` release.
+Status: Task A is `COMPLETE / PASS` on the alpha implementation branch. Task B remains a planning proposal. Neither alpha task is part of the protected `v0.2.0` release tag.
 
 ## Recommendation in one page
 

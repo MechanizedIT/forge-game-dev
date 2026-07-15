@@ -444,3 +444,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Created after this entry; exact planning SHA reported in the task response
 - **Session ID:** Current Codex planning task; primary submission `/feedback` ID remains pending
 - **Next step:** Review and approve Task A only. If a real generated quest does not complete by the end of the first major implementation day, cut Task B and use the reduced Gravity Tap fallback on Day 2.
+
+---
+
+## 2026-07-14 — Complete one governed generated-project quest
+
+- **Actor/model surface:** Codex desktop repository implementation; Agent-Native visual plan; official `@openai/codex-sdk`; Codex thread `019f63c4-68cb-7770-a5c0-35a4ca735e7f`; pinned Godot 4.7; local Git; in-app Browser and Microsoft Edge visual review
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Approved Task A only from reviewed planning commit `e2e4e228a9c1cf68064a83733c10ca06f793fcca`; approved the bounded implementation plan; personally played the real generated Gravity Tap change and selected **Worked**; did not authorize Task B, push, deployment, release-tag mutation, broader new-file authority, another starter, or another generated quest.
+- **AI contribution:** Added strict generated-run contracts and v1-to-v2 read compatibility; a sibling generated runner with deterministic focused context, official SDK execution, registered-project and exact inventory boundaries, durable journaling, cancellation/recovery, independent project/mechanic/creator proof, run-owned rollback with concurrent-edit refusal, atomic completion and actual-SHA receipt recovery; added exact same-origin host routes, outcome-first Project World UI, staged progress/proof/play/recovery/completion states, Forge-owned Gravity verifier, focused tests, restart-safe registry summaries, and browser evidence.
+- **Files changed:** Generated-project and run contracts; new `src/generated-quest-runner/` subsystem; generated-world adapter; Godot verification profile; dashboard host/API/UI; project registry compatibility; visual-review harness; generated-runner, recovery, completion, host, UI, and project-creation regressions; Task A plan/evidence/handoff/review/closeout; alpha and operational roadmap/status; this log.
+- **Verification:** Real run `run-q1-enter-the-arena-1784085217366-54d6c1f399c3` started from clean Gravity Tap baseline `7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8`, changed exactly `scenes/main.tscn` and `scripts/objective_marker.gd`, passed boundary/project/mechanic proof, received creator **Worked**, and produced completion commit `f4cbba5928e22c0a3471239d7b67b490c7649a56` with tree `1fd2f3045f65d1d4ec70475666ea089a9ae12d85`. Fresh service and full host restart restored Q1 complete, Q2 available, matching Chronicle/receipt, clean no-remote Git, and no active lock. The final Forge gates pass context validation, 98/98 full tests, 38/38 protected tests, production build, showcase checks, `git diff --check`, and 12 Edge states with zero issues.
+- **Protected boundaries:** The sample fixture/path, Last-Moment Pulse project, showcase source, and `v0.2.0` tag remain unchanged. Task B and arbitrary-small-game support remain unimplemented.
+- **Commit:** Included in the milestone commit; exact SHA reported in the task response
+- **Session ID:** Current Codex task; official implementation thread `019f63c4-68cb-7770-a5c0-35a4ca735e7f`; primary submission `/feedback` ID remains pending
+- **Next step:** Review and merge the Task A branch. Start Task B only under a separate approved plan; push, deploy, tag, or submit only with explicit owner authorization.

@@ -10,6 +10,7 @@ import { ForgeDashboardService } from "./service.js";
 import { createForgeDashboardServer } from "./server.js";
 import { ProjectCreationService } from "../project-creation/service.js";
 import { GeneratedProjectWorldService } from "../generated-project-world/service.js";
+import { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
 
 function parsePort(value: string | undefined): number {
   const port = Number(value ?? "4173");
@@ -50,13 +51,18 @@ const planningService = new BlueprintPlanningService(
   new OfficialBlueprintModelExecutor(repositoryRoot),
 );
 const creationService = new ProjectCreationService();
-const generatedWorldService = new GeneratedProjectWorldService();
+const generatedRunner = new GeneratedQuestRunnerService({
+  codexExecutor: new OfficialCodexExecutor(),
+});
+await generatedRunner.recoverActiveRuns();
+const generatedWorldService = new GeneratedProjectWorldService({ generatedRunner });
 const server = createForgeDashboardServer(
   service,
   path.join(repositoryRoot, "dist", "dashboard"),
   planningService,
   creationService,
   generatedWorldService,
+  generatedRunner,
 );
 
 server.once("error", (error: NodeJS.ErrnoException) => {

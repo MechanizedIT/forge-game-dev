@@ -36,6 +36,8 @@ Multiple starters/foundations, general project scanning/import, general Companio
 
 ## Task A — complete one generated quest
 
+**Status:** `COMPLETE / PASS` (2026-07-14). Real Gravity Tap Arena Quest 1 passed exact approval, official SDK execution, existing-file boundary review, project and mechanic proof, visible creator play, creator-selected **Worked**, atomic completion commit, fresh-service reconciliation, and full host restart restoration. See the [review](../../reviews/2026-07-14-alpha-task-a-generated-quest-loop-review.md), [closeout](../../closeouts/2026-07-14-alpha-task-a-generated-quest-loop-closeout.md), and [real rehearsal evidence](../../evidence/2026-07-14-alpha-task-a-real-rehearsal.json).
+
 **Goal:** implement, prove, play, confirm, complete, commit, and restore one generated quest without changing the sample semantics.
 
 **Creator-visible result:** an eligible Project World quest offers Adjust, Build, and Defer. Build opens a plain-language contract with exact file boundary. After approval, Forge shows bounded progress, proof results, play instructions, explicit success/failure/not-ready choices, then a completion card with Chronicle, Git, and next quest.
@@ -81,6 +83,8 @@ Multiple starters/foundations, general project scanning/import, general Companio
 4. Quest, roadmap, Chronicle, docs, provenance, project state, and Git agree after reload.
 5. The commit records the run ID; the ignored receipt records the actual SHA without a second commit.
 6. The sample fixture/path, other generated projects, showcase, and `v0.2.0` remain unchanged.
+
+All six acceptance criteria passed. Task A intentionally proves one prepared, existing-file-only generated quest; it does not authorize Task B or broaden the supported project/foundation boundary.
 
 **Estimate:** one xhigh Codex implementation session plus one separate review/fix session; roughly 25–40 touched Forge files including tests/docs. **Model:** GPT-5.6 Sol xhigh. **Unattended:** code/test work may run unattended inside the approved task; real Codex execution, visible play, creator confirmation, and failure/rollback judgment require the creator. **Kill:** if no real generated quest completes by the end of Day 1, stop Task B and use only the reduced fallback on Day 2; if that still fails, return to the released v0.2 submission path.
 

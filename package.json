@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit && tsc -p tsconfig.dashboard.json --noEmit",
-    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/blueprint-planning.test.ts tests/project-creation.test.ts tests/generated-project-world.test.ts",
+    "test": "tsx --test tests/contracts.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/blueprint-planning.test.ts tests/project-creation.test.ts tests/generated-project-world.test.ts tests/generated-quest-runner.test.ts tests/generated-quest-recovery.test.ts tests/generated-quest-completion.test.ts",
     "check": "npm run typecheck && npm test",
     "check:v0.1": "npm run typecheck && npm run dashboard:build && tsx --test tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/legacy-sample.test.ts",
     "context:check": "node scripts/validate-repository-context.mjs",
@@ -34,6 +34,7 @@
     "visual:review:v0.2:blueprint": "npm run dashboard:build && tsx src/visual-review/v0.2-blueprint.ts",
     "visual:review:v0.2:creation": "npm run dashboard:build && tsx src/visual-review/v0.2-creation.ts",
     "visual:review:v0.2:project-world": "npm run dashboard:build && tsx src/visual-review/v0.2-project-world.ts",
+    "visual:review:alpha:generated-quest": "npm run dashboard:build && tsx src/visual-review/v0.2-generated-quest.ts",
     "blueprint:rehearse": "tsx src/blueprint-planner/rehearsal.ts",
     "project:create:rehearse": "tsx src/project-creation/rehearsal.ts",
     "project:world:rehearse": "tsx src/generated-project-world/rehearsal.ts",

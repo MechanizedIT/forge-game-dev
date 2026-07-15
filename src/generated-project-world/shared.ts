@@ -1,12 +1,13 @@
 import type {
-  Chronicle,
-  GeneratedProjectState,
-  GeneratedQuestArtifact,
+  ChronicleV2,
+  GeneratedProjectStateAny,
+  GeneratedQuestArtifactV2,
+  GeneratedRoadmapV2,
   IdeaSeed,
-  Roadmap,
 } from "../contracts/index.js";
+import type { GeneratedQuestEligibility, GeneratedQuestRunSnapshot } from "../generated-quest-runner/shared.js";
 
-export type GeneratedWorldView = Exclude<GeneratedProjectState["currentView"], "project_created">;
+export type GeneratedWorldView = Exclude<GeneratedProjectStateAny["currentView"], "project_created">;
 
 export interface GeneratedProjectIdentity {
   projectId: string;
@@ -30,10 +31,12 @@ export interface GeneratedPlayableTruth {
   successMarker: "FORGE_TOP_DOWN_ARENA_VERIFY_OK";
 }
 
-export interface GeneratedQuestBrief extends GeneratedQuestArtifact {
+export interface GeneratedQuestBrief extends GeneratedQuestArtifactV2 {
   outcomeLabel: "Generated intended outcome";
   whyItMatters: string;
-  implementationLabel: "Quest planned · Codex implementation not enabled yet";
+  implementationLabel: string;
+  eligibility: GeneratedQuestEligibility;
+  run: GeneratedQuestRunSnapshot | null;
 }
 
 export interface GeneratedDocumentDisclosure {
@@ -72,14 +75,15 @@ export interface GeneratedProjectWorldSnapshot {
     outcome: string;
     questIds: string[];
   };
-  roadmap: Roadmap;
+  roadmap: GeneratedRoadmapV2;
   quests: GeneratedQuestBrief[];
   state: {
     currentView: GeneratedWorldView;
     selectedQuestId: string;
+    nextRecommendedQuestId: string | null;
     repairNotice: string | null;
   };
-  chronicle: Chronicle;
+  chronicle: ChronicleV2;
   ideaSeeds: IdeaSeed[];
   activity: GeneratedActivity[];
   documents: GeneratedDocumentDisclosure[];
@@ -87,7 +91,7 @@ export interface GeneratedProjectWorldSnapshot {
     launchGodot: true;
     openFolder: true;
     saveIdea: true;
-    generatedQuestImplementation: false;
+    generatedQuestImplementation: boolean;
   };
 }
 

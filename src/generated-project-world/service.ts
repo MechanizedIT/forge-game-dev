@@ -2,32 +2,37 @@ import { randomUUID } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { lstat, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
-import type { z } from "zod";
+import { z } from "zod";
 
 import {
-  chronicleSchema,
+  chronicleAnySchema,
+  chronicleV2Schema,
   creationProvenanceSchema,
   firstPlayableMilestoneSchema,
   gameBlueprintSchema,
   gameVisionSchema,
   generatedProjectManifestSchema,
-  generatedProjectStateSchema,
-  generatedQuestArtifactSchema,
+  generatedProjectStateAnySchema,
+  generatedProjectStateV2Schema,
+  generatedQuestArtifactAnySchema,
   gitBaselineResultSchema,
   godotVerificationResultSchema,
   ideaSeedSchema,
   ideaSeedsSchema,
   planningProvenanceSchema,
+  generatedRoadmapV2Schema,
   roadmapSchema,
   topDownArenaStarterManifestSchema,
-  type GeneratedProjectState,
-  type GeneratedQuestArtifact,
+  type GeneratedProjectStateAny,
+  type GeneratedQuestArtifactV2,
   type IdeaSeed,
 } from "../contracts/index.js";
 import { resolveForgeHome } from "../demo/paths.js";
 import { ensurePinnedGodot } from "../godot/bootstrap.js";
 import { ProjectRegistryStore } from "../project-creation/registry.js";
 import { writeJsonAtomic, writeTextAtomic } from "../quest-runner/artifacts.js";
+import { normalizeGeneratedQuest, normalizeGeneratedRoadmap } from "../generated-quest-runner/contract.js";
+import type { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
 import type {
   GeneratedActivity,
   GeneratedIdeaSaveResponse,
@@ -71,6 +76,7 @@ export interface GeneratedProjectWorldServiceOptions {
   registry?: ProjectRegistryStore;
   resolveGodot?: typeof ensurePinnedGodot;
   launchGodot?: GeneratedWorldLauncher;
+  generatedRunner?: Pick<GeneratedQuestRunnerService, "getSummary">;
 }
 
 function defaultLauncher(request: GeneratedWorldLaunchRequest): void {
@@ -94,11 +100,11 @@ function sameList(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
-function worldView(value: GeneratedProjectState["currentView"]): GeneratedWorldView {
+function worldView(value: GeneratedProjectStateAny["currentView"]): GeneratedWorldView {
   return value === "project_created" ? "project_world" : value;
 }
 
-function questWhyItMatters(quest: GeneratedQuestArtifact, milestone: string): string {
+function questWhyItMatters(quest: GeneratedQuestArtifactV2, milestone: string): string {
   if (quest.sequence === 1) return `This establishes the first dependable foundation for ${milestone}`;
   const dependency = quest.dependsOn.length === 1
     ? "the planned step before it"
@@ -128,6 +134,7 @@ export class GeneratedProjectWorldService {
   private readonly registry: ProjectRegistryStore;
   private readonly resolveGodot: typeof ensurePinnedGodot;
   private readonly launchGodotProcess: GeneratedWorldLauncher;
+  private readonly generatedRunner: Pick<GeneratedQuestRunnerService, "getSummary"> | undefined;
   private readonly launching = new Set<string>();
   private readonly ideaQueues = new Map<string, Promise<unknown>>();
 
@@ -138,6 +145,7 @@ export class GeneratedProjectWorldService {
     this.registry = options.registry ?? new ProjectRegistryStore(this.forgeHome, this.now);
     this.resolveGodot = options.resolveGodot ?? ensurePinnedGodot;
     this.launchGodotProcess = options.launchGodot ?? defaultLauncher;
+    this.generatedRunner = options.generatedRunner;
   }
 
   private async resolveProject(projectId: string): Promise<{ projectPath: string; entry: Awaited<ReturnType<ProjectRegistryStore["resolveRegisteredProject"]>> }> {
@@ -190,18 +198,33 @@ export class GeneratedProjectWorldService {
       const approvedBlueprint = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.approvedBlueprint), gameBlueprintSchema);
       const vision = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.vision), gameVisionSchema);
       const firstPlayable = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.firstPlayable), firstPlayableMilestoneSchema);
-      const roadmap = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.roadmap), roadmapSchema);
-      const state = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.projectState), generatedProjectStateSchema);
-      const chronicle = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.chronicle), chronicleSchema);
+      const roadmap = normalizeGeneratedRoadmap(await readValidated(
+        await this.ownedPath(projectPath, manifest.artifacts.roadmap),
+        z.union([generatedRoadmapV2Schema, roadmapSchema]),
+      ));
+      const state = await readValidated(
+        await this.ownedPath(projectPath, manifest.artifacts.projectState),
+        generatedProjectStateAnySchema,
+      );
+      const chronicleAny = await readValidated(
+        await this.ownedPath(projectPath, manifest.artifacts.chronicle),
+        chronicleAnySchema,
+      );
+      const chronicle = chronicleAny.schemaVersion === 2
+        ? chronicleV2Schema.parse(chronicleAny)
+        : chronicleV2Schema.parse({ ...chronicleAny, schemaVersion: 2 });
       const godot = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.localGodotVerification), godotVerificationResultSchema);
       const planning = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.planningProvenance), planningProvenanceSchema);
       const creation = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.localCreationProvenance), creationProvenanceSchema);
       const git = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.localGitBaseline), gitBaselineResultSchema);
       const questDirectory = await this.ownedPath(projectPath, manifest.artifacts.questsDirectory, "directory");
-      const quests: GeneratedQuestArtifact[] = [];
+      const quests: GeneratedQuestArtifactV2[] = [];
       for (const roadmapQuest of roadmap.quests) {
         const questPath = await this.ownedPath(projectPath, path.join(path.relative(projectPath, questDirectory), `${roadmapQuest.questId}.json`));
-        quests.push(await readValidated(questPath, generatedQuestArtifactSchema));
+        quests.push(normalizeGeneratedQuest(
+          await readValidated(questPath, generatedQuestArtifactAnySchema),
+          roadmapQuest.state,
+        ));
       }
 
       const owned = [vision, firstPlayable, roadmap, state, chronicle, godot, planning, creation, git, ...quests];
@@ -213,7 +236,7 @@ export class GeneratedProjectWorldService {
       if (quests.length !== roadmap.quests.length) throw new Error("The roadmap and quest artifact count do not match.");
       quests.forEach((quest, index) => {
         const node = roadmap.quests[index];
-        if (!node || quest.questId !== node.questId || quest.sequence !== index + 1 || quest.title !== node.title || !sameList(quest.dependsOn, node.dependsOn)) {
+        if (!node || quest.questId !== node.questId || quest.revision !== node.revision || quest.sequence !== index + 1 || quest.title !== node.title || !sameList(quest.dependsOn, node.dependsOn)) {
           throw new Error(`Quest ${quest.questId} does not match its roadmap node.`);
         }
         for (const dependency of quest.dependsOn) {
@@ -226,11 +249,33 @@ export class GeneratedProjectWorldService {
       const selectedIsValid = state.selectedQuestId !== null && roadmapIds.includes(state.selectedQuestId);
       const selectedQuestId = selectedIsValid ? state.selectedQuestId! : roadmapIds[0]!;
       const repairNotice = selectedIsValid ? null : "The saved quest selection was unavailable. Forge focused the first roadmap quest in memory; choose a quest to persist the repair.";
-      const questBriefs: GeneratedQuestBrief[] = quests.map((quest) => ({
-        ...quest,
-        outcomeLabel: "Generated intended outcome",
-        whyItMatters: questWhyItMatters(quest, firstPlayable.outcome),
-        implementationLabel: "Quest planned · Codex implementation not enabled yet",
+      const questBriefs: GeneratedQuestBrief[] = await Promise.all(quests.map(async (quest) => {
+        const summary = this.generatedRunner
+          ? await this.generatedRunner.getSummary(projectId, quest.questId)
+          : {
+              eligibility: {
+                eligible: false,
+                reason: "Generated quest implementation is unavailable in this service composition.",
+                revision: quest.revision,
+                state: quest.state,
+              },
+              run: null,
+            };
+        const implementationLabel = quest.implementation !== "not_enabled"
+          ? `Quest completed · run ${quest.implementation.runId}`
+          : summary.run
+            ? `Forge run · ${summary.run.phase.replaceAll("_", " ")}`
+            : summary.eligibility.eligible
+              ? "Ready for bounded Forge implementation"
+              : `Forge recommendation · ${summary.eligibility.reason}`;
+        return {
+          ...quest,
+          outcomeLabel: "Generated intended outcome",
+          whyItMatters: quest.whyItMatters || questWhyItMatters(quest, firstPlayable.outcome),
+          implementationLabel,
+          eligibility: summary.eligibility,
+          run: summary.run,
+        };
       }));
       const authoritativeActivity: GeneratedActivity[] = chronicle.entries.map((item) => ({
         activityId: item.entryId,
@@ -282,12 +327,19 @@ export class GeneratedProjectWorldService {
         firstPlayable,
         roadmap,
         quests: questBriefs,
-        state: { currentView: worldView(state.currentView), selectedQuestId, repairNotice },
+        state: {
+          currentView: worldView(state.currentView),
+          selectedQuestId,
+          nextRecommendedQuestId: state.schemaVersion === 2
+            ? state.nextRecommendedQuestId
+            : roadmap.quests.find((quest) => quest.state === "available")?.questId ?? null,
+          repairNotice,
+        },
         chronicle,
         ideaSeeds,
         activity,
         documents: documentCandidates.map(([label, relativePath, owner]) => ({ label, relativePath, owner })),
-        actions: { launchGodot: true, openFolder: true, saveIdea: true, generatedQuestImplementation: false },
+        actions: { launchGodot: true, openFolder: true, saveIdea: true, generatedQuestImplementation: this.generatedRunner !== undefined },
       };
     } catch (error) {
       if (error instanceof GeneratedProjectWorldNotFoundError || error instanceof GeneratedProjectWorldConflictError) throw error;
@@ -310,7 +362,7 @@ export class GeneratedProjectWorldService {
     const { projectPath } = await this.resolveProject(projectId);
     const manifest = await readValidated(await this.ownedPath(projectPath, ".forge/project-manifest.json"), generatedProjectManifestSchema);
     const statePath = await this.ownedPath(projectPath, manifest.artifacts.projectState);
-    const previous = await readValidated(statePath, generatedProjectStateSchema);
+    const previous = await readValidated(statePath, generatedProjectStateAnySchema);
     const gitDirectory = await stat(path.join(projectPath, ".git")).catch(() => null);
     if (gitDirectory?.isDirectory()) {
       const relativeStatePath = path.relative(projectPath, statePath).replaceAll("\\", "/");
@@ -323,11 +375,14 @@ export class GeneratedProjectWorldService {
         throw new GeneratedProjectWorldConflictError(`Forge could not protect mutable project state in the local Git baseline: ${result.stderr.trim()}`);
       }
     }
-    await writeJsonAtomic(statePath, generatedProjectStateSchema.parse({
+    const nextState = {
       ...previous,
       currentView: input.currentView,
       selectedQuestId: input.selectedQuestId,
-    }));
+    };
+    await writeJsonAtomic(statePath, previous.schemaVersion === 2
+      ? generatedProjectStateV2Schema.parse(nextState)
+      : generatedProjectStateAnySchema.parse(nextState));
     return this.loadWorld(projectId);
   }
 

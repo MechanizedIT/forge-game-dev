@@ -2,21 +2,28 @@
 
 **Last updated:** 2026-07-14
 
-**Current milestone:** `v0.2 Task 8 — Public Showcase and Guided Walkthrough`
+**Current milestone:** `Alpha Task A — Generated Quest Completion Loop`
 
-**Overall state:** `COMPLETE / PASS` — the Task 7 local release remains verified, and the additional static public showcase is build-ready, validated, responsive, and deployment-ready.
+**Overall state:** `COMPLETE / PASS` — one real generated Gravity Tap quest completed through the governed Codex-to-play transaction and restored after a full host restart. The protected `v0.2.0` release and Task 8 showcase remain unchanged; Task A is implemented on its alpha branch only.
 
 ## What works now
 
 - `npm run forge` opens the v0.2 Living Game Workshop. `npm run forge:v0.1` remains the protected direct compatibility launch, and `npm run forge:v0.2` remains an explicit alias.
 - The sample journey reviews an exact three-file plan, requires approval, runs the official Codex SDK once, shows truthful stages, verifies scope and Godot behavior, launches the game, requires exact creator confirmation, persists completion, reloads, and resets safely.
 - The new-game journey uses real GPT-5.6 high reasoning, bounded clarification, strict blueprint validation, separate approvals, one controlled Top-down Arena starter, pinned Godot verification, a clean no-remote Git baseline, registry-last persistence, and a restart-safe Project World.
-- Generated Project World restores roadmap selection, quest briefs, documents, Chronicle, and idea seeds. Idea saves do not mutate roadmap or authoritative Chronicle. Generated-quest implementation is clearly unavailable.
+- Generated Project World restores roadmap selection, quest briefs, documents, Chronicle, and idea seeds. For the prepared Gravity Tap Quest 1, it now supports Adjust, Build, exact contract approval, staged progress, independent proof, visible play, creator confirmation, safe rollback, completion, and restart restoration.
 - Task 7 corrected visible Windows launching for generated Godot and File Explorer actions.
 - Edge `150.0.4078.65` and Playwright `1.61.1` pass 48 automated captures across six suites at desktop, tablet, and mobile sizes, including focus, reduced motion, failures, and recovery. One additional real creator-confirmed completion capture records the final gate.
 - A clean temporary checkout passed `npm ci`, Codex login status, first-time pinned Godot download, and demo preparation.
 - `npm run showcase` opens a separate static submission surface with a thirty-second product explanation, interface tour, two seven-step guided replays, current/future boundary, architecture, Task 7 proof, local setup, and truthful pending public links.
 - The showcase imports no operational Forge service, makes no runtime data call, and cannot run Codex or GPT-5.6, launch Godot or Git, access files, modify games, simulate an agent run, or persist visitor projects.
+
+## Alpha Task A evidence
+
+- Real project `gravity-tap-arena-6cbe7b2a54` began at clean baseline `7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8`; adjusted contract revision 2 changed exactly `scenes/main.tscn` and `scripts/objective_marker.gd` through official SDK thread `019f63c4-68cb-7770-a5c0-35a4ca735e7f`.
+- Run `run-q1-enter-the-arena-1784085217366-54d6c1f399c3` passed exact inventory boundary, pinned Godot project health, Forge-owned `gravity_orb_presence_v1` mechanic proof, and the creator's explicit **Worked** result after visible play.
+- Completion commit `f4cbba5928e22c0a3471239d7b67b490c7649a56` records the run ID. Quest, roadmap, Chronicle, docs, provenance, project state, commit tree, and ignored receipt agree after fresh-service reload and a full host process restart.
+- Full validation passes 98/98 tests, all 38 protected v0.1 tests, production build, showcase checks, context validation, and a 12-state Edge review with zero reported issues.
 
 ## Task 8 evidence
 
@@ -38,6 +45,6 @@
 2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
 3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-Generated-quest implementation, additional starters, import, generalized scanning, Graphify, Godot MCP, general chat, and sample art remain deferred.
+Task B's honest starter-aware intake, additional generated quests and starters, controlled new-file creation, import, generalized scanning, Graphify, Godot MCP, general chat, and sample art remain deferred. Task A currently proves one prepared existing-file-only Gravity Tap quest; it is not a claim that Forge can yet create arbitrary small Godot games end to end.
 
-See the [showcase README](showcase/README.md), [Task 8 plan](docs/plans/2026-07-14-v0.2-task-8-public-showcase.md), [Task 8 browser evidence](docs/evidence/2026-07-14-v0.2-task-8-showcase-review/README.md), [judge guide](docs/JUDGE_GUIDE.md), and final [Task 7 review](docs/reviews/2026-07-14-v0.2-task-7-hardening-review.md).
+See the [Alpha Task A review](docs/reviews/2026-07-14-alpha-task-a-generated-quest-loop-review.md), [real rehearsal evidence](docs/evidence/2026-07-14-alpha-task-a-real-rehearsal.json), [showcase README](showcase/README.md), [judge guide](docs/JUDGE_GUIDE.md), and final [Task 7 review](docs/reviews/2026-07-14-v0.2-task-7-hardening-review.md).
