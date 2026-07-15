@@ -3,6 +3,7 @@ import { access, lstat, readFile, realpath, rename, stat } from "node:fs/promise
 import path from "node:path";
 
 import {
+  generatedRoadmapV2Schema,
   godotVerificationResultSchema,
   projectRegistrySchema,
   roadmapSchema,
@@ -129,9 +130,11 @@ export class ProjectRegistryStore {
     const summaries = await Promise.all(registry.projects.map(async (project) => {
       const projectFile = await stat(path.join(project.canonicalPath, "project.godot")).catch(() => null);
       const available = projectFile?.isFile() ?? false;
-      const roadmap = available
-        ? roadmapSchema.safeParse(await readUnknown(path.join(project.canonicalPath, ".forge", "roadmap.json")))
+      const roadmapValue = available
+        ? await readUnknown(path.join(project.canonicalPath, ".forge", "roadmap.json"))
         : null;
+      const generatedRoadmap = available ? generatedRoadmapV2Schema.safeParse(roadmapValue) : null;
+      const legacyRoadmap = available && !generatedRoadmap?.success ? roadmapSchema.safeParse(roadmapValue) : null;
       const godot = available
         ? godotVerificationResultSchema.safeParse(await readUnknown(path.join(project.canonicalPath, ".forge", "local", "godot-verification.json")))
         : null;
@@ -147,7 +150,11 @@ export class ProjectRegistryStore {
         stateLabel: available
           ? "Created · Project World ready"
           : "Missing locally · registry entry preserved",
-        questCount: roadmap?.success ? roadmap.data.quests.length : null,
+        questCount: generatedRoadmap?.success
+          ? generatedRoadmap.data.quests.length
+          : legacyRoadmap?.success
+            ? legacyRoadmap.data.quests.length
+            : null,
         godotSmokeCheckPassed: godot?.success ?? false,
       } satisfies RecentProjectSummary;
     }));

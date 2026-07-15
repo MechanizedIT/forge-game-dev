@@ -113,7 +113,7 @@ test("real sample adapter distinguishes fresh, preserved, active, and completed 
 });
 
 test("v0.2 source connects the protected sample API and real blueprint planning", async () => {
-  const [app, newGame, generatedWorld, generatedShared, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, planningSdk, planningService, server] = await Promise.all([
+  const [app, newGame, generatedWorld, generatedShared, planningShared, adapter, styles, html, packageJsonText, visualReview, blueprintVisualReview, generatedQuestVisualReview, planningSdk, planningService, server] = await Promise.all([
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "App.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "NewGameFlow.tsx"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-v2", "GeneratedProjectWorld.tsx"), "utf8"),
@@ -125,6 +125,7 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
     readFile(path.join(repositoryRoot, "package.json"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2-blueprint.ts"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "visual-review", "v0.2-generated-quest.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "blueprint-planner", "sdk.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "blueprint-planner", "service.ts"), "utf8"),
     readFile(path.join(repositoryRoot, "src", "dashboard-host", "server.ts"), "utf8"),
@@ -170,9 +171,22 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(generatedWorld, /playable-state preview/i);
   assert.match(generatedWorld, /NOT A CAPTURED GODOT FRAME/);
   assert.match(generatedShared, /Generated intended outcome/);
-  assert.match(generatedShared, /Quest planned · Codex implementation not enabled yet/);
+  assert.match(generatedShared, /GeneratedQuestRunSnapshot/);
+  assert.match(generatedShared, /generatedQuestImplementation: boolean/);
   assert.match(generatedShared, /Idea activity · derived from saved seed/);
-  assert.match(generatedWorld, /No Build button, Codex run, project mutation, or progress claim/);
+  assert.match(generatedWorld, /Adjust outcome/);
+  assert.match(generatedWorld, /Build with Forge/);
+  assert.match(generatedWorld, /Approve exact contract/);
+  assert.match(generatedWorld, /Boundary/);
+  assert.match(generatedWorld, /Project health/);
+  assert.match(generatedWorld, /Mechanic/);
+  assert.match(generatedWorld, /Your playtest/);
+  assert.match(generatedWorld, /Play the real game/);
+  assert.match(generatedWorld, />Worked</);
+  assert.match(generatedWorld, /Did not work/);
+  assert.match(generatedWorld, /Not ready/);
+  assert.match(generatedWorld, /Roll back reviewed changes/);
+  assert.match(generatedWorld, /Forge recommendation/);
   assert.match(generatedWorld, /aria-current/);
   assert.match(generatedWorld, /role="status"/);
   assert.match(generatedWorld, /role="alert"/);
@@ -209,6 +223,11 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(blueprintVisualReview, /planning-desktop/);
   assert.match(blueprintVisualReview, /blueprint-review-mobile/);
   assert.match(blueprintVisualReview, /blueprint-ready-desktop/);
+  assert.match(generatedQuestVisualReview, /generated-contract-mobile/);
+  assert.match(generatedQuestVisualReview, /generated-progress-desktop/);
+  assert.match(generatedQuestVisualReview, /generated-proof-playtest-desktop/);
+  assert.match(generatedQuestVisualReview, /generated-complete-desktop/);
+  assert.match(generatedQuestVisualReview, /generated-safe-rollback-desktop/);
 
   const packageJson = JSON.parse(packageJsonText) as {
     scripts: Record<string, string>;
@@ -219,6 +238,7 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.equal(packageJson.scripts["forge:v0.2"], "npm run dashboard:build && npm run dashboard:host -- --v0.2");
   assert.equal(packageJson.scripts["visual:review:v0.2"], "npm run dashboard:build && tsx src/visual-review/v0.2.ts");
   assert.equal(packageJson.scripts["visual:review:v0.2:blueprint"], "npm run dashboard:build && tsx src/visual-review/v0.2-blueprint.ts");
+  assert.equal(packageJson.scripts["visual:review:alpha:generated-quest"], "npm run dashboard:build && tsx src/visual-review/v0.2-generated-quest.ts");
   assert.match(visualReview, /spawn\(process\.execPath, \[tsxCli, "src\/dashboard-host\/cli\.ts", "--v0\.2"\]/);
   assert.match(visualReview, /FORGE_REVIEW_EVIDENCE_ROOT/);
   assert.equal(packageJson.devDependencies["@playwright/test"], "1.61.1");

@@ -323,6 +323,78 @@ test("the local HTTP host serves the dashboard and validated state API", async (
   });
 });
 
+test("generated quest routes require loopback same-origin requests and reject browser authority", async () => {
+  await withForgeHome(async (forgeHome) => {
+    const staticRoot = path.join(path.dirname(forgeHome), "generated-static");
+    await mkdir(staticRoot, { recursive: true });
+    await writeFile(path.join(staticRoot, "index.html"), "<main>Generated route test</main>", "utf8");
+    const calls: string[] = [];
+    const result = { projectId: "gravity-tap", questId: "q1-enter-the-arena", phase: "contract_review" };
+    const generatedRunner = {
+      getSummary: async () => ({ eligibility: { eligible: true, reason: null, revision: 1, state: "available" }, run: result }),
+      adjust: async () => { calls.push("adjust"); return result; },
+      defer: async () => { calls.push("defer"); return result; },
+      prepare: async () => { calls.push("prepare"); return result; },
+      approve: async () => { calls.push("approve"); return result; },
+      start: async () => { calls.push("start"); return result; },
+      cancel: async () => { calls.push("cancel"); return result; },
+      play: async () => { calls.push("play"); return result; },
+      confirm: async () => { calls.push("confirm"); return result; },
+      rollback: async () => { calls.push("rollback"); return result; },
+      subscribe: () => () => {},
+    } as unknown as Parameters<typeof createForgeDashboardServer>[5];
+    const server = createForgeDashboardServer(
+      createService(forgeHome),
+      staticRoot,
+      undefined,
+      undefined,
+      undefined,
+      generatedRunner,
+    );
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+      const address = server.address() as AddressInfo;
+      const base = `http://127.0.0.1:${address.port}`;
+      const route = `${base}/api/projects/gravity-tap/quests/q1-enter-the-arena`;
+
+      const missingOrigin = await fetch(`${route}/prepare`, { method: "POST" });
+      assert.equal(missingOrigin.status, 400);
+      assert.deepEqual(calls, []);
+
+      const crossOrigin = await fetch(`${route}/prepare`, {
+        method: "POST",
+        headers: { origin: "https://example.com" },
+      });
+      assert.equal(crossOrigin.status, 400);
+      assert.deepEqual(calls, []);
+
+      const prepared = await fetch(`${route}/prepare`, {
+        method: "POST",
+        headers: { origin: base },
+      });
+      assert.equal(prepared.status, 201);
+      assert.deepEqual(calls, ["prepare"]);
+
+      const injectedAuthority = await fetch(`${route}/start`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: base },
+        body: JSON.stringify({ model: "caller-choice", projectPath: "C:\\outside" }),
+      });
+      assert.equal(injectedAuthority.status, 400);
+      assert.deepEqual(calls, ["prepare"]);
+
+      const unsafeId = await fetch(`${base}/api/projects/Gravity-Tap/quests/q1-enter-the-arena/prepare`, {
+        method: "POST",
+        headers: { origin: base },
+      });
+      assert.equal(unsafeId.status, 400);
+      assert.deepEqual(calls, ["prepare"]);
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  });
+});
+
 test("the command-line quest path still cancels safely without interactive approval", async () => {
   await withForgeHome(async (forgeHome) => {
     const tsxCli = path.join(repositoryRoot, "node_modules", "tsx", "dist", "cli.mjs");

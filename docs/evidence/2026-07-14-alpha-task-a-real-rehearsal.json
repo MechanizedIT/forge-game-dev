@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-07-14",
+  "task": "Forge Alpha Task A — generated quest completion loop",
+  "reviewedPlanningCommit": "e2e4e228a9c1cf68064a83733c10ca06f793fcca",
+  "implementationBranch": "codex/alpha-task-a-generated-quest-loop",
+  "protectedRelease": {
+    "tag": "v0.2.0",
+    "commitSha": "08cffa71cd802b14c6c72ad343f9fa5b4007a482"
+  },
+  "project": {
+    "projectId": "gravity-tap-arena-6cbe7b2a54",
+    "baselineCommitSha": "7dbbbf43f206cd5334b226d6c9a98fbfcf0e10a8",
+    "adjustmentCommitSha": "d066a7e1d2f3851b8e78abe8bdb5fd921cb5f2b3",
+    "completionCommitSha": "f4cbba5928e22c0a3471239d7b67b490c7649a56",
+    "completionTreeSha": "1fd2f3045f65d1d4ec70475666ea089a9ae12d85",
+    "completionSubject": "forge: complete q1-enter-the-arena [run:run-q1-enter-the-arena-1784085217366-54d6c1f399c3]",
+    "cleanAfterCompletion": true,
+    "remotes": []
+  },
+  "run": {
+    "runId": "run-q1-enter-the-arena-1784085217366-54d6c1f399c3",
+    "codexThreadId": "019f63c4-68cb-7770-a5c0-35a4ca735e7f",
+    "contractFingerprint": "3b0c1598abcf2d645010be1555dbc17ee48651ee9074f347a9927c7b8ebfa712",
+    "questRevision": 2,
+    "verificationProfile": "gravity_orb_presence_v1",
+    "changedFiles": [
+      "scenes/main.tscn",
+      "scripts/objective_marker.gd"
+    ],
+    "proof": {
+      "boundary": "passed",
+      "projectHealth": "passed",
+      "mechanic": "passed",
+      "creator": "passed"
+    },
+    "creatorResult": "worked",
+    "phase": "completed",
+    "error": null
+  },
+  "completionLinkage": {
+    "questState": "completed",
+    "questRunIdMatches": true,
+    "roadmapStates": [
+      "q1-enter-the-arena:completed",
+      "q2-move-into-position:available",
+      "q3-create-the-gravity-well:blocked",
+      "q4-pull-the-orb:blocked"
+    ],
+    "nextRecommendedQuestId": "q2-move-into-position",
+    "chronicleEvent": "quest_completed",
+    "chronicleRunIdMatches": true,
+    "receiptCommitMatchesHead": true,
+    "activeLockRemoved": true,
+    "freshServiceRestoredCompletion": true,
+    "freshHostProcessRestoredCompletion": true
+  },
+  "rollbackRehearsal": {
+    "source": "temporary isolated checkout of the same verified Gravity Tap baseline",
+    "controlledFailure": "SDK failure after one approved scene edit",
+    "safeRollbackOffered": true,
+    "exactPreimageRestored": true,
+    "questCompleted": false
+  },
+  "browserReview": {
+    "browser": "Microsoft Edge 150.0.4078.65",
+    "screenshots": 12,
+    "issues": 0,
+    "result": "PASS",
+    "report": "docs/evidence/2026-07-14-alpha-task-a-browser-review/browser-review.json"
+  },
+  "repositoryGates": {
+    "contextCheck": "PASS — 11 subsystems, 10 routes, 252 path references, 67 test references",
+    "fullCheck": "PASS — 98 tests",
+    "protectedV01": "PASS — 38 tests",
+    "dashboardBuild": "PASS",
+    "showcaseCheck": "PASS — 5 tests plus build and validation",
+    "diffCheck": "PASS"
+  }
+}

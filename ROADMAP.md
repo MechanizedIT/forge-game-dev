@@ -151,6 +151,18 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Judges have a deploy-ready, no-install explanation and guided replay while the full Forge application, v0.2 release tag, local safety boundaries, and Task 7 evidence remain unchanged.
 
+#### Alpha Task A — Generated Quest Completion Loop
+
+- [x] Add a sibling generated-project runner with an exact fingerprinted implementation contract and a maximum four-existing-file boundary.
+- [x] Govern execution with registered canonical projects, clean expected local Git, no remotes, official SDK workspace restrictions, durable journaling, cancellation, and restart recovery.
+- [x] Separate boundary, project-health, mechanic, and creator proof; require visible play and explicit creator success before completion.
+- [x] Restore only run-owned exact preimages after safe failure and refuse rollback over concurrent edits.
+- [x] Atomically reconcile quest, roadmap, Chronicle, deterministic records, project state, provenance, completion Git commit, and ignored actual-SHA receipt.
+- [x] Complete Gravity Tap Arena Quest 1 through a real official SDK run, creator-selected **Worked**, fresh-service reload, and full host restart.
+- [x] Preserve the sample runner, unrelated generated projects, showcase, and protected `v0.2.0` tag.
+
+**Exit:** One prepared generated quest now completes as a bounded, verified, creator-gated transaction. This alpha branch is not the `v0.2.0` release, supports only the prepared existing-file contract, and does not include Task B's starter-aware fresh-intake work.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -185,4 +197,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Task 8 is complete on `feature/build-week-showcase`. Remaining submission actions are owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a license, deploy the static site, and push or submit only when authorized. Generated-quest Codex implementation remains a separate future task.
+Alpha Task A is complete on `codex/alpha-task-a-generated-quest-loop` and awaits owner review/merge. Task B remains a separately scoped and separately approved future implementation. Submission actions remain owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a license, deploy the static site, and push or submit only when authorized.

@@ -22,6 +22,7 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 | Current milestone truth | [Project status](../PROJECT_STATUS.md) |
 | Required/deferred sequence | [Roadmap](../ROADMAP.md) |
 | Approved v0.2 journeys and boundaries | [Plan](../PLAN.md) |
+| Proposed post-v0.2 alpha proof-game scope | [Alpha proof-game plan](plans/alpha/README.md) |
 | Original architecture decisions | [Build plan](BUILD_PLAN.md) |
 | Sample CLI and evidence behavior | [Quest CLI guide](QUEST_CLI.md) |
 | Godot fixture/bootstrap operation | [Godot fixture guide](GODOT_FIXTURE.md) |

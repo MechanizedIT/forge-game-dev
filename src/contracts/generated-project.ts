@@ -115,6 +115,86 @@ export const generatedQuestArtifactSchema = z.object({
   implementation: z.literal("not_enabled"),
 }).strict();
 
+export const GENERATED_QUEST_PLAN_STATES = [
+  "planned",
+  "available",
+  "blocked",
+  "deferred",
+  "completed",
+] as const;
+
+export const generatedQuestPlanStateSchema = z.enum(GENERATED_QUEST_PLAN_STATES);
+export const generatedEditableFileRoleSchema = z.enum(["main_scene", "objective_visual"]);
+export const generatedVerificationProfileSchema = z.literal("gravity_orb_presence_v1");
+
+const generatedQuestImplementationSchema = z.union([
+  z.literal("not_enabled"),
+  z.object({
+    status: z.literal("completed"),
+    runId: slugSchema,
+    completedAt: timestampSchema,
+    changedFiles: z.array(relativePathSchema).min(1).max(4),
+    verificationProfile: generatedVerificationProfileSchema,
+    contractFingerprint: sha256Schema,
+    creatorConfirmation: z.literal("worked"),
+  }).strict(),
+]);
+
+export const generatedQuestArtifactV2Schema = z.object({
+  schemaVersion: z.literal(2),
+  projectId: slugSchema,
+  questId: slugSchema,
+  revision: z.number().int().positive(),
+  sequence: z.number().int().positive().max(5),
+  title: nonEmptyStringSchema,
+  visibleOutcome: z.string().trim().min(10).max(280),
+  whyItMatters: z.string().trim().min(10).max(500),
+  currentPlayableFacts: z.array(z.string().trim().min(1).max(240)).min(1).max(12),
+  dependsOn: z.array(slugSchema).max(4),
+  state: generatedQuestPlanStateSchema,
+  scope: z.object({
+    included: z.array(z.string().trim().min(1).max(240)).min(1).max(12),
+    excluded: z.array(z.string().trim().min(1).max(240)).min(1).max(12),
+  }).strict(),
+  acceptanceCriteria: z.array(z.object({
+    id: z.string().regex(/^AC-[1-9][0-9]*$/u),
+    criterion: nonEmptyStringSchema,
+    verificationIds: z.array(z.string().regex(/^V-[1-9][0-9]*$/u)).min(1),
+  }).strict()).min(1).max(8),
+  verificationIdeas: z.array(z.object({
+    id: z.string().regex(/^V-[1-9][0-9]*$/u),
+    idea: nonEmptyStringSchema,
+  }).strict()).min(1).max(8),
+  editableFileRoles: z.array(generatedEditableFileRoleSchema).min(1).max(4),
+  verificationProfile: generatedVerificationProfileSchema,
+  implementation: generatedQuestImplementationSchema,
+}).strict();
+
+export const generatedQuestArtifactAnySchema = z.union([
+  generatedQuestArtifactV2Schema,
+  generatedQuestArtifactSchema,
+]);
+
+export const generatedRoadmapQuestV2Schema = z.object({
+  questId: slugSchema,
+  revision: z.number().int().positive(),
+  title: nonEmptyStringSchema,
+  summary: nonEmptyStringSchema,
+  state: generatedQuestPlanStateSchema,
+  dependsOn: z.array(slugSchema),
+  position: z.object({
+    column: z.number().int().nonnegative(),
+    row: z.number().int().nonnegative(),
+  }).strict(),
+}).strict();
+
+export const generatedRoadmapV2Schema = z.object({
+  schemaVersion: z.literal(2),
+  projectId: slugSchema,
+  updatedAt: timestampSchema,
+  quests: z.array(generatedRoadmapQuestV2Schema).min(1).max(5),
+}).strict();
+
 export const generatedProjectStateSchema = z.object({
   schemaVersion: schemaVersionSchema,
   projectId: slugSchema,
@@ -122,6 +202,20 @@ export const generatedProjectStateSchema = z.object({
   selectedQuestId: slugSchema.nullable(),
   lastOpenedAt: timestampSchema,
 }).strict();
+
+export const generatedProjectStateV2Schema = z.object({
+  schemaVersion: z.literal(2),
+  projectId: slugSchema,
+  currentView: z.enum(["project_created", "project_world", "quest_brief", "chronicle", "documents"]),
+  selectedQuestId: slugSchema.nullable(),
+  nextRecommendedQuestId: slugSchema.nullable(),
+  lastOpenedAt: timestampSchema,
+}).strict();
+
+export const generatedProjectStateAnySchema = z.union([
+  generatedProjectStateV2Schema,
+  generatedProjectStateSchema,
+]);
 
 export const chronicleSchema = z.object({
   schemaVersion: schemaVersionSchema,
@@ -133,6 +227,34 @@ export const chronicleSchema = z.object({
     summary: nonEmptyStringSchema,
   }).strict()).min(1),
 }).strict();
+
+const projectCreatedChronicleEntryV2Schema = z.object({
+  entryId: slugSchema,
+  type: z.literal("project_created"),
+  occurredAt: timestampSchema,
+  summary: nonEmptyStringSchema,
+}).strict();
+
+const questCompletedChronicleEntrySchema = z.object({
+  entryId: slugSchema,
+  type: z.literal("quest_completed"),
+  occurredAt: timestampSchema,
+  summary: nonEmptyStringSchema,
+  questId: slugSchema,
+  runId: slugSchema,
+  visibleOutcome: nonEmptyStringSchema,
+}).strict();
+
+export const chronicleV2Schema = z.object({
+  schemaVersion: z.literal(2),
+  projectId: slugSchema,
+  entries: z.array(z.union([
+    projectCreatedChronicleEntryV2Schema,
+    questCompletedChronicleEntrySchema,
+  ])).min(1),
+}).strict();
+
+export const chronicleAnySchema = z.union([chronicleV2Schema, chronicleSchema]);
 
 export const ideaSeedSchema = z.object({
   ideaSeedId: slugSchema,
@@ -245,8 +367,16 @@ export const creationFailureRecordSchema = z.object({
 export type TopDownArenaStarterManifest = z.infer<typeof topDownArenaStarterManifestSchema>;
 export type GeneratedProjectManifest = z.infer<typeof generatedProjectManifestSchema>;
 export type GeneratedQuestArtifact = z.infer<typeof generatedQuestArtifactSchema>;
+export type GeneratedQuestArtifactV2 = z.infer<typeof generatedQuestArtifactV2Schema>;
+export type GeneratedQuestArtifactAny = z.infer<typeof generatedQuestArtifactAnySchema>;
+export type GeneratedQuestPlanState = z.infer<typeof generatedQuestPlanStateSchema>;
+export type GeneratedRoadmapV2 = z.infer<typeof generatedRoadmapV2Schema>;
 export type GeneratedProjectState = z.infer<typeof generatedProjectStateSchema>;
+export type GeneratedProjectStateV2 = z.infer<typeof generatedProjectStateV2Schema>;
+export type GeneratedProjectStateAny = z.infer<typeof generatedProjectStateAnySchema>;
 export type Chronicle = z.infer<typeof chronicleSchema>;
+export type ChronicleV2 = z.infer<typeof chronicleV2Schema>;
+export type ChronicleAny = z.infer<typeof chronicleAnySchema>;
 export type IdeaSeed = z.infer<typeof ideaSeedSchema>;
 export type IdeaSeeds = z.infer<typeof ideaSeedsSchema>;
 export type ProjectRegistry = z.infer<typeof projectRegistrySchema>;

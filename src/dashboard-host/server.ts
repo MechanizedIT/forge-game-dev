@@ -21,6 +21,16 @@ import {
   GeneratedProjectWorldService,
 } from "../generated-project-world/service.js";
 import type { GeneratedWorldStateInput, GeneratedWorldView } from "../generated-project-world/shared.js";
+import {
+  GeneratedQuestRunConflictError,
+  GeneratedQuestRunNotFoundError,
+} from "../generated-quest-runner/service.js";
+import type { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
+import type { GeneratedQuestRunEvent } from "../generated-quest-runner/shared.js";
+
+type GeneratedQuestRunnerHost = Pick<GeneratedQuestRunnerService,
+  "getSummary" | "adjust" | "defer" | "prepare" | "approve" | "start" | "cancel" | "play" | "confirm" | "rollback" | "subscribe"
+>;
 
 const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -152,6 +162,41 @@ function openProjectCreationEventStream(
   });
 }
 
+function openGeneratedRunEventStream(
+  request: IncomingMessage,
+  response: ServerResponse,
+  generatedRunner: GeneratedQuestRunnerHost,
+  projectId: string,
+  questId: string,
+): void {
+  response.writeHead(200, {
+    "content-type": "text/event-stream",
+    "cache-control": "no-cache, no-transform",
+    connection: "keep-alive",
+  });
+  response.write(`data: ${JSON.stringify({ type: "refresh", projectId, questId } satisfies GeneratedQuestRunEvent)}\n\n`);
+  const unsubscribe = generatedRunner.subscribe((event) => {
+    if (event.projectId === projectId && event.questId === questId) response.write(`data: ${JSON.stringify(event)}\n\n`);
+  });
+  const heartbeat = setInterval(() => response.write(": keep-alive\n\n"), 15_000);
+  request.on("close", () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  });
+}
+
+function safePathId(value: string | undefined, label: string): string {
+  const decoded = decodeURIComponent(value ?? "");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(decoded)) throw new Error(`A safe ${label} is required.`);
+  return decoded;
+}
+
+function requireExactKeys(body: Record<string, unknown>, keys: string[], message: string): void {
+  const actual = Object.keys(body).sort();
+  const expected = [...keys].sort();
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message);
+}
+
 function requireSameOrigin(request: IncomingMessage): void {
   const origin = request.headers.origin;
   const host = request.headers.host;
@@ -180,6 +225,7 @@ export function createForgeDashboardServer(
   planningService?: BlueprintPlanningService,
   creationService?: ProjectCreationService,
   generatedWorldService?: GeneratedProjectWorldService,
+  generatedRunner?: GeneratedQuestRunnerHost,
 ): Server {
   const resolvedStaticRoot = path.resolve(staticRoot);
   let creationMutationToken = randomBytes(32).toString("hex");
@@ -222,6 +268,82 @@ export function createForgeDashboardServer(
       if (request.method === "GET" && url.pathname === "/api/projects/events" && creationService) {
         openProjectCreationEventStream(request, response, creationService);
         return;
+      }
+      const generatedQuestRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/quests\/([^/]+)\/(adjust|defer|prepare|approve|start|run|events|cancel|play|confirm|rollback)$/u);
+      if (generatedQuestRoute && generatedRunner) {
+        const projectId = safePathId(generatedQuestRoute[1], "project ID");
+        const questId = safePathId(generatedQuestRoute[2], "quest ID");
+        const action = generatedQuestRoute[3]!;
+        if (request.method === "GET" && action === "run") {
+          const summary = await generatedRunner.getSummary(projectId, questId);
+          if (!summary.run) throw new GeneratedQuestRunNotFoundError("No generated run exists for this quest.");
+          sendJson(response, 200, summary.run);
+          return;
+        }
+        if (request.method === "GET" && action === "events") {
+          openGeneratedRunEventStream(request, response, generatedRunner, projectId, questId);
+          return;
+        }
+        if (request.method !== "POST") {
+          sendJson(response, 404, { error: "Not found" });
+          return;
+        }
+        requireSameOrigin(request);
+        const body = await readJsonBody(request);
+        if (action === "adjust") {
+          requireExactKeys(body, ["expectedRevision", "visibleOutcome", "includedScope"], "Adjust accepts only expectedRevision, visibleOutcome, and includedScope.");
+          if (!Number.isInteger(body.expectedRevision) || typeof body.visibleOutcome !== "string" || !Array.isArray(body.includedScope) || body.includedScope.some((item) => typeof item !== "string")) throw new Error("Adjust requires a revision, visible outcome, and string scope list.");
+          sendJson(response, 200, await generatedRunner.adjust(projectId, questId, {
+            expectedRevision: body.expectedRevision as number,
+            visibleOutcome: body.visibleOutcome,
+            includedScope: body.includedScope as string[],
+          }));
+          return;
+        }
+        if (action === "defer") {
+          requireExactKeys(body, ["expectedRevision"], "Defer accepts only expectedRevision.");
+          if (!Number.isInteger(body.expectedRevision)) throw new Error("Defer requires the current quest revision.");
+          sendJson(response, 200, await generatedRunner.defer(projectId, questId, body.expectedRevision as number));
+          return;
+        }
+        if (action === "prepare") {
+          requireExactKeys(body, [], "Prepare accepts no browser-supplied authority values.");
+          sendJson(response, 201, await generatedRunner.prepare(projectId, questId));
+          return;
+        }
+        if (action === "approve") {
+          requireExactKeys(body, ["fingerprint", "decision"], "Approve accepts only the reviewed fingerprint and decision.");
+          if (typeof body.fingerprint !== "string" || body.decision !== "APPROVE") throw new Error("Approve requires the exact contract fingerprint and APPROVE decision.");
+          sendJson(response, 200, await generatedRunner.approve(projectId, questId, body.fingerprint, "APPROVE"));
+          return;
+        }
+        if (action === "start") {
+          requireExactKeys(body, [], "Start accepts no browser-supplied path, model, command, verifier, or Git values.");
+          sendJson(response, 202, await generatedRunner.start(projectId, questId));
+          return;
+        }
+        if (action === "cancel") {
+          requireExactKeys(body, ["decision"], "Cancel accepts only the exact decision.");
+          if (body.decision !== "CANCEL") throw new Error("Cancel requires the exact CANCEL decision.");
+          sendJson(response, 200, await generatedRunner.cancel(projectId, questId, "CANCEL"));
+          return;
+        }
+        if (action === "play") {
+          requireExactKeys(body, [], "Play accepts no caller-supplied path or process arguments.");
+          sendJson(response, 202, await generatedRunner.play(projectId, questId));
+          return;
+        }
+        if (action === "confirm") {
+          requireExactKeys(body, ["result"], "Confirm accepts only the creator result.");
+          sendJson(response, 200, await generatedRunner.confirm(projectId, questId, body.result));
+          return;
+        }
+        if (action === "rollback") {
+          requireExactKeys(body, ["confirmation"], "Rollback accepts only the exact reviewed confirmation.");
+          if (body.confirmation !== "ROLL BACK REVIEWED CHANGES") throw new Error("Rollback requires the exact reviewed confirmation.");
+          sendJson(response, 200, await generatedRunner.rollback(projectId, questId, "ROLL BACK REVIEWED CHANGES"));
+          return;
+        }
       }
       const generatedWorldMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/world$/u);
       if (request.method === "GET" && generatedWorldMatch && generatedWorldService) {
@@ -391,9 +513,9 @@ export function createForgeDashboardServer(
       }
       sendJson(response, 404, { error: "Not found" });
     } catch (error) {
-      const status = error instanceof GeneratedProjectWorldNotFoundError
+      const status = error instanceof GeneratedProjectWorldNotFoundError || error instanceof GeneratedQuestRunNotFoundError
         ? 404
-        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError
+        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError || error instanceof GeneratedQuestRunConflictError
           ? 409
           : 400;
       sendJson(response, status, {

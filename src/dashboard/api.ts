@@ -20,6 +20,13 @@ import type {
   GeneratedProjectWorldSnapshot,
   GeneratedWorldStateInput,
 } from "../generated-project-world/shared.js";
+import type {
+  GeneratedQuestAdjustmentInput,
+  GeneratedQuestPlanMutationResult,
+  GeneratedQuestRunEvent,
+  GeneratedQuestRunSnapshot,
+} from "../generated-quest-runner/shared.js";
+import type { GeneratedCreatorResult } from "../contracts/index.js";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
@@ -202,6 +209,102 @@ export function openCreatedProjectFolder(projectId: string): Promise<{ opened: t
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ projectId }),
   });
+}
+
+function generatedQuestUrl(projectId: string, questId: string, action: string): string {
+  return `/api/projects/${encodeURIComponent(projectId)}/quests/${encodeURIComponent(questId)}/${action}`;
+}
+
+export function adjustGeneratedQuest(
+  projectId: string,
+  questId: string,
+  input: GeneratedQuestAdjustmentInput,
+): Promise<GeneratedQuestPlanMutationResult> {
+  return request(generatedQuestUrl(projectId, questId, "adjust"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export function deferGeneratedQuest(
+  projectId: string,
+  questId: string,
+  expectedRevision: number,
+): Promise<GeneratedQuestPlanMutationResult> {
+  return request(generatedQuestUrl(projectId, questId, "defer"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ expectedRevision }),
+  });
+}
+
+export function prepareGeneratedQuest(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "prepare"), { method: "POST" });
+}
+
+export function approveGeneratedQuest(
+  projectId: string,
+  questId: string,
+  fingerprint: string,
+): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "approve"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ fingerprint, decision: "APPROVE" }),
+  });
+}
+
+export function startGeneratedQuest(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "start"), { method: "POST" });
+}
+
+export function loadGeneratedQuestRun(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "run"));
+}
+
+export function cancelGeneratedQuest(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "cancel"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ decision: "CANCEL" }),
+  });
+}
+
+export function playGeneratedQuest(projectId: string, questId: string): Promise<GeneratedLaunchResponse> {
+  return request(generatedQuestUrl(projectId, questId, "play"), { method: "POST" });
+}
+
+export function confirmGeneratedQuest(
+  projectId: string,
+  questId: string,
+  result: GeneratedCreatorResult,
+): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "confirm"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ result }),
+  });
+}
+
+export function rollbackGeneratedQuest(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "rollback"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ confirmation: "ROLL BACK REVIEWED CHANGES" }),
+  });
+}
+
+export function subscribeToGeneratedQuest(
+  projectId: string,
+  questId: string,
+  onEvent: (event: GeneratedQuestRunEvent) => void,
+  onDisconnect: () => void,
+): () => void {
+  const stream = new EventSource(generatedQuestUrl(projectId, questId, "events"));
+  stream.onmessage = (message) => onEvent(JSON.parse(message.data) as GeneratedQuestRunEvent);
+  stream.onerror = onDisconnect;
+  return () => stream.close();
 }
 
 export function subscribeToProjectCreation(
