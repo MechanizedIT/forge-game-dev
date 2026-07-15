@@ -9,7 +9,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit && tsc -p tsconfig.dashboard.json --noEmit",
-    "test": "tsx --test tests/contracts.test.ts tests/project-model.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/generated-workspace.test.ts tests/blueprint-planning.test.ts tests/project-creation.test.ts tests/generated-project-world.test.ts tests/generated-quest-runner.test.ts tests/generated-quest-recovery.test.ts tests/generated-quest-completion.test.ts tests/system-roadmap-planning.test.ts",
+    "test": "tsx --test tests/contracts.test.ts tests/project-model.test.ts tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/godot-executable.test.ts tests/godot-bootstrap.test.ts tests/legacy-sample.test.ts tests/dashboard-v2.test.ts tests/generated-workspace.test.ts tests/blueprint-planning.test.ts tests/project-creation.test.ts tests/generated-project-world.test.ts tests/generated-quest-runner.test.ts tests/generated-quest-recovery.test.ts tests/generated-quest-completion.test.ts tests/system-roadmap-planning.test.ts tests/system-quest-planning.test.ts",
     "check": "npm run typecheck && npm test",
     "check:v0.1": "npm run typecheck && npm run dashboard:build && tsx --test tests/prepared-quest.test.ts tests/quest-runner.test.ts tests/quest-completion.test.ts tests/dashboard-host.test.ts tests/workspace.test.ts tests/legacy-sample.test.ts",
     "context:check": "node scripts/validate-repository-context.mjs",
@@ -36,6 +36,7 @@
     "visual:review:v0.2:project-world": "npm run dashboard:build && tsx src/visual-review/v0.2-project-world.ts",
     "visual:review:alpha:generated-quest": "npm run dashboard:build && tsx src/visual-review/v0.2-generated-quest.ts",
     "visual:review:alpha:system-roadmap": "npm run dashboard:build && tsx src/visual-review/v0.2-system-roadmap.ts",
+    "visual:review:alpha:system-quest": "npm run dashboard:build && tsx src/visual-review/v0.2-system-quest.ts",
     "visual:review:alpha:task-b": "npm run dashboard:build && tsx src/visual-review/alpha-task-b.ts",
     "blueprint:rehearse": "tsx src/blueprint-planner/rehearsal.ts",
     "project:create:rehearse": "tsx src/project-creation/rehearsal.ts",

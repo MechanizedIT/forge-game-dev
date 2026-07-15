@@ -59,14 +59,14 @@ test("workspace presentation uses systems and quests from the open Project Model
   assert.equal(presentation.dock.playEnabled, true);
 });
 
-test("an empty system is selectable without inventing a quest or refinement action", () => {
+test("an empty system is selectable and offers the bounded refinement action without inventing a quest", () => {
   const presentation = buildGeneratedWorkspacePresentation(snapshot(), "camera-feel");
   assert.equal(presentation.selectedSystem.systemId, "camera-feel");
   assert.deepEqual(presentation.selectedSystem.quests, []);
   assert.equal(presentation.selectedQuest, null);
   assert.equal(presentation.context.kind, "system");
-  assert.equal(presentation.context.primaryActionLabel, null);
-  assert.match(presentation.context.recommendation, /next milestone/i);
+  assert.equal(presentation.context.primaryActionLabel, "Refine into quests");
+  assert.match(presentation.context.recommendation, /suggest a few small/i);
 });
 
 test("an active work session disables Play but keeps safe folder and Toolbox access", () => {

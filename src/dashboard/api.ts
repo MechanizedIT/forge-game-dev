@@ -15,6 +15,10 @@ import type {
   SystemRoadmapPlanningSnapshot,
 } from "../blueprint-planner/system-roadmap.js";
 import type {
+  SystemQuestPlanningEvent,
+  SystemQuestPlanningSnapshot,
+} from "../blueprint-planner/system-quest.js";
+import type {
   CreatedProjectSummary,
   ProjectCreationEvent,
   ProjectCreationStateResponse,
@@ -24,6 +28,7 @@ import type {
   GeneratedLaunchResponse,
   GeneratedProjectWorldSnapshot,
   GeneratedWorldStateInput,
+  SystemQuestFileCandidate,
 } from "../generated-project-world/shared.js";
 import type {
   GeneratedQuestAdjustmentInput,
@@ -286,6 +291,57 @@ export function subscribeToSystemRoadmapPlanning(
 ): () => void {
   const stream = new EventSource(systemPlanningUrl(projectId, "events"));
   stream.onmessage = (message) => onEvent(JSON.parse(message.data) as SystemRoadmapPlanningEvent);
+  stream.onerror = onDisconnect;
+  return () => stream.close();
+}
+
+function systemQuestPlanningUrl(projectId: string, systemId: string, action: string): string {
+  return `/api/projects/${encodeURIComponent(projectId)}/systems/${encodeURIComponent(systemId)}/quest-planning/${action}`;
+}
+
+export function loadSystemQuestPlanning(projectId: string, systemId: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "state"));
+}
+
+export function listSystemQuestFiles(projectId: string, systemId: string): Promise<SystemQuestFileCandidate[]> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "files"));
+}
+
+export function startSystemQuestPlanning(projectId: string, systemId: string, description: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "start"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ description }) });
+}
+
+export function answerSystemQuestPlanning(projectId: string, systemId: string, answers: Array<{ questionId: string; answer: string }>): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "answers"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ answers }) });
+}
+
+export function reviseSystemQuestPlanning(projectId: string, systemId: string, revision: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "revise"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ request: revision }) });
+}
+
+export function retrySystemQuestPlanning(projectId: string, systemId: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "retry"), { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+}
+
+export function acceptSystemQuestPlanning(projectId: string, systemId: string, fingerprint: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "accept-quests"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "ACCEPT SYSTEM QUESTS", fingerprint }) });
+}
+
+export function reviewSystemQuestWorkOrder(projectId: string, systemId: string, existingFiles: string[], newFiles: string[]): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "review-work-order"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ existingFiles, newFiles }) });
+}
+
+export function acceptSystemQuestWorkOrder(projectId: string, systemId: string, fingerprint: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "accept-work-order"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "ACCEPT QUEST WORK ORDER", fingerprint }) });
+}
+
+export function cancelSystemQuestPlanning(projectId: string, systemId: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "cancel"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "CANCEL QUEST PLANNING" }) });
+}
+
+export function subscribeToSystemQuestPlanning(projectId: string, systemId: string, onEvent: (event: SystemQuestPlanningEvent) => void, onDisconnect: () => void): () => void {
+  const stream = new EventSource(systemQuestPlanningUrl(projectId, systemId, "events"));
+  stream.onmessage = (message) => onEvent(JSON.parse(message.data) as SystemQuestPlanningEvent);
   stream.onerror = onDisconnect;
   return () => stream.close();
 }

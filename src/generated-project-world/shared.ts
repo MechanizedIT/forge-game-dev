@@ -5,6 +5,7 @@ import type {
   GeneratedRoadmapV2,
   IdeaSeed,
   ProjectModel,
+  AcceptedSystemQuestPlan,
 } from "../contracts/index.js";
 import type { GeneratedQuestEligibility, GeneratedQuestRunSnapshot } from "../generated-quest-runner/shared.js";
 
@@ -64,6 +65,7 @@ export type GeneratedActivity = {
 export interface GeneratedProjectWorldSnapshot {
   project: GeneratedProjectIdentity;
   projectModel: ProjectModel;
+  systemQuestPlan: AcceptedSystemQuestPlan | null;
   vision: {
     vision: string;
     coreAction: string;
@@ -118,4 +120,21 @@ export interface GeneratedIdeaSaveResponse {
 export interface GeneratedLaunchResponse {
   launched: true;
   message: string;
+}
+
+export interface SystemQuestFileCandidate {
+  relativePath: string;
+  size: number;
+  sha256: string;
+}
+
+export interface SystemQuestWorkOrderReview {
+  questId: string;
+  title: string;
+  playerVisibleOutcome: string;
+  doneWhen: string[];
+  excludedScope: string[];
+  existingFiles: string[];
+  newFiles: string[];
+  fingerprint: string;
 }

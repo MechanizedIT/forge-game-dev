@@ -608,3 +608,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** This entry is included in the single owner-authorized Milestone 4 commit; its exact SHA is reported in the final orchestration handoff.
 - **Session ID:** Codex task delegated from source thread `019f6313-ebd0-72a2-a4a7-6462ebbce5d4`; no live runtime SDK thread was started for a registered project.
 - **Next step:** Create and review the bounded system-to-quests and work-order plan, then implement it only under the owner's delegated Milestone 5 approval.
+
+---
+
+## 2026-07-15 — Add guided system-to-quest refinement
+
+- **Actor/model surface:** Codex desktop repository implementation and orchestration; approved Agent-Native visual plan; independent read-only subagent review; local Node/TypeScript tests; temporary Edge project copies; read-only live Forge project audit
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Pre-authorized the exact bounded Milestone 5 outcome after skeptical plan review, one local commit, and continuation to a plan-only creator rehearsal. Required ordinary-language system refinement, a short ordered quest list, exact acceptance, native persistence, a bounded safe Godot text-file chooser, exact one-to-four-file review, and a stop before existing contract preparation. Prohibited registered-project mutation, runner rewrites, capability or profile permission, broad scanning, integrations, non-Godot engines, multi-agent product machinery, push, PR, merge, deployment, remotes, and tags.
+- **AI contribution:** Created and corrected Plan `plan-a54e77c121da4490`; added strict open quest-proposal and fixed-record contracts; bounded clarification, repair, revision, cancel, retry, and exact acceptance; native quest overlay; semantic source fingerprints; safe existing/expected-new Godot text path review; restart resume; save-time active-work recheck; same-origin exact project/system routes; connected workspace screens; and temporary browser evidence. Independent review found and drove five fixes before closeout.
+- **Files changed:** Bounded quest planning contracts/service; generated-world overlay/save; project-scoped host/API/CLI wiring; connected workspace refinement view/styles; focused tests; one visual harness and dated evidence; `ROADMAP.md`, `PROJECT_STATUS.md`, dated review/closeout, and this log. No runner implementation, verification profile, capability, starter, template, registered Godot project, dependency, integration, or release file changed.
+- **Verification:** Focused final checks passed 39/39; full suite 154/154; protected v0.1 38/38 with production build; context validation passed; new 8-state Edge review passed with zero issues. Temporary projects proved exact planning-only writes. Live registry, Gravity Tap, and Signal Sweep bytes, Git HEAD/status/remotes stayed identical before and after read-only load.
+- **Protected boundaries:** Real registered projects were not approved, started, played, recovered, or written. Signal Sweep remains unapproved, unimplemented, unplayed, and incomplete. The work-order draft grants no file authority and no runner contract or SDK run was started.
+- **Commit:** This entry is included in the single owner-authorized Milestone 5 commit; its exact SHA is reported in the final orchestration handoff.
+- **Session ID:** Codex task delegated from source thread `019f6313-ebd0-72a2-a4a7-6462ebbce5d4`; no live runtime SDK thread was started for a registered project.
+- **Next step:** Prepare the bounded creator-rehearsal plan, then stop for owner approval before implementation.

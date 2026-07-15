@@ -11,6 +11,7 @@ export interface GeneratedWorkspaceQuest {
   selected: boolean;
   recommended: boolean;
   brief: GeneratedQuestBrief | null;
+  nativePlan: boolean;
 }
 
 export interface GeneratedWorkspaceSystem {
@@ -61,6 +62,13 @@ const activeRunPhases = new Set([
 function contextForQuest(quest: GeneratedWorkspaceQuest): GeneratedWorkspaceContext {
   const run = quest.brief?.run ?? null;
   if (!run) {
+    if (quest.nativePlan) {
+      return {
+        kind: "quest", title: quest.title, summary: quest.outcome, status: quest.status,
+        recommendation: "Review this planned quest and its exact one-to-four-file work-order draft. No runner contract exists yet.",
+        primaryActionLabel: "Review planned quest", questId: quest.questId,
+      };
+    }
     const eligible = quest.brief?.eligibility.eligible ?? false;
     return {
       kind: "quest",
@@ -133,6 +141,7 @@ export function buildGeneratedWorkspacePresentation(
         selected: selected && savedQuestId === questId,
         recommended: snapshot.projectModel.focus.nextRecommendedQuestId === questId,
         brief: briefById.get(questId) ?? null,
+        nativePlan: !briefById.has(questId),
       };
     });
     return {
@@ -158,9 +167,9 @@ export function buildGeneratedWorkspacePresentation(
       summary: selectedSystem.outcome,
       status: selectedSystem.status,
       recommendation: selectedSystem.quests.length === 0
-        ? "This system has no quests yet. Guided refinement is the next milestone."
-        : "Choose one quest to see its visible result and next safe action.",
-      primaryActionLabel: null,
+        ? "Describe this system and let Forge suggest a few small, visible quests."
+        : "Choose a quest, or refine this system with a few more small outcomes.",
+      primaryActionLabel: "Refine into quests",
       questId: null,
     };
   const context = snapshot.state.currentView === "project_world"

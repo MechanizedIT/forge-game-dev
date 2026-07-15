@@ -14,6 +14,10 @@ import {
   SystemRoadmapPlanningConflictError,
   SystemRoadmapPlanningService,
 } from "../blueprint-planner/system-roadmap.js";
+import {
+  SystemQuestPlanningConflictError,
+  SystemQuestPlanningService,
+} from "../blueprint-planner/system-quest.js";
 import type { CreatorConfirmation, DashboardEvent } from "../dashboard/shared.js";
 import { DashboardConflictError, ForgeDashboardService } from "./service.js";
 import {
@@ -181,6 +185,18 @@ function openSystemRoadmapEventStream(
   request.on("close", () => { clearInterval(heartbeat); unsubscribe(); });
 }
 
+function openSystemQuestEventStream(
+  request: IncomingMessage,
+  response: ServerResponse,
+  planningService: SystemQuestPlanningService,
+): void {
+  response.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache, no-transform", connection: "keep-alive" });
+  response.write(`data: ${JSON.stringify({ type: "refresh" })}\n\n`);
+  const unsubscribe = planningService.subscribe((event) => response.write(`data: ${JSON.stringify(event)}\n\n`));
+  const heartbeat = setInterval(() => response.write(": keep-alive\n\n"), 15_000);
+  request.on("close", () => { clearInterval(heartbeat); unsubscribe(); });
+}
+
 function openGeneratedRunEventStream(
   request: IncomingMessage,
   response: ServerResponse,
@@ -246,6 +262,7 @@ export function createForgeDashboardServer(
   generatedWorldService?: GeneratedProjectWorldService,
   generatedRunner?: GeneratedQuestRunnerHost,
   systemRoadmapPlanningService?: SystemRoadmapPlanningService,
+  systemQuestPlanningService?: SystemQuestPlanningService,
 ): Server {
   const resolvedStaticRoot = path.resolve(staticRoot);
   const projectMutationTails = new Map<string, Promise<void>>();
@@ -448,6 +465,103 @@ export function createForgeDashboardServer(
         creationService.cancelCreation();
         sendJson(response, 202, await creationState());
         return;
+      }
+      const systemQuestRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/systems\/([^/]+)\/quest-planning\/(state|events|files|start|answers|revise|retry|accept-quests|review-work-order|accept-work-order|cancel)$/u);
+      if (systemQuestRoute && systemQuestPlanningService && generatedWorldService) {
+        const projectId = safePathId(systemQuestRoute[1], "project ID");
+        const systemId = safePathId(systemQuestRoute[2], "system ID");
+        const action = systemQuestRoute[3]!;
+        const active = systemQuestPlanningService.getSnapshot();
+        if (active.projectId && (active.projectId !== projectId || active.systemId !== systemId) && !["idle", "cancelled", "ready"].includes(active.phase)) {
+          throw new SystemQuestPlanningConflictError("Quest planning is open for another system.");
+        }
+        if (request.method === "GET" && action === "state") {
+          const world = await generatedWorldService.loadWorld(projectId);
+          sendJson(response, 200, systemQuestPlanningService.getSnapshotFor(projectId, systemId, world.systemQuestPlan));
+          return;
+        }
+        if (request.method === "GET" && action === "events") {
+          openSystemQuestEventStream(request, response, systemQuestPlanningService);
+          return;
+        }
+        if (request.method === "GET" && action === "files") {
+          sendJson(response, 200, await generatedWorldService.listSystemQuestFiles(projectId, systemId));
+          return;
+        }
+        if (request.method !== "POST") { sendJson(response, 404, { error: "Not found" }); return; }
+        requireSameOrigin(request);
+        const body = await readJsonBody(request);
+        if (action === "start") {
+          requireExactKeys(body, ["description"], "Quest refinement accepts only the creator description.");
+          if (typeof body.description !== "string") throw new Error("A system description is required.");
+          const world = await generatedWorldService.loadWorld(projectId);
+          systemQuestPlanningService.begin(world.projectModel, systemId, body.description);
+          sendJson(response, 202, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "answers") {
+          requireExactKeys(body, ["answers"], "Quest-planning answers accept only the shown answers.");
+          if (!Array.isArray(body.answers) || body.answers.some((answer) => !answer || typeof answer !== "object" || Array.isArray(answer) || Object.keys(answer).sort().join(",") !== "answer,questionId" || typeof (answer as Record<string, unknown>).questionId !== "string" || typeof (answer as Record<string, unknown>).answer !== "string")) throw new Error("Quest-planning answers must match the shown questions.");
+          systemQuestPlanningService.submitAnswers(body.answers as Array<{ questionId: string; answer: string }>);
+          sendJson(response, 202, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "revise") {
+          requireExactKeys(body, ["request"], "Quest revision accepts only the creator request.");
+          if (typeof body.request !== "string") throw new Error("A revision request is required.");
+          systemQuestPlanningService.revise(body.request);
+          sendJson(response, 202, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "retry") {
+          requireExactKeys(body, [], "Quest-planning retry accepts no authority values.");
+          systemQuestPlanningService.retry();
+          sendJson(response, 202, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "accept-quests") {
+          requireExactKeys(body, ["decision", "fingerprint"], "Quest acceptance accepts only the exact decision and fingerprint.");
+          if (body.decision !== "ACCEPT SYSTEM QUESTS" || typeof body.fingerprint !== "string") throw new Error("Quest acceptance requires the exact decision and current fingerprint.");
+          await withProjectMutation(projectId, async () => {
+            const world = await generatedWorldService.loadWorld(projectId);
+            await systemQuestPlanningService.acceptQuests("ACCEPT SYSTEM QUESTS", body.fingerprint as string, world.projectModel, world.systemQuestPlan, (batch) => generatedWorldService.saveSystemQuestBatch(projectId, batch));
+          });
+          sendJson(response, 200, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "review-work-order") {
+          requireExactKeys(body, ["existingFiles", "newFiles"], "Work-order review accepts only exact existing and new file lists.");
+          if (!Array.isArray(body.existingFiles) || !Array.isArray(body.newFiles) || [...body.existingFiles, ...body.newFiles].some((item) => typeof item !== "string")) throw new Error("Work-order files must be exact path lists.");
+          const world = await generatedWorldService.loadWorld(projectId);
+          systemQuestPlanningService.restorePersisted(projectId, systemId, world.systemQuestPlan);
+          const snapshot = systemQuestPlanningService.getSnapshot();
+          if (!snapshot.firstQuestId) throw new SystemQuestPlanningConflictError("Accept quests before reviewing a work order.");
+          const review = await generatedWorldService.reviewSystemQuestWorkOrder(projectId, systemId, snapshot.firstQuestId, { existingFiles: body.existingFiles as string[], newFiles: body.newFiles as string[] });
+          systemQuestPlanningService.setWorkOrderReview(review);
+          sendJson(response, 200, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "accept-work-order") {
+          requireExactKeys(body, ["decision", "fingerprint"], "Work-order acceptance accepts only the exact decision and fingerprint.");
+          if (body.decision !== "ACCEPT QUEST WORK ORDER" || typeof body.fingerprint !== "string") throw new Error("Work-order acceptance requires the exact decision and current fingerprint.");
+          await withProjectMutation(projectId, async () => {
+            const snapshot = systemQuestPlanningService.getSnapshot();
+            const draft = snapshot.workOrder;
+            if (!draft || snapshot.projectId !== projectId || snapshot.systemId !== systemId) throw new SystemQuestPlanningConflictError("Review the exact work order before accepting it.");
+            await systemQuestPlanningService.acceptWorkOrder("ACCEPT QUEST WORK ORDER", body.fingerprint as string, () => generatedWorldService.saveSystemQuestWorkOrder(projectId, systemId, draft.questId, { existingFiles: draft.existingFiles, newFiles: draft.newFiles }, draft.fingerprint));
+          });
+          sendJson(response, 200, systemQuestPlanningService.getSnapshot());
+          return;
+        }
+        if (action === "cancel") {
+          requireExactKeys(body, ["decision"], "Quest-planning cancellation accepts only the exact decision.");
+          if (body.decision !== "CANCEL QUEST PLANNING") throw new Error("Quest-planning cancellation requires the exact decision.");
+          const world = await generatedWorldService.loadWorld(projectId);
+          if (world.systemQuestPlan?.systems.some((system) => system.systemId === systemId)) systemQuestPlanningService.restorePersisted(projectId, systemId, world.systemQuestPlan);
+          systemQuestPlanningService.cancel("CANCEL QUEST PLANNING", world.systemQuestPlan);
+          sendJson(response, 200, systemQuestPlanningService.getSnapshotFor(projectId, systemId, world.systemQuestPlan));
+          return;
+        }
       }
       const systemPlanningRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/system-planning\/(state|events|start|answers|revise|retry|accept|cancel)$/u);
       if (systemPlanningRoute && systemRoadmapPlanningService && generatedWorldService) {
@@ -668,7 +782,7 @@ export function createForgeDashboardServer(
     } catch (error) {
       const status = error instanceof GeneratedProjectWorldNotFoundError || error instanceof GeneratedQuestRunNotFoundError
         ? 404
-        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof SystemRoadmapPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError || error instanceof GeneratedQuestRunConflictError
+        : error instanceof DashboardConflictError || error instanceof BlueprintPlanningConflictError || error instanceof SystemRoadmapPlanningConflictError || error instanceof SystemQuestPlanningConflictError || error instanceof ProjectCreationConflictError || error instanceof GeneratedProjectWorldConflictError || error instanceof GeneratedQuestRunConflictError
           ? 409
           : 400;
       sendJson(response, status, {

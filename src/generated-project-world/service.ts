@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
-import { lstat, readFile, realpath, stat } from "node:fs/promises";
+import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 
@@ -8,6 +8,8 @@ import {
   chronicleAnySchema,
   acceptedRoadmapProvenanceSchema,
   acceptedSystemRoadmapSchema,
+  acceptedSystemQuestPlanSchema,
+  acceptedSystemQuestBatchSchema,
   chronicleV2Schema,
   creationProvenanceSchema,
   firstPlayableMilestoneSchema,
@@ -29,26 +31,37 @@ import {
   type GeneratedQuestArtifactV2,
   type IdeaSeed,
   type AcceptedSystemRoadmap,
+  type AcceptedSystemQuestBatch,
+  type AcceptedSystemQuestPlan,
+  type SystemQuestFileChoice,
+  systemQuestFileChoiceSchema,
+  projectModelSchema,
 } from "../contracts/index.js";
 import { resolveForgeHome } from "../demo/paths.js";
+import { fingerprintSystemQuestStructure } from "../blueprint-planner/system-quest.js";
 import { ensurePinnedGodot } from "../godot/bootstrap.js";
 import { ProjectRegistryStore } from "../project-creation/registry.js";
 import { writeJsonAtomic, writeTextAtomic } from "../quest-runner/artifacts.js";
 import { normalizeGeneratedQuest, normalizeGeneratedRoadmap } from "../generated-quest-runner/contract.js";
 import { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
+import { readContainedUtf8File, validateExpectedAbsentWorkFile } from "../generated-quest-runner/boundary.js";
 import type {
   GeneratedActivity,
   GeneratedIdeaSaveResponse,
   GeneratedLaunchResponse,
   GeneratedProjectWorldSnapshot,
   GeneratedQuestBrief,
+  SystemQuestFileCandidate,
+  SystemQuestWorkOrderReview,
   GeneratedWorldStateInput,
   GeneratedWorldView,
 } from "./shared.js";
 import { applyAcceptedSystemRoadmap, buildLegacyProjectModel } from "./project-model.js";
+import { applyAcceptedSystemQuests, nativeQuestIds } from "./system-quest-plan.js";
 
 const ideaRelativePath = ".forge/idea-seeds.json";
 const systemRoadmapRelativePath = ".forge/system-roadmap.json";
+const systemQuestRelativePath = ".forge/system-quests.json";
 const generatedViews = new Set<GeneratedWorldView>(["project_world", "quest_brief", "chronicle", "documents"]);
 
 export class GeneratedProjectWorldNotFoundError extends Error {
@@ -103,6 +116,12 @@ function isContained(root: string, target: string): boolean {
 
 function sameList(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function hasUnresolvedGeneratedWork(snapshot: GeneratedProjectWorldSnapshot): boolean {
+  return snapshot.projectModel.workSessions.some((session) =>
+    ["contract_review", "approved", "implementing", "scope_review", "verifying", "waiting_for_playtest", "completion_pending", "failed", "interrupted"].includes(session.phase)
+    || (session.phase === "cancelled" && (session.recovery.action === "rollback" || session.recovery.action === "manual")));
 }
 
 function worldView(value: GeneratedProjectStateAny["currentView"]): GeneratedWorldView {
@@ -199,6 +218,15 @@ export class GeneratedProjectWorldService {
     return artifact;
   }
 
+  private async optionalSystemQuestPlan(projectPath: string, projectId: string): Promise<AcceptedSystemQuestPlan | null> {
+    const target = path.join(projectPath, systemQuestRelativePath);
+    const info = await lstat(target).catch(() => null);
+    if (!info) return null;
+    const artifact = await readValidated(await this.ownedPath(projectPath, systemQuestRelativePath), acceptedSystemQuestPlanSchema);
+    if (artifact.projectId !== projectId) throw new Error("The system quest plan belongs to another project.");
+    return artifact;
+  }
+
   async loadWorld(projectId: string): Promise<GeneratedProjectWorldSnapshot> {
     try {
       const { projectPath, entry } = await this.resolveProject(projectId);
@@ -277,13 +305,20 @@ export class GeneratedProjectWorldService {
         sessions,
       });
       const acceptedSystemRoadmap = await this.optionalSystemRoadmap(projectPath, projectId);
-      const projectModel = acceptedSystemRoadmap
+      const roadmapProjectModel = acceptedSystemRoadmap
         ? applyAcceptedSystemRoadmap(legacyProjectModel, acceptedSystemRoadmap)
         : legacyProjectModel;
+      const acceptedSystemQuestPlan = await this.optionalSystemQuestPlan(projectPath, projectId);
+      let projectModel = acceptedSystemQuestPlan
+        ? applyAcceptedSystemQuests(roadmapProjectModel, acceptedSystemQuestPlan)
+        : roadmapProjectModel;
 
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
-      const selectedIsValid = state.selectedQuestId !== null && roadmapIds.includes(state.selectedQuestId);
-      const selectedQuestId = selectedIsValid ? state.selectedQuestId! : roadmapIds[0]!;
+      const combinedQuestIds = projectModel.quests.map((quest) => quest.questId);
+      const selectedIsValid = state.selectedQuestId !== null && combinedQuestIds.includes(state.selectedQuestId);
+      const selectedQuestId = selectedIsValid ? state.selectedQuestId! : combinedQuestIds[0]!;
+      const selectedSystemId = projectModel.quests.find((quest) => quest.questId === selectedQuestId)?.systemId ?? projectModel.systems[0]!.systemId;
+      projectModel = projectModelSchema.parse({ ...projectModel, focus: { ...projectModel.focus, selectedSystemId, selectedQuestId } });
       const repairNotice = selectedIsValid ? null : "The saved quest selection was unavailable. Forge focused the first roadmap quest in memory; choose a quest to persist the repair.";
       const questBriefs: GeneratedQuestBrief[] = await Promise.all(quests.map(async (quest) => {
         const summary = this.generatedRunner
@@ -345,6 +380,7 @@ export class GeneratedProjectWorldService {
           lastOpenedAt: entry.lastOpenedAt,
         },
         projectModel,
+        systemQuestPlan: acceptedSystemQuestPlan,
         vision,
         starterAwarePlanning: {
           accepted: acceptedRoadmapProvenance !== null,
@@ -399,10 +435,7 @@ export class GeneratedProjectWorldService {
     const roadmap = acceptedSystemRoadmapSchema.parse(roadmapValue);
     if (roadmap.projectId !== projectId) throw new GeneratedProjectWorldConflictError("The system roadmap belongs to another project.");
     const current = await this.loadWorld(projectId);
-    const unresolvedWork = current.projectModel.workSessions.some((session) =>
-      ["contract_review", "approved", "implementing", "scope_review", "verifying", "waiting_for_playtest", "completion_pending", "failed", "interrupted"].includes(session.phase)
-      || (session.phase === "cancelled" && (session.recovery.action === "rollback" || session.recovery.action === "manual")));
-    if (unresolvedWork) {
+    if (hasUnresolvedGeneratedWork(current)) {
       throw new GeneratedProjectWorldConflictError("Finish or safely close the active work session before saving systems.");
     }
     const structure = {
@@ -431,6 +464,14 @@ export class GeneratedProjectWorldService {
       throw new GeneratedProjectWorldConflictError("The system roadmap must preserve every quest exactly once.");
     }
     const { projectPath } = await this.resolveProject(projectId);
+    const ownedNativeQuestIds = nativeQuestIds(await this.optionalSystemQuestPlan(projectPath, projectId));
+    const canonicalRoadmap = acceptedSystemRoadmapSchema.parse({
+      ...roadmap,
+      systems: roadmap.systems.map((system) => ({
+        ...system,
+        questIds: system.questIds.filter((questId) => !ownedNativeQuestIds.has(questId)),
+      })),
+    });
     const forgeDirectory = await this.ownedPath(projectPath, ".forge", "directory");
     const target = path.join(forgeDirectory, "system-roadmap.json");
     const info = await lstat(target).catch(() => null);
@@ -438,14 +479,142 @@ export class GeneratedProjectWorldService {
       throw new GeneratedProjectWorldConflictError("The system roadmap target is unsafe.");
     }
     if (info) await this.ownedPath(projectPath, systemRoadmapRelativePath);
-    await writeJsonAtomic(target, roadmap);
+    await writeJsonAtomic(target, canonicalRoadmap);
+  }
+
+  async saveSystemQuestBatch(projectId: string, batchValue: AcceptedSystemQuestBatch): Promise<AcceptedSystemQuestPlan> {
+    const batch = acceptedSystemQuestBatchSchema.parse(batchValue);
+    const current = await this.loadWorld(projectId);
+    if (current.projectModel.project.projectId !== projectId) throw new GeneratedProjectWorldConflictError("The system quest plan belongs to another project.");
+    if (hasUnresolvedGeneratedWork(current)) throw new GeneratedProjectWorldConflictError("Finish or safely close the active work session before saving quests.");
+    if (batch.sourceFingerprint !== fingerprintSystemQuestStructure(current.projectModel, batch.systemId)) {
+      throw new GeneratedProjectWorldConflictError("The project plan changed before these quests could be saved.");
+    }
+    const system = current.projectModel.systems.find((candidate) => candidate.systemId === batch.systemId);
+    if (!system) throw new GeneratedProjectWorldConflictError("The selected system is no longer available.");
+    const { projectPath } = await this.resolveProject(projectId);
+    const previous = await this.optionalSystemQuestPlan(projectPath, projectId);
+    const previousIds = nativeQuestIds(previous);
+    const baseQuestIds = system.questIds.filter((questId) => !previousIds.has(questId));
+    if (!sameList(baseQuestIds, batch.baseQuestIds)) throw new GeneratedProjectWorldConflictError("The selected system's base quests changed before this save.");
+    if (system.questIds.length + batch.quests.length > 5) throw new GeneratedProjectWorldConflictError("A system may contain at most five quests in this alpha.");
+    if (batch.quests.some((quest) => current.projectModel.quests.some((existing) => existing.questId === quest.questId))) throw new GeneratedProjectWorldConflictError("A proposed quest ID already exists.");
+    const existingSystem = previous?.systems.find((candidate) => candidate.systemId === batch.systemId) ?? null;
+    const mergedBatch = existingSystem
+      ? { ...batch, baseQuestIds: existingSystem.baseQuestIds, quests: [...existingSystem.quests, ...batch.quests] }
+      : batch;
+    const next = acceptedSystemQuestPlanSchema.parse({
+      schemaVersion: 1,
+      projectId,
+      systems: previous
+        ? [...previous.systems.filter((candidate) => candidate.systemId !== batch.systemId), mergedBatch]
+        : [mergedBatch],
+    });
+    const forgeDirectory = await this.ownedPath(projectPath, ".forge", "directory");
+    const target = path.join(forgeDirectory, "system-quests.json");
+    const info = await lstat(target).catch(() => null);
+    if (info && (info.isSymbolicLink() || !info.isFile())) throw new GeneratedProjectWorldConflictError("The system quest target is unsafe.");
+    if (info) await this.ownedPath(projectPath, systemQuestRelativePath);
+    await writeJsonAtomic(target, next);
+    return next;
+  }
+
+  private async validateWorkPath(projectPath: string, relativePath: string, kind: "existing" | "new"): Promise<void> {
+    const normalized = relativePath.replaceAll("\\", "/");
+    if (normalized !== relativePath || path.posix.normalize(normalized) !== normalized || normalized.split("/").includes(".") || (!normalized.startsWith("scenes/") && !normalized.startsWith("scripts/"))) {
+      throw new GeneratedProjectWorldConflictError("Quest work files must stay inside scenes/ or scripts/.");
+    }
+    try {
+      if (kind === "existing") await readContainedUtf8File(projectPath, relativePath);
+      else await validateExpectedAbsentWorkFile(projectPath, relativePath);
+    } catch (error) {
+      throw new GeneratedProjectWorldConflictError(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  async listSystemQuestFiles(projectId: string, systemId: string): Promise<SystemQuestFileCandidate[]> {
+    const current = await this.loadWorld(projectId);
+    if (!current.projectModel.systems.some((system) => system.systemId === systemId)) throw new GeneratedProjectWorldConflictError("Choose a system from the current project plan.");
+    const { projectPath } = await this.resolveProject(projectId);
+    const paths: string[] = [];
+    let visited = 0;
+    const walk = async (relativeDirectory: string): Promise<void> => {
+      const directory = path.join(projectPath, relativeDirectory);
+      const info = await lstat(directory).catch(() => null);
+      if (!info) return;
+      if (!info.isDirectory() || info.isSymbolicLink() || await realpath(directory) !== directory) throw new GeneratedProjectWorldConflictError(`The ${relativeDirectory} folder is unsafe.`);
+      for (const entry of await readdir(directory, { withFileTypes: true })) {
+        visited += 1;
+        if (visited > 256) throw new GeneratedProjectWorldConflictError("This alpha file chooser found too many entries under scenes/ and scripts/.");
+        const relativePath = `${relativeDirectory}/${entry.name}`.replaceAll("\\", "/");
+        if (entry.isSymbolicLink()) throw new GeneratedProjectWorldConflictError(`The file chooser found an unsafe link: ${relativePath}`);
+        if (entry.isDirectory()) await walk(relativePath);
+        else if (entry.isFile() && /\.(?:gd|tscn|tres|gdshader|gdshaderinc)$/u.test(relativePath)) paths.push(relativePath);
+      }
+    };
+    await walk("scenes");
+    await walk("scripts");
+    const candidates: SystemQuestFileCandidate[] = [];
+    for (const relativePath of paths.sort((left, right) => left.localeCompare(right))) {
+      try {
+        const file = await readContainedUtf8File(projectPath, relativePath);
+        candidates.push({ relativePath, size: file.size, sha256: file.sha256 });
+        if (candidates.length === 64) break;
+      } catch {
+        // Unsafe, binary, verifier, oversized, or otherwise ineligible files stay hidden.
+      }
+    }
+    return candidates;
+  }
+
+  async reviewSystemQuestWorkOrder(projectId: string, systemId: string, questId: string, choiceValue: SystemQuestFileChoice): Promise<SystemQuestWorkOrderReview> {
+    const choice = systemQuestFileChoiceSchema.parse(choiceValue);
+    const current = await this.loadWorld(projectId);
+    const savedSystem = current.systemQuestPlan?.systems.find((system) => system.systemId === systemId);
+    const quest = savedSystem?.quests[0];
+    if (!quest || quest.questId !== questId) throw new GeneratedProjectWorldConflictError("Review file scope only for the first accepted native quest.");
+    const { projectPath } = await this.resolveProject(projectId);
+    for (const relativePath of choice.existingFiles) await this.validateWorkPath(projectPath, relativePath, "existing");
+    for (const relativePath of choice.newFiles) await this.validateWorkPath(projectPath, relativePath, "new");
+    const review = {
+      questId, title: quest.title, playerVisibleOutcome: quest.playerVisibleOutcome,
+      doneWhen: quest.doneWhen, excludedScope: quest.excludedScope,
+      existingFiles: choice.existingFiles, newFiles: choice.newFiles,
+    };
+    return { ...review, fingerprint: createHash("sha256").update(JSON.stringify(review), "utf8").digest("hex") };
+  }
+
+  async saveSystemQuestWorkOrder(projectId: string, systemId: string, questId: string, choice: SystemQuestFileChoice, fingerprint: string): Promise<AcceptedSystemQuestPlan> {
+    const review = await this.reviewSystemQuestWorkOrder(projectId, systemId, questId, choice);
+    if (review.fingerprint !== fingerprint) throw new GeneratedProjectWorldConflictError("The exact work order changed before it could be saved.");
+    const latest = await this.loadWorld(projectId);
+    if (hasUnresolvedGeneratedWork(latest)) throw new GeneratedProjectWorldConflictError("Finish or safely close the active work session before saving a work order.");
+    const { projectPath } = await this.resolveProject(projectId);
+    const previous = await this.optionalSystemQuestPlan(projectPath, projectId);
+    if (!previous) throw new GeneratedProjectWorldConflictError("Accept quests before accepting a work order.");
+    const next = acceptedSystemQuestPlanSchema.parse({
+      ...previous,
+      systems: previous.systems.map((system) => system.systemId !== systemId ? system : {
+        ...system,
+        quests: system.quests.map((quest, index) => index !== 0 || quest.questId !== questId ? quest : {
+          ...quest,
+          workOrder: { existingFiles: review.existingFiles, newFiles: review.newFiles, fingerprint, acceptedAt: this.now().toISOString() },
+        }),
+      }),
+    });
+    const target = path.join(await this.ownedPath(projectPath, ".forge", "directory"), "system-quests.json");
+    const info = await lstat(target).catch(() => null);
+    if (!info?.isFile() || info.isSymbolicLink()) throw new GeneratedProjectWorldConflictError("The system quest target is missing or unsafe.");
+    await this.ownedPath(projectPath, systemQuestRelativePath);
+    await writeJsonAtomic(target, next);
+    return next;
   }
 
   async saveState(projectId: string, input: GeneratedWorldStateInput): Promise<GeneratedProjectWorldSnapshot> {
     if (!generatedViews.has(input.currentView)) throw new GeneratedProjectWorldConflictError("A valid generated Project World view is required.");
     const snapshot = await this.loadWorld(projectId);
-    if (!snapshot.roadmap.quests.some((quest) => quest.questId === input.selectedQuestId)) {
-      throw new GeneratedProjectWorldConflictError("The selected quest does not belong to this roadmap.");
+    if (!snapshot.projectModel.quests.some((quest) => quest.questId === input.selectedQuestId)) {
+      throw new GeneratedProjectWorldConflictError("The selected quest does not belong to this project plan.");
     }
     const { projectPath } = await this.resolveProject(projectId);
     const manifest = await readValidated(await this.ownedPath(projectPath, ".forge/project-manifest.json"), generatedProjectManifestSchema);

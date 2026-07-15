@@ -2,11 +2,17 @@
 
 **Last updated:** 2026-07-15
 
-**Current milestone:** `Alpha Pivot Milestone 4 — Open Idea to System Roadmap`
+**Current milestone:** `Alpha Pivot Milestone 5 — System to Quests and Work Order`
 
-**Overall state:** `ALPHA PIVOT MILESTONE 4 COMPLETE` — Inside an existing Forge-owned project, a creator can describe any game idea, answer only essential questions, revise three to six broad systems, and save the exact accepted roadmap. Planning changes no Godot file and starts no work.
+**Overall state:** `ALPHA PIVOT MILESTONE 5 COMPLETE` — A creator can open one system, describe it in ordinary words, revise and accept a short quest list, then review the first quest's exact one-to-four-file work-order draft. Forge saves planning only. It does not prepare a runner contract, start an agent, or change a Godot file.
 
 ## What works now
+
+- **Refine this system** opens from the connected roadmap. The creator explains the player-facing result in ordinary words; no game type, capability, profile, starter, template, tool, or verifier decides what is allowed.
+- Forge asks at most one short clarification round and proposes up to five ordered quests. The creator can revise repeatedly, cancel safely, retry the exact failed step, or accept the exact fingerprinted proposal.
+- Accepted quests persist in `.forge/system-quests.json` under the selected system. Missing records keep exact Milestone 4 behavior, malformed records fail closed, and later roadmap reshaping never writes or rewrites this record on read.
+- A small chooser lists only bounded existing Godot text files under `scenes/` and `scripts/`, plus an exact expected-new Godot text path under an existing safe parent. The creator must review and accept the exact one-to-four-file draft.
+- Reload resumes accepted quests and scope review honestly. Saving rechecks stale system or quest wording, canonical exact paths, and unresolved work. The final screen plainly says no contract was prepared and no work ran.
 
 - **Shape systems** opens inside the connected Roadmap shell. The creator writes an idea in ordinary words; no game type, capability, starter, template, profile, or verifier decides whether it is allowed.
 - Forge asks at most one short round of up to three questions, then shows three to six broad systems. The creator can revise repeatedly, cancel safely, retry the exact failed step, or accept the exact fingerprinted proposal.
@@ -74,9 +80,16 @@
 - The temporary project's real Git status changed from clean to only `?? .forge/system-roadmap.json`. A recursive audit proved every other project file and the temporary registry stayed byte-identical.
 - Live read-only reload kept registry hash `a23042ae97c706285780d91642faed0a0e29261ab04b4feb2b6f75c840f06b86`. Gravity Tap stayed clean at Git `f4cbba5928e22c0a3471239d7b67b490c7649a56` with tree digest `155d08c1581c1adbb71f2456eef2993656bd1bc17bb208aec9b77e3a6a7342e5`. Signal Sweep stayed clean at Git `a0ad834d6c1f98a51b63c7313564acb1af274e41` with tree digest `d6125f1b31626e57cfaabfbb86eac98228562ce6310251f61a542d9c300988bf`. Both still have no remotes.
 
+## Alpha Pivot Milestone 5 evidence
+
+- Focused final checks pass 39/39. The full suite passes 154/154. Protected v0.1 passes 38/38 with a production build. Context validation reports 11 subsystems, 10 change routes, 255 path references, and 68 test references.
+- The new Edge review passes 8 description, proposal, responsive, file-choice, exact-review, ready, and reload states with zero issues. Existing roadmap, workspace, and runner browser suites also pass with temporary projects.
+- Independent read-only review found five safety and truth gaps. Restart resume, active-work rechecking, semantic fingerprints, canonical exact paths, and work-order wording were corrected and rechecked.
+- Live read-only reload kept registry hash `a23042ae97c706285780d91642faed0a0e29261ab04b4feb2b6f75c840f06b86`. Gravity Tap kept 40 audited files and clean Git `f4cbba5928e22c0a3471239d7b67b490c7649a56`; Signal Sweep kept 37 audited files and clean Git `a0ad834d6c1f98a51b63c7313564acb1af274e41`. Both still have no remotes.
+
 ## How to test this milestone
 
-Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run forge`. Open a recent generated project, choose **Roadmap**, then **Shape systems**. Use a temporary project for acceptance tests. For automated proof, run `npm test`, `npm run check:v0.1`, `npm run visual:review:alpha:system-roadmap`, `npm run visual:review:v0.2:project-world`, and `npm run visual:review:alpha:generated-quest`.
+Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run forge`. Open a temporary generated project, choose **Roadmap**, select a system, then choose **Refine this system**. Stop after the screen says the work-order draft was saved. For automated proof, run `npm test`, `npm run check:v0.1`, and `npm run visual:review:alpha:system-quest`.
 
 ## Alpha Task B implementation evidence
 
@@ -107,6 +120,6 @@ Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run fo
 2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
 3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-The open project model, profile-free runner boundary, connected workspace shell, and open system planning are complete. Forge still lacks creator-facing system-to-quest refinement and work-order authoring. External import, broad scanning, and non-Godot engines remain deferred. Signal Sweep remains unapproved and unimplemented. The next recommended milestone opens one system, accepts a short quest list, and prepares the first plain-language work order for exact file-scope review.
+The open project model, profile-free runner boundary, connected workspace shell, open system planning, and system-to-quest work-order drafting are complete. Forge still needs one honest end-to-end rehearsal that joins those parts. External import, broad scanning, non-Godot engines, and generalized integrations remain deferred. Signal Sweep remains unapproved and unimplemented. The next recommended milestone plans and runs one temporary-project creator rehearsal, with the owner's visible play confirmation kept separate from automated proof.
 
-See the [Alpha Pivot Milestone 4 review](docs/reviews/2026-07-15-alpha-pivot-open-roadmap-planning-review.md), [Alpha Pivot Milestone 3 review](docs/reviews/2026-07-15-alpha-pivot-workspace-shell-review.md), and [judge guide](docs/JUDGE_GUIDE.md).
+See the [Alpha Pivot Milestone 5 review](docs/reviews/2026-07-15-alpha-pivot-system-quest-refinement-review.md), [Alpha Pivot Milestone 4 review](docs/reviews/2026-07-15-alpha-pivot-open-roadmap-planning-review.md), and [judge guide](docs/JUDGE_GUIDE.md).

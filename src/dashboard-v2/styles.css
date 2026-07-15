@@ -1167,3 +1167,15 @@ p { color: var(--secondary); line-height: 1.55; }
 @media (prefers-reduced-motion: reduce) {
   .module-active.module-active, .build-stages .current > span, .planning-pulse, .creation-stage-list .stage-active > span, .new-game-shell .companion-core, .new-game-shell .companion-orbit { animation: none !important; transition-duration: 0s !important; }
 }
+/* Milestone 5: one bounded system-to-quests review surface. */
+.workspace-system-actions { align-items: flex-end; display: flex; flex-direction: column; gap: .65rem; }
+.system-quest-refinement { display: grid; gap: 1.15rem; margin: 0 auto; max-width: 1040px; padding: 1.5rem; width: 100%; }
+.system-quest-refinement > header small, .system-quest-refinement label small { color: var(--text-muted); display: block; margin-top: .35rem; }
+.system-quest-refinement label { display: grid; gap: .45rem; }
+.system-quest-refinement input, .system-quest-refinement textarea { background: rgba(12, 17, 30, .72); border: 1px solid rgba(255, 255, 255, .14); border-radius: 12px; color: inherit; font: inherit; padding: .75rem .85rem; resize: vertical; }
+.system-quest-actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: flex-end; }
+.system-quest-proposal article { cursor: default; text-align: left; }
+.system-quest-refinement fieldset { border: 1px solid rgba(255, 255, 255, .14); border-radius: 14px; display: grid; gap: .55rem; margin: 0; padding: .9rem; }
+.system-quest-file { align-items: center; display: flex !important; gap: .65rem !important; }
+.system-quest-file input { flex: 0 0 auto; }
+@media (max-width: 720px) { .workspace-system-actions { align-items: flex-start; } .system-quest-refinement { padding: 1rem; } .system-quest-actions { align-items: stretch; flex-direction: column; } }

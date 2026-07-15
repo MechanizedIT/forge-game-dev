@@ -237,6 +237,22 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Focused, full, protected, build, context, and three browser suites pass. Live Gravity Tap and Signal Sweep remain byte-identical after read-only reload.
 
+#### Alpha Pivot Milestone 5 — System to Quests and Work Order
+
+- [x] Open one broad system and discuss its player-facing outcome in ordinary language.
+- [x] Ask at most one essential clarification round, then propose up to five ordered quests with visible outcomes.
+- [x] Let the creator revise or exactly accept the quest list without a mechanic type, capability, profile, starter, or template gate.
+- [x] Persist accepted quests under the selected system in one fixed Forge planning record.
+- [x] Offer a bounded chooser for safe existing and expected-new Godot text files inside the canonical project.
+- [x] Save the first quest's exact one-to-four-file work-order draft only after explicit creator review, then stop before runner contract preparation.
+- [x] Prove restart resume, stale-state rejection, active-work locks, safe cancellation, responsive screens, and unchanged Godot bytes with temporary projects.
+
+**Status:** `COMPLETE`. A creator can refine one broad system into a short quest list, revise it, accept it, and review the first quest's exact file scope. Forge saves only `.forge/system-quests.json`; it does not prepare a runner contract or start an agent in this milestone.
+
+**Truth boundary:** The work order is a planning draft, not file authority. The existing profile-free runner still owns contract preparation, exact approval, execution, proof, play confirmation, completion, Git evidence, reload, and undo. The full creator rehearsal that joins these paths is separate.
+
+**Exit:** Focused, full, protected, build, context, and temporary browser checks pass. Live Gravity Tap and Signal Sweep remain byte-identical after read-only reload.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -271,11 +287,13 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Pivot Milestone 4 is complete. The next bounded product task opens one system,
-discusses it in ordinary words, proposes a short ordered quest list, lets the creator
-revise or accept it, and prepares the first quest's plain work-order draft for exact
-one-to-four-file review before the existing contract path. Do not add generalized quest
-generation, file indexing, integrations, non-Godot engines, or multi-agent machinery.
+Alpha Pivot Milestone 5 is complete. The next bounded product task is one genuine
+creator rehearsal on a temporary or separately owner-approved Godot project. It joins
+free-form idea planning, system refinement, exact work approval, the existing runner,
+verification, visible play, creator confirmation, persistence, revise, and safe undo.
+The plan must separate automated proof from the owner's visible play decision and must
+resolve how Forge-owned planning records coexist with the runner's clean-Git boundary
+without granting game-file authority. Do not implement that rehearsal before approval.
 Submission actions remain owner-controlled: review public copy, supply the
 demo/live/Devpost URLs, select a license, deploy the static site, and push or submit
 only when authorized.
