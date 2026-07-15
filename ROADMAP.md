@@ -163,6 +163,20 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** One prepared generated quest now completes as a bounded, verified, creator-gated transaction. This alpha branch is not the `v0.2.0` release, supports only the prepared existing-file contract, and does not include Task B's starter-aware fresh-intake work.
 
+#### Alpha Task B — Honest Starter-Aware Intake and Roadmap Review
+
+- [ ] Show one explicit Top-down Arena interpretation with fit, tradeoffs, alternatives, revise, and reject instead of silently coercing the idea.
+- [ ] Separate immutable approved-blueprint provenance from a fingerprinted accepted roadmap that labels starter facts and planned deltas.
+- [ ] Support bounded roadmap title/outcome, optional-delta, removal, and dependency-safe reorder decisions before creation.
+- [ ] Persist new projects directly with truthful v2 roadmap/quest artifacts while keeping existing generated projects read-only and compatible.
+- [ ] Register one Forge-owned `relay_activation_v1` profile so fresh Signal Sweep Quest 1 is genuinely eligible under the Task A boundary.
+- [ ] Rehearse live Signal Sweep planning and controlled creation, reopen it, and inspect the exact first contract without running Codex or claiming completion.
+
+**Status:** `APPROVED / IMPLEMENTATION READY`. The creator-approved plan is recorded in
+[`docs/plans/2026-07-14-alpha-task-b-starter-aware-planning.md`](docs/plans/2026-07-14-alpha-task-b-starter-aware-planning.md).
+
+**Exit:** One fresh idea has an honestly supported interpretation, an explicitly accepted non-duplicative roadmap, and one clean created project whose first quest has a registered existing-file contract. Real relay implementation and completion remain a separate creator-gated proof run.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -197,4 +211,7 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Task A is complete on `codex/alpha-task-a-generated-quest-loop` and awaits owner review/merge. Task B remains a separately scoped and separately approved future implementation. Submission actions remain owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a license, deploy the static site, and push or submit only when authorized.
+Alpha Task A is merged into `main`. Task B's approved implementation plan is the next
+bounded action. Submission actions remain
+owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a
+license, deploy the static site, and push or submit only when authorized.

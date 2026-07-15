@@ -1,6 +1,9 @@
 # Forge Alpha Proof-Game Plan
 
-Status: Task A is `COMPLETE / PASS` on the alpha implementation branch. Task B remains a planning proposal. Neither alpha task is part of the protected `v0.2.0` release tag.
+Status: Task A is `COMPLETE / PASS` and merged into `main`. Task B now has a
+[creator-approved implementation plan](../2026-07-14-alpha-task-b-starter-aware-planning.md)
+on `codex/alpha-task-b-starter-aware-planning`; implementation has not started.
+Neither alpha task is part of the protected `v0.2.0` release tag.
 
 ## Recommendation in one page
 
