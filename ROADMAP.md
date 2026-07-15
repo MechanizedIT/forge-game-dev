@@ -207,6 +207,21 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** The profile-free temporary project completes and undoes safely; all full and protected checks pass; live Gravity Tap and Signal Sweep read audits are byte-identical.
 
+#### Alpha Pivot Milestone 3 — Connected Workspace Shell
+
+- [x] Keep one project shell mounted around Roadmap, History, Project files, quest review, and work sessions.
+- [x] Show systems and quests from the open Project Model, including honest systems with no quests.
+- [x] Give the selected system or quest one short Forgie recommendation and one next action.
+- [x] Add a slim Workbench Dock with Play Game, Open Folder, and Toolbox only.
+- [x] Keep exact contract approval, active-work safety, proof, play confirmation, completion, reload, and rollback behavior unchanged.
+- [x] Prove desktop, tablet, phone, keyboard focus, reduced motion, controlled failures, exact pre-approval, and active-work locks in temporary browser data.
+
+**Status:** `COMPLETE`. Opening a generated project now enters one connected workspace. The main view is the system roadmap. History, project files, quest details, Forgie guidance, Play, Open Folder, and Toolbox stay in the same shell. Any active work session focuses its real quest and locks Play plus navigation while safe folder access remains available.
+
+**Truth boundary:** This milestone is presentation only. It adds no new service, endpoint, runner, integration, project schema, tool permission, capability, supported game type, or profile gate. Toolbox lists only the two existing actions.
+
+**Exit:** Focused and full checks pass, both browser suites pass, and live Gravity Tap plus Signal Sweep remain byte-identical after read-only reload.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -241,12 +256,12 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Pivot Milestone 2 is complete. The next bounded product task is the smallest
-useful persistent workspace shell: keep the Launchpad, show the project's systems and
-quests as the main roadmap, use one contextual right panel, and add a slim Workbench
-Dock that reuses Play and Open Folder first. Do not add custom launch configuration,
-broad integrations, a general customization framework, or conversational quest
-decomposition in that milestone.
+Alpha Pivot Milestone 3 is complete. The next bounded product task is open system-roadmap
+planning inside an existing Forge-owned Godot workspace: discuss one free-form idea,
+ask only essential questions, propose three to six broad systems, let the creator revise
+or accept them, and persist only the accepted Forge planning records. Systems may remain
+empty until later quest refinement. Do not add project import, broad scanning, a new
+engine, collaboration, capability gates, or an orchestration framework.
 Submission actions remain owner-controlled: review public copy, supply the
 demo/live/Devpost URLs, select a license, deploy the static site, and push or submit
 only when authorized.

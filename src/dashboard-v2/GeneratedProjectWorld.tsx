@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject, type RefObject } from "react";
 
 import {
   adjustGeneratedQuest,
@@ -25,23 +25,80 @@ import type {
   GeneratedWorldView,
 } from "../generated-project-world/shared.js";
 import type { GeneratedQuestRunSnapshot } from "../generated-quest-runner/shared.js";
+import {
+  buildGeneratedWorkspacePresentation,
+  type GeneratedWorkspacePresentation,
+} from "./generated-workspace.js";
 
 function GeneratedCompanion() {
   return <span aria-label="Forge Companion focused" className="companion-core companion-focused companion-compact" role="img"><span className="companion-orbit orbit-a" /><span className="companion-orbit orbit-b" /><span className="companion-center" /></span>;
 }
 
-function GeneratedHeader({ active, locked, projectName, onBack, onNavigate }: {
-  active: GeneratedWorldView;
+function WorkspaceHeader({ locked, onBack, onToolbox, projectName, toolboxButtonRef }: {
   locked: boolean;
-  projectName: string;
   onBack: () => void;
-  onNavigate: (view: GeneratedWorldView) => void;
+  onToolbox: () => void;
+  projectName: string;
+  toolboxButtonRef: RefObject<HTMLButtonElement | null>;
 }) {
-  return <header className="world-header generated-world-header"><button className="back-button" onClick={onBack} type="button"><span aria-hidden="true">←</span> Launchpad</button><div className="forge-brand"><GeneratedCompanion /><div><strong>Forge</strong><span>Living Game Workshop</span></div></div><nav aria-label="Generated project navigation">{(["project_world", "chronicle", "documents"] as const).map((view) => <button aria-current={active === view ? "page" : undefined} disabled={locked} key={view} onClick={() => onNavigate(view)} type="button">{view === "project_world" ? "World" : view === "chronicle" ? "Chronicle" : "Documents"}</button>)}</nav><div className="world-project-title"><div><span className="v2-eyebrow">Generated Project World</span><h1>{projectName}</h1></div><span className="workspace-chip workspace-created">Created</span></div></header>;
+  return <header className="generated-workspace-header"><div className="forge-brand"><GeneratedCompanion /><div><strong>Forge</strong><span>Project Workspace</span></div></div><span className="workspace-chip workspace-created">{projectName}</span><div className="workspace-header-spacer" /><button className="v2-button button-quiet" onClick={onToolbox} ref={toolboxButtonRef} type="button">Toolbox</button><button className="back-button" disabled={locked} onClick={onBack} type="button"><span aria-hidden="true">←</span> Launchpad</button></header>;
 }
 
-function StarterPreview({ snapshot }: { snapshot: GeneratedProjectWorldSnapshot }) {
-  return <section className="generated-starter" aria-labelledby="starter-preview-title"><div className="generated-preview-frame" aria-label="Code-native playable-state preview of the verified starter layout"><div className="preview-window-bar"><span><i /> {snapshot.playable.previewLabel.toUpperCase()}</span><strong>CODE-NATIVE · NOT A CAPTURED GODOT FRAME</strong></div><div className="generated-arena"><span className="generated-boundary" /><span className="generated-player">PLAYER</span><span className="generated-objective">OBJECTIVE</span><span className="generated-control">WASD / ARROWS</span></div></div><div className="generated-playable-copy"><p className="v2-eyebrow">{snapshot.playable.layoutLabel} · verification-derived</p><h2 id="starter-preview-title">{snapshot.playable.summary}</h2><ul>{snapshot.playable.facts.map((fact) => <li key={fact}>✓ {fact}</li>)}</ul><div className="planned-warning"><strong>Planned, not playable yet</strong>{snapshot.playable.plannedNotPlayable.map((item) => <span key={item}>{item}</span>)}</div></div></section>;
+function WorkspaceNavigation({ active, locked, onNavigate }: {
+  active: GeneratedWorldView;
+  locked: boolean;
+  onNavigate: (view: GeneratedWorldView) => void;
+}) {
+  const items = [
+    ["project_world", "Roadmap"],
+    ["chronicle", "History"],
+    ["documents", "Project files"],
+  ] as const;
+  return <nav aria-label="Project workspace navigation" className="generated-workspace-nav"><p className="v2-eyebrow">Project</p>{items.map(([view, label]) => <button aria-current={active === view ? "page" : undefined} disabled={locked} key={view} onClick={() => onNavigate(view)} type="button">{label}</button>)}<div className="workspace-nav-spacer" /><small>Saved locally</small></nav>;
+}
+
+function WorkspaceRoadmap({ onSelectQuest, onSelectSystem, presentation, questButtons }: {
+  onSelectQuest: (questId: string, systemId: string) => void;
+  onSelectSystem: (systemId: string) => void;
+  presentation: GeneratedWorkspacePresentation;
+  questButtons: MutableRefObject<Map<string, HTMLButtonElement>>;
+}) {
+  return <main className="generated-workspace-roadmap generated-roadmap"><header><p className="v2-eyebrow">System map</p><h1>Your game at a glance</h1><p>Systems are the big pieces. Quests are the small visible results inside them.</p></header><div className="workspace-system-rail" aria-label="Game systems">{presentation.systems.map((system) => <button aria-current={system.selected ? "true" : undefined} className={`workspace-system-card state-${system.status}`} key={system.systemId} onClick={() => onSelectSystem(system.systemId)} type="button"><span>{system.status}</span><strong>{system.title}</strong><small>{system.quests.length === 0 ? "No quests yet" : `${system.completedQuestCount} of ${system.quests.length} quests complete`}</small></button>)}</div><section className="workspace-system-detail" aria-labelledby="selected-system-title"><header><div><p className="v2-eyebrow">Selected system · {presentation.selectedSystem.status}</p><h2 id="selected-system-title">{presentation.selectedSystem.title}</h2><p>{presentation.selectedSystem.outcome}</p></div><span>{presentation.selectedSystem.quests.length} {presentation.selectedSystem.quests.length === 1 ? "quest" : "quests"}</span></header>{presentation.selectedSystem.quests.length === 0 ? <div className="workspace-empty"><strong>No quests yet.</strong><p>This system is saved. Guided refinement comes next.</p></div> : <div className="workspace-quest-grid">{presentation.selectedSystem.quests.map((quest) => <button aria-current={quest.selected ? "step" : undefined} className={`workspace-quest-card state-${quest.status}`} key={quest.questId} onClick={() => onSelectQuest(quest.questId, quest.systemId)} ref={(element) => { if (element) questButtons.current.set(quest.questId, element); else questButtons.current.delete(quest.questId); }} type="button"><small>{quest.recommended ? "Next · " : ""}{quest.status}</small><strong>{quest.title}</strong><p>{quest.outcome}</p><span>{quest.selected ? "Selected" : "View quest"}</span></button>)}</div>}</section></main>;
+}
+
+function WorkspaceContextPanel({ busy, closeButtonRef, idea, locked, onClose, onIdeaChange, onOpenQuest, onSaveIdea, presentation }: {
+  busy: boolean;
+  closeButtonRef: RefObject<HTMLButtonElement | null>;
+  idea: string;
+  locked: boolean;
+  onClose: () => void;
+  onIdeaChange: (idea: string) => void;
+  onOpenQuest: () => void;
+  onSaveIdea: () => void;
+  presentation: GeneratedWorkspacePresentation;
+}) {
+  return <div className="workspace-context-content"><div className="workspace-context-heading"><button aria-label="Close details" className="workspace-panel-close" onClick={onClose} ref={closeButtonRef} type="button">×</button><GeneratedCompanion /><div><p className="v2-eyebrow">Forgie</p><strong>{presentation.context.kind === "quest" ? "Quest guide" : "System guide"}</strong></div></div><span className="workspace-context-status">{presentation.context.status}</span><strong className="workspace-context-title">{presentation.context.title}</strong><p>{presentation.context.summary}</p><div className="workspace-recommendation"><strong>Next</strong><p>{presentation.context.recommendation}</p></div>{presentation.context.primaryActionLabel && <button className="v2-button button-ember generated-quest-node" onClick={onOpenQuest} type="button">{presentation.context.primaryActionLabel}</button>}<details><summary>Save an idea for later</summary><label className="workspace-idea-field"><span>Project note</span><input disabled={locked} maxLength={500} onChange={(event) => onIdeaChange(event.target.value)} placeholder="Leave a fading ring after each pulse…" type="text" value={idea} /><button className="v2-button button-quiet" disabled={busy || locked || !idea.trim()} onClick={onSaveIdea} type="button">Save idea</button></label></details><details><summary>Details</summary><p>Visible outcome, current state, and exact work information stay available here when needed.</p></details></div>;
+}
+
+function ToolboxPanel({ closeButtonRef, onClose, onLaunch, onOpenFolder, playEnabled }: {
+  closeButtonRef: RefObject<HTMLButtonElement | null>;
+  onClose: () => void;
+  onLaunch: () => void;
+  onOpenFolder: () => void;
+  playEnabled: boolean;
+}) {
+  return <div className="workspace-context-content workspace-toolbox"><div className="workspace-context-heading"><button aria-label="Close Toolbox" className="workspace-panel-close" onClick={onClose} ref={closeButtonRef} type="button">×</button><div><p className="v2-eyebrow">Workbench</p><h2>Toolbox</h2></div></div><p>Safe actions available for this registered project.</p><button className="workspace-tool-row" disabled={!playEnabled} onClick={onLaunch} type="button"><span><strong>Play Game</strong><small>Open the project with pinned Godot.</small></span><em>Pinned</em></button><button className="workspace-tool-row" onClick={onOpenFolder} type="button"><span><strong>Open Folder</strong><small>Open the registered project folder.</small></span><em>Pinned</em></button><aside><strong>That is all for this milestone.</strong><p>Scene shortcuts and app connections come later.</p></aside><small>Tools help you work. They never decide which ideas or quests are allowed.</small></div>;
+}
+
+function WorkbenchDock({ busy, onLaunch, onOpenFolder, onToolbox, presentation, toolboxButtonRef }: {
+  busy: boolean;
+  onLaunch: () => void;
+  onOpenFolder: () => void;
+  onToolbox: () => void;
+  presentation: GeneratedWorkspacePresentation;
+  toolboxButtonRef: RefObject<HTMLButtonElement | null>;
+}) {
+  return <footer className="generated-workbench-dock"><strong>Workbench</strong>{presentation.dock.status && <span className="workspace-dock-status">{presentation.dock.status}</span>}<button disabled={busy || !presentation.dock.playEnabled} onClick={onLaunch} type="button">Play Game<span className="sr-only"> · Launch in Godot</span></button><button disabled={busy} onClick={onOpenFolder} type="button">Open Folder</button><div className="workspace-dock-spacer" /><button onClick={onToolbox} ref={toolboxButtonRef} type="button">Toolbox</button></footer>;
 }
 
 const proofRows = [
@@ -126,12 +183,29 @@ export function GeneratedProjectWorld({ initialSnapshot, onBack, onSnapshot }: {
   const [idea, setIdea] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSystemId, setSelectedSystemId] = useState<string | undefined>(initialSnapshot.projectModel.focus.selectedSystemId);
+  const [contextPanelOpen, setContextPanelOpen] = useState(false);
+  const [toolboxOpen, setToolboxOpen] = useState(false);
   const statusRef = useRef<HTMLParagraphElement>(null);
   const questButtons = useRef(new Map<string, HTMLButtonElement>());
-  useEffect(() => { setSnapshot(initialSnapshot); }, [initialSnapshot]);
+  const toolboxButtonRef = useRef<HTMLButtonElement>(null);
+  const dockToolboxButtonRef = useRef<HTMLButtonElement>(null);
+  const toolboxReturnRef = useRef<HTMLButtonElement | null>(null);
+  const contextButtonRef = useRef<HTMLButtonElement>(null);
+  const panelCloseRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    setSnapshot(initialSnapshot);
+    setSelectedSystemId(initialSnapshot.projectModel.focus.selectedSystemId);
+    setContextPanelOpen(false);
+    setToolboxOpen(false);
+  }, [initialSnapshot]);
   useEffect(() => { if (notice) statusRef.current?.focus(); }, [notice]);
   const selectedQuest = useMemo(() => snapshot.quests.find((quest) => quest.questId === snapshot.state.selectedQuestId) ?? snapshot.quests[0]!, [snapshot]);
-  const locked = selectedQuest.run !== null && selectedQuest.run.phase !== "completed" && selectedQuest.run.phase !== "cancelled";
+  const presentation = useMemo(() => buildGeneratedWorkspacePresentation(snapshot, selectedSystemId), [selectedSystemId, snapshot]);
+  const locked = presentation.locked;
+  useEffect(() => {
+    if (contextPanelOpen || toolboxOpen) window.setTimeout(() => panelCloseRef.current?.focus(), 0);
+  }, [contextPanelOpen, toolboxOpen]);
   const update = (next: GeneratedProjectWorldSnapshot) => { setSnapshot(next); onSnapshot(next); };
   const setRun = (run: GeneratedQuestRunSnapshot) => setSnapshot((current) => ({ ...current, quests: current.quests.map((quest) => quest.questId === run.questId ? { ...quest, run, implementationLabel: `Forge run · ${run.phase.replaceAll("_", " ")}` } : quest) }));
   const refreshWorld = async () => update(await loadGeneratedProjectWorld(snapshot.project.projectId));
@@ -152,11 +226,24 @@ export function GeneratedProjectWorld({ initialSnapshot, onBack, onSnapshot }: {
     catch (nextError) { setError(nextError instanceof Error ? nextError.message : String(nextError)); }
     finally { setBusy(false); }
   };
-  const persistView = async (currentView: GeneratedWorldView, selectedQuestId = snapshot.state.selectedQuestId) => {
-    if (busy || locked) return;
+  const persistView = async (currentView: GeneratedWorldView, selectedQuestId = snapshot.state.selectedQuestId, allowDuringLock = false) => {
+    if (busy || (locked && !allowDuringLock)) return;
     await action(() => saveGeneratedProjectState(snapshot.project.projectId, { currentView, selectedQuestId }), update);
   };
-  const selectQuest = async (questId: string) => { await persistView("quest_brief", questId); };
+  const selectQuest = async (questId: string, systemId: string) => {
+    setSelectedSystemId(systemId);
+    await persistView("project_world", questId);
+  };
+  const selectSystem = (systemId: string) => {
+    if (locked) return;
+    setSelectedSystemId(systemId);
+  };
+  const openSelectedQuest = async () => {
+    const questId = presentation.context.questId;
+    if (!questId) return;
+    setContextPanelOpen(false);
+    await persistView("quest_brief", questId, true);
+  };
   const closeBrief = async () => { const questId = snapshot.state.selectedQuestId; await persistView("project_world", questId); window.setTimeout(() => questButtons.current.get(questId)?.focus(), 0); };
   const saveIdea = async () => {
     if (!idea.trim() || busy || locked) return;
@@ -184,9 +271,31 @@ export function GeneratedProjectWorld({ initialSnapshot, onBack, onSnapshot }: {
   const rollback = () => questAction(() => rollbackGeneratedQuest(snapshot.project.projectId, selectedQuest.questId), refreshWorld);
 
   const active = snapshot.state.currentView;
-  if (active === "quest_brief") return <div className="project-world generated-project-world"><GeneratedHeader active={active} locked={locked} onBack={onBack} onNavigate={(view) => void persistView(view)} projectName={snapshot.project.displayName} />{error && <p className="workflow-error" role="alert">{error}</p>}{notice && <p className="workflow-notice generated-live-status" ref={statusRef} role="status" tabIndex={-1}>{notice}</p>}<QuestBrief busy={busy} implementationEnabled={snapshot.actions.generatedQuestImplementation} onAdjust={adjust} onApprove={approve} onCancel={cancel} onClose={() => void closeBrief()} onConfirm={confirm} onDefer={defer} onPlay={play} onPrepare={prepare} onRollback={rollback} onStart={start} quest={selectedQuest} /></div>;
-  const completedCount = snapshot.roadmap.quests.filter((quest) => quest.state === "completed").length;
-  return <div className="project-world generated-project-world"><GeneratedHeader active={active} locked={locked} onBack={onBack} onNavigate={(view) => void persistView(view)} projectName={snapshot.project.displayName} />{error && <p className="workflow-error" role="alert">{error}</p>}{notice && <p className="workflow-notice generated-live-status" ref={statusRef} role="status" tabIndex={-1}>{notice}</p>}{snapshot.state.repairNotice && <p className="workflow-notice" role="status">{snapshot.state.repairNotice}</p>}{active === "chronicle" ? <ChronicleView snapshot={snapshot} /> : active === "documents" ? <DocumentsView snapshot={snapshot} /> : <main className="generated-world-main"><section className="generated-identity"><div><p className="v2-eyebrow">{snapshot.project.foundationLabel} · {snapshot.project.engineLabel}</p><h1>{snapshot.project.displayName}</h1><p>{snapshot.vision.vision}</p></div><aside><span>First playable milestone</span><strong>{snapshot.firstPlayable.outcome}</strong></aside></section><StarterPreview snapshot={snapshot} /><section className="generated-roadmap" aria-labelledby="generated-roadmap-title"><header><div><p className="v2-eyebrow">Persisted game assembly roadmap</p><h2 id="generated-roadmap-title">{snapshot.roadmap.quests.length} quests toward First Playable</h2></div><span>{completedCount} completed · {snapshot.roadmap.quests.length - completedCount} remaining</span></header><div className="generated-roadmap-rail">{snapshot.roadmap.quests.map((node, index) => <div className="generated-roadmap-step" key={node.questId}>{index > 0 && <span className="generated-dependency" aria-label={`Depends on ${node.dependsOn.join(", ")}`}>→</span>}<button aria-current={snapshot.state.selectedQuestId === node.questId ? "step" : undefined} className={`generated-quest-node state-${node.state}`} disabled={locked} onClick={() => void selectQuest(node.questId)} ref={(element) => { if (element) questButtons.current.set(node.questId, element); else questButtons.current.delete(node.questId); }} type="button"><small>Quest {index + 1} · {node.state.replaceAll("_", " ")}</small><strong>{node.title}</strong><p>{node.summary}</p><em>{node.dependsOn.length > 0 ? `After ${node.dependsOn.join(", ")}` : "Foundation quest"}</em><span>Open quest outcome →</span></button>{snapshot.state.selectedQuestId === node.questId && <aside className="generated-companion-note"><GeneratedCompanion /><p><strong>Forge recommendation</strong><br />{node.questId === snapshot.state.nextRecommendedQuestId ? "This is the next eligible quest." : node.state === "completed" ? "This outcome is complete and recorded in local project history." : "Open the outcome to review its honest eligibility and next action."}</p></aside>}</div>)}</div></section><section className="generated-world-lower"><article><p className="v2-eyebrow">Recent project activity</p><h2>Chronicle and idea activity</h2>{snapshot.activity.slice(0, 3).map((item) => <p key={item.activityId}><strong>{item.label}</strong><br />{item.summary}</p>)}<button className="v2-button button-quiet" onClick={() => void persistView("chronicle")} type="button">View Chronicle</button></article><article><p className="v2-eyebrow">Project-local documentation</p><h2>{snapshot.documents.length} validated records</h2><p>Vision, milestone, roadmap, Chronicle, and project overview remain available without scanning arbitrary files.</p><button className="v2-button button-quiet" onClick={() => void persistView("documents")} type="button">View documents</button></article><article className="generated-actions"><p className="v2-eyebrow">Verified starter actions</p><h2>Open the real project</h2><button className="v2-button button-ember" disabled={busy || locked} onClick={() => void launch()} type="button">Launch in Godot</button><button className="v2-button button-quiet" disabled={busy} onClick={() => void openFolder()} type="button">Open project folder</button><small>Launch uses pinned Godot and the canonical registered path.</small></article></section></main>}<section className="idea-dock generated-idea-dock" aria-labelledby="generated-idea-title"><span className="idea-dock-icon">✦</span><div className="idea-dock-label"><span className="v2-eyebrow">Idea seed · persisted planning input</span><h2 id="generated-idea-title">What should Forge remember for later?</h2></div><label className="idea-input"><span className="sr-only">Save an idea for future planning</span><input disabled={locked} maxLength={500} onChange={(event) => setIdea(event.target.value)} placeholder="Leave a fading ring after each pulse…" type="text" value={idea} /><button aria-label="Save idea seed" disabled={busy || locked || !idea.trim()} onClick={() => void saveIdea()} type="button">→</button></label></section></div>;
+  const closePanel = () => {
+    const returnTo = toolboxOpen ? toolboxReturnRef.current : contextButtonRef.current;
+    setToolboxOpen(false);
+    setContextPanelOpen(false);
+    window.setTimeout(() => returnTo?.focus(), 0);
+  };
+  const showToolbox = (trigger: HTMLButtonElement | null) => {
+    toolboxReturnRef.current = trigger;
+    setContextPanelOpen(false);
+    setToolboxOpen(true);
+  };
+  const navigate = (view: GeneratedWorldView) => {
+    setContextPanelOpen(false);
+    setToolboxOpen(false);
+    void persistView(view);
+  };
+  const center = active === "quest_brief"
+    ? <QuestBrief busy={busy} implementationEnabled={snapshot.actions.generatedQuestImplementation} onAdjust={adjust} onApprove={approve} onCancel={cancel} onClose={() => void closeBrief()} onConfirm={confirm} onDefer={defer} onPlay={play} onPrepare={prepare} onRollback={rollback} onStart={start} quest={selectedQuest} />
+    : active === "chronicle"
+      ? <ChronicleView snapshot={snapshot} />
+      : active === "documents"
+        ? <DocumentsView snapshot={snapshot} />
+        : <WorkspaceRoadmap onSelectQuest={(questId, systemId) => void selectQuest(questId, systemId)} onSelectSystem={selectSystem} presentation={presentation} questButtons={questButtons} />;
+
+  return <div className="project-world generated-project-world generated-workspace"><WorkspaceHeader locked={locked} onBack={onBack} onToolbox={() => showToolbox(toolboxButtonRef.current)} projectName={snapshot.project.displayName} toolboxButtonRef={toolboxButtonRef} />{error && <p className="workflow-error" role="alert">{error}</p>}{notice && <p className="workflow-notice generated-live-status" ref={statusRef} role="status" tabIndex={-1}>{notice}</p>}{snapshot.state.repairNotice && <p className="workflow-notice" role="status">{snapshot.state.repairNotice}</p>}<div className="generated-workspace-shell"><WorkspaceNavigation active={active} locked={locked} onNavigate={navigate} /><div className="generated-workspace-center"><button className="v2-button button-quiet workspace-context-toggle" onClick={() => setContextPanelOpen(true)} ref={contextButtonRef} type="button">{presentation.context.kind === "quest" ? "Quest details" : "System details"}</button>{center}</div><aside aria-label={toolboxOpen ? "Toolbox" : "Forgie guidance"} className={`generated-workspace-context${contextPanelOpen || toolboxOpen ? " is-open" : ""}`}>{toolboxOpen ? <ToolboxPanel closeButtonRef={panelCloseRef} onClose={closePanel} onLaunch={() => void launch()} onOpenFolder={() => void openFolder()} playEnabled={presentation.dock.playEnabled} /> : <WorkspaceContextPanel busy={busy} closeButtonRef={panelCloseRef} idea={idea} locked={locked} onClose={closePanel} onIdeaChange={setIdea} onOpenQuest={() => void openSelectedQuest()} onSaveIdea={() => void saveIdea()} presentation={presentation} />}</aside></div><WorkbenchDock busy={busy} onLaunch={() => void launch()} onOpenFolder={() => void openFolder()} onToolbox={() => showToolbox(dockToolboxButtonRef.current)} presentation={presentation} toolboxButtonRef={dockToolboxButtonRef} /></div>;
 }
 
 export function GeneratedProjectWorldFailure({ error, onBack, onRetry, projectId }: {

@@ -578,3 +578,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** This entry is included in the single owner-authorized milestone commit; its exact SHA is reported in the final task response.
 - **Session ID:** Codex task delegated from source thread `019f6313-ebd0-72a2-a4a7-6462ebbce5d4`; no live runtime SDK thread was started for a registered project.
 - **Next step:** Review and approve the separate smallest useful workspace-shell plan before any workspace implementation begins.
+
+---
+
+## 2026-07-15 — Add the connected Forge workspace shell
+
+- **Actor/model surface:** Codex desktop repository implementation and orchestration; approved Agent-Native Plan; independent read-only subagent review; local Node/TypeScript tests; temporary Edge browser fixtures; read-only live Forge project audit
+- **Workflow stage:** Implement / Review / Document / Complete
+- **Human decisions:** Approved Agent-Native Plan `plan-bfeaace1988249cf`, its exact presentation-only file authority, one local milestone commit, and continuation to the next bounded planning milestone. Required one persistent workspace, a system-first roadmap, one Forgie panel, Play/Open Folder/Toolbox, responsive behavior, and unchanged approval/runner safety. Prohibited service, API, runner, project-data, capability, profile-permission, integration, registered-project mutation, push, PR, merge, deploy, publish, remote, and tag changes.
+- **AI contribution:** Added one pure Project Model presentation adapter; composed the persistent Roadmap/History/Project files/quest/work shell; added the bounded Workbench and Toolbox; preserved existing actions and work-session surfaces; focused any active session's real quest; kept Play/navigation locked while folder access remains safe; added desktop/narrow/focus/contract/active/failure browser proof. Independent review found and drove fixes for project-wide locking, active-quest reachability, duplicate locked actions, trigger-specific focus return, narrow dock clipping, and missing contract/active evidence.
+- **Files changed:** `src/dashboard-v2/generated-workspace.ts`, `src/dashboard-v2/GeneratedProjectWorld.tsx`, `src/dashboard-v2/styles.css`, focused dashboard/workspace tests, the existing project-world visual review, `package.json`, `ROADMAP.md`, `PROJECT_STATUS.md`, dated review/closeout, and this log. No service, API, server, runner, contract, registered project, dependency, integration, or release file changed.
+- **Verification:** Focused checks passed 19/19. Full checks passed 132/132. Protected v0.1 passed 38/38 with production build. The workspace Edge review passed 15 states and the protected generated-quest review passed 12 states, both with zero issues. Context validation and final diff checks are reported at commit. A read-only live audit kept registry, project bytes, Git HEAD, and status unchanged for Gravity Tap and Signal Sweep.
+- **Protected boundaries:** No registered project was approved, started, played, recovered, or written. Signal Sweep remains in its existing unapproved contract review. No capability, supported game type, profile permission, template eligibility, scanner, import path, second runner, fictional tool, or integration framework was added.
+- **Commit:** This entry is included in the single owner-authorized Milestone 3 commit; its exact SHA is reported in the final orchestration handoff.
+- **Session ID:** Codex task delegated from source thread `019f6313-ebd0-72a2-a4a7-6462ebbce5d4`; no live runtime SDK thread was started for a registered project.
+- **Next step:** Create and review the bounded open idea-to-system-roadmap plan, then implement it only under the owner's delegated Milestone 4 approval.

@@ -2,11 +2,17 @@
 
 **Last updated:** 2026-07-15
 
-**Current milestone:** `Alpha Pivot Milestone 2 — Profile-free, Creator-approved Work Sessions`
+**Current milestone:** `Alpha Pivot Milestone 3 — Connected Workspace Shell`
 
-**Overall state:** `ALPHA PIVOT MILESTONE 2 COMPLETE` — An ordinary available quest can now run through the existing Forge runner from an exact creator-approved file scope. The scope may contain existing files and expected-new Godot text files. A profile may add extra proof, but it no longer grants permission. Exact approval, baseline Godot health, real play, creator confirmation, completion, reload, and safe undo remain required.
+**Overall state:** `ALPHA PIVOT MILESTONE 3 COMPLETE` — Opening a generated project now shows one connected workspace. Systems and quests form the main roadmap. Forgie explains the selected item. Play, Open Folder, and Toolbox stay close by. Exact work approval and all runner safety remain unchanged.
 
 ## What works now
+
+- Generated projects open into one persistent shell with Roadmap, History, Project files, quest review, and work-session views.
+- The roadmap reads systems and quests from the open Project Model. An empty system remains visible without a fake quest or fake action.
+- Forgie shows one short recommendation for the selected system or quest. The Workbench Dock contains only Play Game, Open Folder, and Toolbox.
+- Any active work session focuses its actual quest, disables Play and workspace navigation, keeps safe folder access, and still lets the creator view progress.
+- Exact contract review remains separate from approval and from starting work. The shell reuses the existing runner, proof, play, confirmation, completion, reload, and rollback screens.
 
 - `npm run forge` opens the v0.2 Living Game Workshop. `npm run forge:v0.1` remains the protected direct compatibility launch, and `npm run forge:v0.2` remains an explicit alias.
 - The sample journey reviews an exact three-file plan, requires approval, runs the official Codex SDK once, shows truthful stages, verifies scope and Godot behavior, launches the game, requires exact creator confirmation, persists completion, reloads, and resets safely.
@@ -48,9 +54,17 @@
 - The full suite passes 126/126. Protected v0.1 passes 38/38 with the production build. The focused milestone commands pass 72/72.
 - A corrected read-only live audit loaded both real projects and proved registry, project files, Forge records, Git HEAD/status, and remotes remained byte-identical. Gravity Tap remains completed at `f4cbba5928e22c0a3471239d7b67b490c7649a56`; Signal Sweep remains unchanged in `contract_review` with zero changed files.
 
+## Alpha Pivot Milestone 3 evidence
+
+- Focused workspace checks pass 19/19. The full suite passes 132/132, and the protected v0.1 suite passes 38/38 with a production build.
+- The project-workspace Edge review passes 15 temporary states with zero issues. It covers desktop, tablet, phone, Toolbox focus from both triggers, quest focus return, reduced motion, empty/failure behavior, exact pre-approval, and active-work locks.
+- The protected generated-quest Edge review passes 12 temporary states with zero issues, including exact approval, separate start, progress, proof, play, creator confirmation, completion, and safe failure.
+- Independent read-only review found and verified fixes for project-wide active locks, active-quest focus, duplicate locked actions, Toolbox focus return, narrow dock clipping, and missing active/pre-approval browser evidence.
+- Live read-only reload kept the registry at `a23042ae97c706285780d91642faed0a0e29261ab04b4feb2b6f75c840f06b86`. Gravity Tap bytes stayed `79dcb02744d4070cd71f4d3d42a333ce84315316c056445be5162efee9f2f56c` at Git `f4cbba5928e22c0a3471239d7b67b490c7649a56`; Signal Sweep bytes stayed `31d5d1acab8e31c5ae2b1ae1a110f68c55fcad2fe30225b87b413e36ef71e86e` at Git `a0ad834d6c1f98a51b63c7313564acb1af274e41`.
+
 ## How to test this milestone
 
-Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run check`, then `npm run check:v0.1`. The welcome-beacon proof is fully temporary and does not touch registered projects.
+Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run forge`. Open a recent generated project to inspect the connected workspace. For automated proof, run `npm run check`, then `npm run check:v0.1`, `npm run visual:review:v0.2:project-world`, and `npm run visual:review:alpha:generated-quest`. Browser proof uses temporary copies.
 
 ## Alpha Task B implementation evidence
 
@@ -81,6 +95,6 @@ Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run ch
 2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
 3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-The open project model and profile-free runner boundary are complete. Forge still lacks creator-facing work-order authoring, native multi-system writing, open conversational planning, external import, broad scanning, and the connected workspace shell. Signal Sweep remains unapproved and unimplemented. The next recommended milestone is the smallest persistent workspace shell and system roadmap; it must reuse existing actions and must not add new runner authority.
+The open project model, profile-free runner boundary, and connected workspace shell are complete. Forge still lacks open conversational system planning, creator-facing quest refinement, and work-order authoring. External import, broad scanning, and non-Godot engines remain deferred. Signal Sweep remains unapproved and unimplemented. The next recommended milestone is the smallest free-form idea-to-system-roadmap path inside an existing Forge-owned project. It must change Forge planning records only.
 
-See the [Alpha Pivot Milestone 2 review](docs/reviews/2026-07-15-alpha-pivot-work-sessions-review.md), [Alpha Pivot Milestone 1 review](docs/reviews/2026-07-15-alpha-pivot-project-model-review.md), [Alpha Task A review](docs/reviews/2026-07-14-alpha-task-a-generated-quest-loop-review.md), and [judge guide](docs/JUDGE_GUIDE.md).
+See the [Alpha Pivot Milestone 3 review](docs/reviews/2026-07-15-alpha-pivot-workspace-shell-review.md), [Alpha Pivot Milestone 2 review](docs/reviews/2026-07-15-alpha-pivot-work-sessions-review.md), [Alpha Pivot Milestone 1 review](docs/reviews/2026-07-15-alpha-pivot-project-model-review.md), and [judge guide](docs/JUDGE_GUIDE.md).
