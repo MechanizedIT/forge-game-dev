@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { sha256DigestSchema } from "./generated-quest-run.js";
+import { generatedQuestCompletionSchema } from "./generated-project.js";
 import { relativePathSchema, slugSchema, timestampSchema } from "./shared.js";
 
 const shortText = z.string().trim().min(1).max(240);
@@ -31,6 +32,15 @@ export const systemQuestPlanningResultSchema = z.discriminatedUnion("resultType"
   }).strict(),
 ]);
 
+// The model-facing envelope avoids a top-level `oneOf`, which the live
+// structured-output API rejects. Strict result validation still happens with
+// systemQuestPlanningResultSchema after the unused list is removed.
+export const systemQuestModelOutputSchema = z.object({
+  resultType: z.enum(["clarification", "proposal"]),
+  clarificationQuestions: z.array(systemQuestQuestionSchema).max(3),
+  quests: z.array(systemQuestProposalItemSchema).max(4),
+}).strict();
+
 export const approvedSystemQuestWorkOrderSchema = z.object({
   existingFiles: z.array(relativePathSchema).max(4),
   newFiles: z.array(relativePathSchema).max(4),
@@ -51,6 +61,7 @@ export const acceptedNativeQuestSchema = z.object({
   excludedScope: z.array(shortText).min(1).max(4),
   dependsOn: z.array(slugSchema).max(4),
   workOrder: approvedSystemQuestWorkOrderSchema.optional(),
+  implementation: generatedQuestCompletionSchema.optional(),
 }).strict();
 
 export const acceptedSystemQuestBatchSchema = z.object({
@@ -80,6 +91,17 @@ export const acceptedSystemQuestPlanSchema = z.object({
       }
       allowedDependencies.add(quest.questId);
       if (quest.workOrder && index !== 0) context.addIssue({ code: "custom", message: "Only the first new quest may carry this milestone's work order", path: ["systems", plan.systems.indexOf(system), "quests", index, "workOrder"] });
+      if (quest.implementation) {
+        if (!quest.workOrder) {
+          context.addIssue({ code: "custom", message: "Completed native quests must keep their confirmed work plan", path: ["systems", plan.systems.indexOf(system), "quests", index, "implementation"] });
+        } else {
+          const approvedFiles = new Set([...quest.workOrder.existingFiles, ...quest.workOrder.newFiles]);
+          for (const changedFile of quest.implementation.changedFiles) {
+            if (!approvedFiles.has(changedFile)) context.addIssue({ code: "custom", message: "Completed native quests may only record files from their confirmed work plan", path: ["systems", plan.systems.indexOf(system), "quests", index, "implementation", "changedFiles"] });
+          }
+        }
+        if (quest.implementation.verificationProfile !== null) context.addIssue({ code: "custom", message: "Native quest completion must remain profile-free", path: ["systems", plan.systems.indexOf(system), "quests", index, "implementation", "verificationProfile"] });
+      }
     });
   }
 });

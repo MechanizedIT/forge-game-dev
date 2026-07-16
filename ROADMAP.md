@@ -253,6 +253,23 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Focused, full, protected, build, context, and temporary browser checks pass. Live Gravity Tap and Signal Sweep remain byte-identical after read-only reload.
 
+#### Alpha Pivot Milestone 6 — Genuine Creator Rehearsal
+
+- [x] Join free-form game ideas, broad systems, small quests, file choice, and the existing profile-free runner in one connected path.
+- [x] Replace main creator-facing engineering words with **work plan**, **files Codex may change**, **Confirm this plan**, **Send to Codex**, and short pencil-button tooltips.
+- [x] Recheck the exact saved planning bytes before work starts and throughout completion without turning planning records or profiles into permission.
+- [x] Prove safe launch gating, changed-plan rejection, failed-save recovery, exact undo, one-commit repair, reload, and older-project compatibility with temporary projects.
+- [x] Pass the full, protected, build, context, and five temporary browser suites.
+- [x] Repair live system and quest suggestions for the current Codex response shape, keep strict checks, and show a friendly retry message instead of raw service errors.
+- [x] Receive the owner's personal **Worked** choice after visible play in the named isolated project.
+- [x] Make the one authorized local milestone commit after that owner choice.
+
+**Status:** `COMPLETE`. The owner played the isolated Godot game, saw the promised welcome beacon, and chose **Worked**. Completion reloaded successfully and the authorized local milestone commit was created.
+
+**Truth rule:** A successful launch or closed game is not success. Only the creator's visible **Worked** choice may save completion. Gravity Tap and Signal Sweep remain read only.
+
+**Exit:** The isolated owner rehearsal completes, reloads, and records one local commit for the Forge milestone. No push, pull request, merge, deploy, remote, tag, or release change occurs.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -287,13 +304,8 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Pivot Milestone 5 is complete. The next bounded product task is one genuine
-creator rehearsal on a temporary or separately owner-approved Godot project. It joins
-free-form idea planning, system refinement, exact work approval, the existing runner,
-verification, visible play, creator confirmation, persistence, revise, and safe undo.
-The plan must separate automated proof from the owner's visible play decision and must
-resolve how Forge-owned planning records coexist with the runner's clean-Git boundary
-without granting game-file authority. Do not implement that rehearsal before approval.
-Submission actions remain owner-controlled: review public copy, supply the
-demo/live/Devpost URLs, select a license, deploy the static site, and push or submit
-only when authorized.
+Alpha Pivot Milestone 6 is complete. Its closeout preserves the completed creator
+rehearsal and local commit. Choose the next bounded milestone before implementation;
+the roadmap deliberately does not authorize a successor yet. Submission actions remain
+owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a
+license, deploy the static site, and push or submit only when authorized.

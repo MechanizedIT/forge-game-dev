@@ -36,6 +36,7 @@ import {
 } from "./boundary.js";
 import {
   completeGeneratedQuestTransaction,
+  completeNativeQuestTransaction,
   GeneratedReceiptPendingError,
   repairGeneratedCompletionReceipt,
   renderGeneratedQuestMarkdown,
@@ -70,6 +71,16 @@ import {
   type GeneratedProofDependencies,
 } from "./verification.js";
 import { generatedProfileCatalog } from "./profiles.js";
+import { loadNativeQuest, type NativePlanningRecord } from "./native-quest.js";
+
+const successfulPlayLaunchProgress = "The real game launched successfully; creator confirmation is still required.";
+
+function assertPlanningRecordsMatchInventory(planningRecords: readonly NativePlanningRecord[], inventory: Array<{ relativePath: string; sha256: string }>): void {
+  const hashes = new Map(inventory.map((entry) => [entry.relativePath, entry.sha256]));
+  for (const record of planningRecords) {
+    if (hashes.get(record.relativePath) !== record.sha256) throw new GeneratedQuestRunConflictError("The saved Forge planning files changed while the work plan was being prepared.");
+  }
+}
 
 const activeLockSchema = z.object({
   schemaVersion: z.literal(1),
@@ -80,13 +91,16 @@ const activeLockSchema = z.object({
 }).strict();
 
 interface LoadedProject {
+  source: "legacy" | "native";
   projectPath: string;
   manifest: z.infer<typeof generatedProjectManifestSchema>;
   starter: z.infer<typeof topDownArenaStarterManifestSchema>;
   baselineHead: string;
   roadmap: GeneratedRoadmapV2;
   quest: GeneratedQuestArtifactV2;
-  questRelativePath: string;
+  questRelativePath: string | null;
+  dependencyStates: Map<string, GeneratedQuestArtifactV2["state"]>;
+  planningRecords: NativePlanningRecord[];
 }
 
 export class GeneratedQuestRunConflictError extends Error {
@@ -251,8 +265,23 @@ export class GeneratedQuestRunnerService {
         ? generatedRoadmapV2Schema.parse(roadmapValue)
         : roadmapSchema.parse(roadmapValue),
     );
+    const native = await loadNativeQuest({ projectPath, projectId, questId, legacyRoadmap: roadmap });
     const node = roadmap.quests.find((item) => item.questId === questId);
-    if (!node) throw new GeneratedQuestRunNotFoundError(`Quest ${questId} is not in project ${projectId}.`);
+    if (!node) {
+      if (!native) throw new GeneratedQuestRunNotFoundError(`Quest ${questId} is not in project ${projectId}.`);
+      return {
+        source: "native",
+        projectPath,
+        manifest,
+        starter,
+        baselineHead: baseline.commitSha,
+        roadmap,
+        quest: native.quest,
+        questRelativePath: null,
+        dependencyStates: native.dependencyStates,
+        planningRecords: native.planningRecords,
+      };
+    }
     const relativeQuestPath = questRelativePath(manifest.artifacts.questsDirectory, questId);
     const questAny = generatedQuestArtifactAnySchema.parse(await readUnknown(path.join(projectPath, relativeQuestPath)));
     const quest = normalizeGeneratedQuest(questAny, node.state);
@@ -260,6 +289,7 @@ export class GeneratedQuestRunnerService {
       throw new GeneratedQuestRunConflictError("Generated quest and roadmap revision identity do not match.");
     }
     return {
+      source: "legacy",
       projectPath,
       manifest,
       starter,
@@ -267,6 +297,8 @@ export class GeneratedQuestRunnerService {
       roadmap,
       quest,
       questRelativePath: relativeQuestPath,
+      dependencyStates: new Map(roadmap.quests.map((item) => [item.questId, item.state])),
+      planningRecords: [],
     };
   }
 
@@ -427,6 +459,7 @@ export class GeneratedQuestRunnerService {
 
   async adjust(projectId: string, questId: string, input: GeneratedQuestAdjustmentInput): Promise<GeneratedQuestPlanMutationResult> {
     const project = await this.loadProject(projectId, questId);
+    if (project.source !== "legacy" || project.questRelativePath === null) throw new GeneratedQuestRunConflictError("Edit the native quest in its game-system plan.");
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("Adjust is unavailable while a generated run owns the project lock.");
     inspectCleanGitStart(project.projectPath, project.baselineHead);
     if (project.quest.verificationProfile !== "gravity_orb_presence_v1" || questId !== "q1-enter-the-arena" || project.quest.sequence !== 1) throw new GeneratedQuestRunConflictError("Adjustment remains the protected Gravity Tap revision ceremony; accepted relay roadmaps do not use it.");
@@ -480,6 +513,7 @@ export class GeneratedQuestRunnerService {
 
   async defer(projectId: string, questId: string, expectedRevision: number): Promise<GeneratedQuestPlanMutationResult> {
     const project = await this.loadProject(projectId, questId);
+    if (project.source !== "legacy" || project.questRelativePath === null) throw new GeneratedQuestRunConflictError("Edit the native quest in its game-system plan.");
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("Defer is unavailable while a generated run owns the project lock.");
     inspectCleanGitStart(project.projectPath, project.baselineHead);
     if (project.quest.revision !== expectedRevision) throw new GeneratedQuestRunConflictError("The quest revision changed; reopen the brief before deferring it.");
@@ -503,14 +537,15 @@ export class GeneratedQuestRunnerService {
   async prepare(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
     const project = await this.loadProject(projectId, questId);
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("This project already has an active generated quest run.");
-    const git = inspectCleanGitStart(project.projectPath, project.baselineHead);
+    const git = inspectCleanGitStart(project.projectPath, project.baselineHead, project.planningRecords);
     const startInventory = await captureControlledInventory(project.projectPath);
+    assertPlanningRecordsMatchInventory(project.planningRecords, startInventory);
     const contract = await buildGeneratedQuestContract({
       projectPath: project.projectPath,
       starterId: project.starter.starterId,
       starterVersion: project.starter.version,
       quest: project.quest,
-      dependencyStates: new Map(project.roadmap.quests.map((node) => [node.questId, node.state])),
+      dependencyStates: project.dependencyStates,
     });
     const context = await buildGeneratedQuestContext(project.projectPath, contract);
     const suffix = this.randomId().toLowerCase().replace(/[^a-f0-9]/gu, "").slice(0, 12);
@@ -533,12 +568,12 @@ export class GeneratedQuestRunnerService {
       startInventory,
       observedPostHashes: {},
       changedFiles: [],
-      progress: [contract.schemaVersion === 2 ? "Prepared the creator-approved work contract for review." : "Prepared the bounded quest contract for creator review."],
+      progress: [contract.schemaVersion === 2 ? "Prepared the creator-confirmed work plan for review." : "Prepared the bounded quest contract for creator review."],
       proofs: createPendingGeneratedProof(contract.verificationProfile),
       creatorResult: null,
       codexThreadId: null,
       error: null,
-      recovery: { action: "resume", message: "Review and approve the exact contract to continue.", concurrentPaths: [] },
+      recovery: { action: "resume", message: contract.schemaVersion === 2 ? "Check and confirm the work plan to continue." : "Review and approve the exact contract to continue.", concurrentPaths: [] },
       createdAt,
       updatedAt: createdAt,
     });
@@ -580,8 +615,8 @@ export class GeneratedQuestRunnerService {
       ...run.journal,
       phase: "approved",
       error: null,
-      recovery: { action: "resume", message: "The exact contract is approved and ready to start.", concurrentPaths: [] },
-    }, run.contract.schemaVersion === 2 ? "Creator approved the exact work-session contract." : "Creator approved the exact existing-file implementation contract."));
+      recovery: { action: "resume", message: run.contract.schemaVersion === 2 ? "The work plan is confirmed and ready to send to Codex." : "The exact contract is approved and ready to start.", concurrentPaths: [] },
+    }, run.contract.schemaVersion === 2 ? "Creator confirmed the work plan. Codex has not started." : "Creator approved the exact existing-file implementation contract."));
     return this.snapshot(run.contract, journal, run.receipt);
   }
 
@@ -592,9 +627,17 @@ export class GeneratedQuestRunnerService {
     if (!lock || lock.questId !== questId) throw new GeneratedQuestRunNotFoundError("No approved generated run is active for this quest.");
     const run = await this.loadRun(project.projectPath, lock.runId);
     if (run.journal.phase !== "approved") throw new GeneratedQuestRunConflictError("Only an approved generated contract can start.");
-    const git = inspectCleanGitStart(project.projectPath, project.baselineHead);
+    const git = inspectCleanGitStart(project.projectPath, project.baselineHead, project.planningRecords);
     const inventory = await captureControlledInventory(project.projectPath);
-    if (git.startHead !== run.journal.startHead || !sameInventory(inventory, run.journal.startInventory) || project.quest.revision !== run.journal.questRevision) {
+    assertPlanningRecordsMatchInventory(project.planningRecords, inventory);
+    const currentContract = await buildGeneratedQuestContract({
+      projectPath: project.projectPath,
+      starterId: project.starter.starterId,
+      starterVersion: project.starter.version,
+      quest: project.quest,
+      dependencyStates: project.dependencyStates,
+    });
+    if (git.startHead !== run.journal.startHead || !sameInventory(inventory, run.journal.startInventory) || project.quest.revision !== run.journal.questRevision || currentContract.fingerprint !== run.contract.fingerprint) {
       throw new GeneratedQuestRunConflictError("Project HEAD, inventory, or quest revision changed after contract approval.");
     }
     const context = await buildGeneratedQuestContext(project.projectPath, run.contract);
@@ -746,7 +789,7 @@ export class GeneratedQuestRunnerService {
         : "Boundary and project health must pass before the real playtest.");
     }
     const result = await this.launchGame({ projectId, projectPath: project.projectPath, forgeHome: this.forgeHome });
-    await this.writeJournal(this.progress(run.journal, "The real game launched; creator confirmation is still required."));
+    await this.writeJournal(this.progress(run.journal, successfulPlayLaunchProgress));
     return result;
   }
 
@@ -757,6 +800,7 @@ export class GeneratedQuestRunnerService {
     if (!lock || lock.questId !== questId) throw new GeneratedQuestRunNotFoundError("No generated playtest is active for this quest.");
     const run = await this.loadRun(project.projectPath, lock.runId);
     if (run.journal.phase !== "waiting_for_playtest") throw new GeneratedQuestRunConflictError("Creator confirmation is available only after automated proof and play launch.");
+    if (!run.journal.progress.includes(successfulPlayLaunchProgress)) throw new GeneratedQuestRunConflictError("Play the real game successfully before choosing a result.");
     const confirmedAt = this.now().toISOString();
     if (result !== "worked") {
       const phase = result === "cancel" ? "cancelled" as const : result === "did_not_work" ? "failed" as const : "waiting_for_playtest" as const;
@@ -820,12 +864,9 @@ export class GeneratedQuestRunnerService {
     journal = await this.writeJournal({ ...journal, proofs: rerun });
     try {
       const fault = this.completionFault?.();
-      const receipt = await completeGeneratedQuestTransaction({
-        journal,
-        contract: run.contract,
-        completedAt: confirmedAt,
-        ...(fault ? { fault } : {}),
-      });
+      const receipt = project.source === "native"
+        ? await completeNativeQuestTransaction({ journal, contract: run.contract, completedAt: confirmedAt, ...(fault ? { fault } : {}) })
+        : await completeGeneratedQuestTransaction({ journal, contract: run.contract, completedAt: confirmedAt, ...(fault ? { fault } : {}) });
       journal = await this.writeJournal(this.progress({
         ...journal,
         phase: "completed",

@@ -221,8 +221,8 @@ async function main(): Promise<void> {
     if (!(await activePlay.isDisabled())) report.issues.push({ kind: "action", state: "active-work", message: "Play remained enabled during active work." });
     if (!(await activeHistory.isDisabled())) report.issues.push({ kind: "action", state: "active-work", message: "Navigation remained enabled during active work." });
     if (await activeFolder.isDisabled()) report.issues.push({ kind: "action", state: "active-work", message: "Safe folder access was disabled during active work." });
-    await activePage.getByRole("button", { name: "View work progress" }).click();
-    await activePage.getByRole("heading", { name: "Forge is building the approved result" }).waitFor();
+    await activePage.getByRole("button", { name: "View progress" }).click();
+    await activePage.getByRole("heading", { name: "Forge is making the confirmed change" }).waitFor();
     await activeFolder.click(); await activePage.getByRole("status").filter({ hasText: "Project folder opened" }).waitFor();
     await capture(activePage, "active-work-safety-desktop");
     await activeContext.close(); await new Promise<void>((resolve) => active.server.close(() => resolve()));
@@ -231,9 +231,9 @@ async function main(): Promise<void> {
     const contract = await startServer(contractFixture.forgeHome, "contract");
     const contractContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const contractPage = await contractContext.newPage(); observe(contractPage, contract.baseUrl, "contract-review", ["/events"]); await openWorld(contractPage, contract.baseUrl);
-    await contractPage.getByRole("button", { name: "Review work order" }).click();
-    await contractPage.getByRole("button", { name: "Approve exact contract" }).waitFor();
-    if (await contractPage.getByRole("button", { name: "Start approved build" }).isVisible().catch(() => false)) report.issues.push({ kind: "action", state: "contract-review", message: "Start work appeared before exact approval." });
+    await contractPage.getByRole("button", { name: "Check work plan" }).click();
+    await contractPage.getByRole("button", { name: "Confirm this plan" }).waitFor();
+    if (await contractPage.getByRole("button", { name: "Send to Codex" }).isVisible().catch(() => false)) report.issues.push({ kind: "action", state: "contract-review", message: "Send to Codex appeared before plan confirmation." });
     await capture(contractPage, "contract-review-before-approval-desktop");
     await contractContext.close(); await new Promise<void>((resolve) => contract.server.close(() => resolve()));
 

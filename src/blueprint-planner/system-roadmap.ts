@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   acceptedSystemRoadmapSchema,
+  systemRoadmapModelOutputSchema,
   systemRoadmapPlanningResultSchema,
   type AcceptedSystemRoadmap,
   type ProjectModel,
@@ -39,7 +40,7 @@ export interface SystemRoadmapPlanningSnapshot {
 export type SystemRoadmapPlanningEvent = { type: "refresh" };
 type Subscriber = (event: SystemRoadmapPlanningEvent) => void;
 
-const outputSchema = z.toJSONSchema(systemRoadmapPlanningResultSchema, { target: "draft-07", reused: "inline" });
+const outputSchema = z.toJSONSchema(systemRoadmapModelOutputSchema, { target: "draft-07", reused: "inline" });
 
 function provenance(): BlueprintProvenance {
   return {
@@ -119,7 +120,7 @@ function modelSummary(model: ProjectModel): string {
 }
 
 function planningPrompt(model: ProjectModel, idea: string, answers: SystemRoadmapPlanningSnapshot["answers"], revision: string | null): string {
-  return `You help a game creator organize one existing Forge-owned Godot project into broad systems.\n\nCREATOR IDEA\n${idea}\n\nCURRENT FORGE PLAN\n${modelSummary(model)}\n\n${answers.length ? `ANSWERS\n${JSON.stringify(answers)}\n` : ""}${revision ? `REVISION REQUEST\n${revision}\n` : ""}\nReturn strict JSON matching the supplied schema. Ask clarification only if an answer materially changes the broad roadmap, at most three short questions, and never after answers were supplied. Otherwise return 3 to 6 ordered broad systems. Preserve every current system exactly once using its exact existingSystemId. Existing systems that contain quests must keep their relative order. Use null only for a genuinely new empty system. Keep titles and outcomes ordinary, concrete, and player-visible. Do not create quests. Do not mention or use supported game types, capabilities, starters, templates, verification profiles, tools, files, commands, or implementation details. A creator's idea is eligible because they chose it.`;
+  return `You help a game creator organize one existing Forge-owned Godot project into broad systems.\n\nCREATOR IDEA\n${idea}\n\nCURRENT FORGE PLAN\n${modelSummary(model)}\n\n${answers.length ? `ANSWERS\n${JSON.stringify(answers)}\n` : ""}${revision ? `REVISION REQUEST\n${revision}\n` : ""}\nReturn strict JSON matching the supplied schema. Always include both lists. For clarification, return 1 to 3 clarificationQuestions and an empty systems list. For a proposal, return an empty clarificationQuestions list and 3 to 6 ordered broad systems. Ask clarification only if an answer materially changes the broad roadmap, and never after answers were supplied. Preserve every current system exactly once using its exact existingSystemId. Existing systems that contain quests must keep their relative order. Use null only for a genuinely new empty system. Keep titles and outcomes ordinary, concrete, and player-visible. Do not create quests. Do not mention or use supported game types, capabilities, starters, templates, verification profiles, tools, files, commands, or implementation details. A creator's idea is eligible because they chose it.`;
 }
 
 function repairPrompt(problems: string[]): string {
@@ -132,7 +133,23 @@ function messageFrom(error: unknown): string {
 
 function parsePlanningResult(text: string): { result: SystemRoadmapPlanningResult | null; problems: string[] } {
   try {
-    const parsed = systemRoadmapPlanningResultSchema.safeParse(JSON.parse(text));
+    const value = JSON.parse(text) as unknown;
+    const direct = systemRoadmapPlanningResultSchema.safeParse(value);
+    if (direct.success) return { result: direct.data, problems: [] };
+    const envelope = systemRoadmapModelOutputSchema.safeParse(value);
+    if (!envelope.success) {
+      return { result: null, problems: direct.error.issues.map((issue) => `${issue.path.join(".") || "result"}: ${issue.message}`) };
+    }
+    if (envelope.data.resultType === "clarification" && envelope.data.systems.length > 0) {
+      return { result: null, problems: ["systems: must be empty when clarification questions are returned"] };
+    }
+    if (envelope.data.resultType === "proposal" && envelope.data.clarificationQuestions.length > 0) {
+      return { result: null, problems: ["clarificationQuestions: must be empty when systems are returned"] };
+    }
+    const candidate = envelope.data.resultType === "clarification"
+      ? { resultType: "clarification" as const, clarificationQuestions: envelope.data.clarificationQuestions }
+      : { resultType: "proposal" as const, systems: envelope.data.systems };
+    const parsed = systemRoadmapPlanningResultSchema.safeParse(candidate);
     return parsed.success
       ? { result: parsed.data, problems: [] }
       : { result: null, problems: parsed.error.issues.map((issue) => `${issue.path.join(".") || "result"}: ${issue.message}`) };

@@ -28,6 +28,15 @@ export const systemRoadmapPlanningResultSchema = z.discriminatedUnion("resultTyp
   }).strict(),
 ]);
 
+// The live structured-output API does not accept a top-level `oneOf`. Keep the
+// strict saved-result union above, but ask the model for one required envelope
+// whose unused list is empty. The planner normalizes and validates it afterward.
+export const systemRoadmapModelOutputSchema = z.object({
+  resultType: z.enum(["clarification", "proposal"]),
+  clarificationQuestions: z.array(systemRoadmapQuestionSchema).max(3),
+  systems: z.array(systemRoadmapProposalSystemSchema).max(6),
+}).strict();
+
 export const acceptedSystemRoadmapSystemSchema = z.object({
   systemId: slugSchema,
   title: z.string().trim().min(1).max(80),

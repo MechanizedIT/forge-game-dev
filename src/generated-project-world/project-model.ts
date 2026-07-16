@@ -28,7 +28,7 @@ export interface LegacyProjectModelInputs {
   sessions: GeneratedQuestRunSnapshot[];
 }
 
-const activePhases = new Set([
+export const activeProjectWorkPhases = new Set([
   "approved",
   "implementing",
   "scope_review",
@@ -36,14 +36,14 @@ const activePhases = new Set([
   "waiting_for_playtest",
   "completion_pending",
 ]);
-const terminalPhases = new Set(["completed", "failed", "cancelled", "interrupted"]);
+export const terminalProjectWorkPhases = new Set(["completed", "failed", "cancelled", "interrupted"]);
 
 export function deriveLegacyQuestStatus(
   persisted: GeneratedQuestArtifactV2["state"],
   latest: Pick<GeneratedQuestRunSnapshot, "phase"> | undefined,
 ): ProjectModelQuest["status"] {
   if (persisted === "completed") return "completed";
-  if (latest && activePhases.has(latest.phase)) return "active";
+  if (latest && activeProjectWorkPhases.has(latest.phase)) return "active";
   return persisted;
 }
 
@@ -56,15 +56,15 @@ export function deriveProjectSystemStatus(statuses: ProjectModelQuest["status"][
   return "planned";
 }
 
-function resultId(runId: string): string {
+export function projectModelResultId(runId: string): string {
   return `result-${runId}`;
 }
 
-function migrateResult(session: GeneratedQuestRunSnapshot): ProjectModelResult | null {
-  if (!terminalPhases.has(session.phase)) return null;
+export function projectModelResultFromSession(session: GeneratedQuestRunSnapshot): ProjectModelResult | null {
+  if (!terminalProjectWorkPhases.has(session.phase)) return null;
   const receipt = session.receipt;
   return {
-    resultId: resultId(session.runId),
+    resultId: projectModelResultId(session.runId),
     workSessionId: session.runId,
     questId: session.questId,
     status: session.phase as ProjectModelResult["status"],
@@ -74,6 +74,25 @@ function migrateResult(session: GeneratedQuestRunSnapshot): ProjectModelResult |
     creatorDecision: session.creatorResult,
     gitCommitSha: receipt?.commitSha ?? null,
     treeSha: receipt?.treeSha ?? null,
+  };
+}
+
+export function projectModelWorkSessionFromSnapshot(session: GeneratedQuestRunSnapshot) {
+  return {
+    workSessionId: session.runId,
+    questId: session.questId,
+    phase: session.phase,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+    contractFingerprint: session.contract.fingerprint,
+    allowedFiles: session.contract.allowedFiles.map((file) => file.relativePath),
+    progress: session.progress,
+    proofs: session.proofs,
+    changedFiles: session.changedFiles,
+    creatorResult: session.creatorResult,
+    error: session.error,
+    recovery: session.recovery,
+    resultId: terminalProjectWorkPhases.has(session.phase) ? projectModelResultId(session.runId) : null,
   };
 }
 
@@ -102,13 +121,14 @@ export function buildLegacyProjectModel(inputs: LegacyProjectModelInputs): Proje
       extraProof: quest.verificationProfile ? { profileId: quest.verificationProfile } : null,
     };
   });
-  const results = inputs.sessions.map(migrateResult).filter((result): result is ProjectModelResult => result !== null);
+  const results = inputs.sessions.map(projectModelResultFromSession).filter((result): result is ProjectModelResult => result !== null);
   const roadmapIds = inputs.roadmap.quests.map((quest) => quest.questId);
   const selectedQuestId = inputs.state.selectedQuestId !== null && roadmapIds.includes(inputs.state.selectedQuestId)
     ? inputs.state.selectedQuestId
     : roadmapIds[0]!;
-  const nextRecommendedQuestId = inputs.state.schemaVersion === 2
-    ? inputs.state.nextRecommendedQuestId
+  const savedNextRecommendedQuestId = inputs.state.schemaVersion === 2 ? inputs.state.nextRecommendedQuestId : null;
+  const nextRecommendedQuestId = savedNextRecommendedQuestId !== null && roadmapIds.includes(savedNextRecommendedQuestId)
+    ? savedNextRecommendedQuestId
     : inputs.roadmap.quests.find((quest) => quest.state === "available")?.questId ?? null;
 
   return projectModelSchema.parse({
@@ -134,22 +154,7 @@ export function buildLegacyProjectModel(inputs: LegacyProjectModelInputs): Proje
       questIds: roadmapIds,
     }],
     quests,
-    workSessions: inputs.sessions.map((session) => ({
-      workSessionId: session.runId,
-      questId: session.questId,
-      phase: session.phase,
-      createdAt: session.createdAt,
-      updatedAt: session.updatedAt,
-      contractFingerprint: session.contract.fingerprint,
-      allowedFiles: session.contract.allowedFiles.map((file) => file.relativePath),
-      progress: session.progress,
-      proofs: session.proofs,
-      changedFiles: session.changedFiles,
-      creatorResult: session.creatorResult,
-      error: session.error,
-      recovery: session.recovery,
-      resultId: terminalPhases.has(session.phase) ? resultId(session.runId) : null,
-    })),
+    workSessions: inputs.sessions.map(projectModelWorkSessionFromSnapshot),
     results,
     history: inputs.chronicle.entries.map((entry) => ({
       historyEntryId: entry.entryId,

@@ -123,10 +123,10 @@ async function openWorld(page: Page, base: string) {
   await page.getByRole("heading", { name: "Recent projects" }).waitFor();
   await page.getByRole("button", { name: "Open Project World" }).click();
   await page.locator(".generated-project-world").waitFor();
-  if (!(await page.getByRole("button", { name: "Shape systems" }).isVisible().catch(() => false))) {
+  if (!(await page.getByRole("button", { name: "Edit these game systems" }).isVisible().catch(() => false))) {
     await page.getByRole("button", { name: "Roadmap", exact: true }).click();
   }
-  await page.getByRole("button", { name: "Shape systems" }).waitFor();
+  await page.getByRole("button", { name: "Edit these game systems" }).waitFor();
 }
 
 async function close(server: ReturnType<typeof createForgeDashboardServer>) { await new Promise<void>((resolve) => server.close(() => resolve())); }
@@ -143,9 +143,9 @@ async function main() {
     const registryBefore = await digest(path.join(successFixture.forgeHome, "project-registry.json"));
     const before = await projectHashes(successFixture.projectPath);
     report.gitStatusBefore = gitStatus(successFixture.projectPath);
-    await page.getByRole("button", { name: "Shape systems" }).click(); await page.getByRole("heading", { name: "What should this game become?" }).waitFor(); await capture(page, "idea-desktop");
+    await page.getByRole("button", { name: "Edit these game systems" }).click(); await page.getByRole("heading", { name: "What should this game become?" }).waitFor(); await capture(page, "idea-desktop");
     await page.getByLabel("Game idea").fill("A lighthouse keeper protects a worried harbor through dangerous but readable storms."); await page.getByRole("button", { name: "Suggest systems" }).click(); await page.getByRole("heading", { name: "4 big pieces make this game." }).waitFor(); await capture(page, "proposal-desktop");
-    await page.getByLabel("What should change?").fill("Make lighthouse care feel gentler."); await page.getByRole("button", { name: "Revise roadmap" }).click(); await page.getByRole("heading", { name: "Gentle Lighthouse Care" }).waitFor(); await capture(page, "revised-desktop");
+    await page.getByLabel("What should change?").fill("Make lighthouse care feel gentler."); await page.getByRole("button", { name: "Edit these game systems" }).click(); await page.getByRole("heading", { name: "Gentle Lighthouse Care" }).waitFor(); await capture(page, "revised-desktop");
     await page.setViewportSize({ width: 390, height: 844 }); await capture(page, "proposal-mobile"); await page.emulateMedia({ reducedMotion: "reduce" }); await capture(page, "proposal-mobile-reduced-motion");
     await page.setViewportSize({ width: 1440, height: 900 });
     const [, acceptResponse] = await Promise.all([
@@ -180,10 +180,10 @@ async function main() {
     await context.close(); await close(success.server);
 
     const clarifyFixture = await fixture(root, "clarify"); const clarifyServer = await start(clarifyFixture.forgeHome, [clarification(), proposal()]);
-    const clarifyContext = await app.newContext({ viewport: { width: 768, height: 900 } }); const clarifyPage = await clarifyContext.newPage(); observe(clarifyPage, clarifyServer.base, "clarify"); await openWorld(clarifyPage, clarifyServer.base); await clarifyPage.getByRole("button", { name: "Shape systems" }).click(); await clarifyPage.getByLabel("Game idea").fill("A lighthouse keeper protects a worried harbor through dangerous but readable storms."); await clarifyPage.getByRole("button", { name: "Suggest systems" }).click(); await clarifyPage.getByRole("heading", { name: "A few answers will help." }).waitFor(); await capture(clarifyPage, "clarification-tablet"); await clarifyPage.getByLabel("What should the player protect?").fill("The harbor village"); await clarifyPage.getByLabel("How long should one night feel?").fill("Ten minutes"); await clarifyPage.getByRole("button", { name: "Build the roadmap" }).click(); await clarifyPage.getByRole("heading", { name: "4 big pieces make this game." }).waitFor(); await clarifyContext.close(); await close(clarifyServer.server);
+    const clarifyContext = await app.newContext({ viewport: { width: 768, height: 900 } }); const clarifyPage = await clarifyContext.newPage(); observe(clarifyPage, clarifyServer.base, "clarify"); await openWorld(clarifyPage, clarifyServer.base); await clarifyPage.getByRole("button", { name: "Edit these game systems" }).click(); await clarifyPage.getByLabel("Game idea").fill("A lighthouse keeper protects a worried harbor through dangerous but readable storms."); await clarifyPage.getByRole("button", { name: "Suggest systems" }).click(); await clarifyPage.getByRole("heading", { name: "A few answers will help." }).waitFor(); await capture(clarifyPage, "clarification-tablet"); await clarifyPage.getByLabel("What should the player protect?").fill("The harbor village"); await clarifyPage.getByLabel("How long should one night feel?").fill("Ten minutes"); await clarifyPage.getByRole("button", { name: "Build the roadmap" }).click(); await clarifyPage.getByRole("heading", { name: "4 big pieces make this game." }).waitFor(); await clarifyContext.close(); await close(clarifyServer.server);
 
     const failFixture = await fixture(root, "failure"); const failServer = await start(failFixture.forgeHome, ["not-json", "still-not-json", proposal()]);
-    const failContext = await app.newContext({ viewport: { width: 1440, height: 900 } }); const failPage = await failContext.newPage(); observe(failPage, failServer.base, "failure"); await openWorld(failPage, failServer.base); await failPage.getByRole("button", { name: "Shape systems" }).click(); await failPage.getByLabel("Game idea").fill("A lighthouse keeper protects a worried harbor through dangerous but readable storms."); await failPage.getByRole("button", { name: "Suggest systems" }).click(); await failPage.getByRole("heading", { name: "Your idea is still here." }).waitFor(); await capture(failPage, "failure-retry-desktop"); await failPage.getByRole("button", { name: "Try again" }).click(); await failPage.getByRole("heading", { name: "4 big pieces make this game." }).waitFor(); await failContext.close(); await close(failServer.server);
+    const failContext = await app.newContext({ viewport: { width: 1440, height: 900 } }); const failPage = await failContext.newPage(); observe(failPage, failServer.base, "failure"); await openWorld(failPage, failServer.base); await failPage.getByRole("button", { name: "Edit these game systems" }).click(); await failPage.getByLabel("Game idea").fill("A lighthouse keeper protects a worried harbor through dangerous but readable storms."); await failPage.getByRole("button", { name: "Suggest systems" }).click(); await failPage.getByRole("heading", { name: "Your idea is still here." }).waitFor(); await capture(failPage, "failure-retry-desktop"); await failPage.getByRole("button", { name: "Try again" }).click(); await failPage.getByRole("heading", { name: "4 big pieces make this game." }).waitFor(); await failContext.close(); await close(failServer.server);
   } catch (error) { report.issues.push(error instanceof Error ? error.stack ?? error.message : String(error)); }
   finally { await app?.close().catch(() => undefined); await rm(root, { recursive: true, force: true }); }
   report.result = report.issues.length ? "FAIL" : "PASS";

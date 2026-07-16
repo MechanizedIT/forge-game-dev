@@ -45,6 +45,7 @@ import { writeJsonAtomic, writeTextAtomic } from "../quest-runner/artifacts.js";
 import { normalizeGeneratedQuest, normalizeGeneratedRoadmap } from "../generated-quest-runner/contract.js";
 import { GeneratedQuestRunnerService } from "../generated-quest-runner/service.js";
 import { readContainedUtf8File, validateExpectedAbsentWorkFile } from "../generated-quest-runner/boundary.js";
+import { createNativeQuestArtifact } from "../generated-quest-runner/native-quest.js";
 import type {
   GeneratedActivity,
   GeneratedIdeaSaveResponse,
@@ -56,6 +57,20 @@ import type {
   GeneratedWorldStateInput,
   GeneratedWorldView,
 } from "./shared.js";
+
+const creatorRunPhaseLabels: Record<string, string> = {
+  contract_review: "work plan ready",
+  approved: "plan confirmed",
+  implementing: "Codex working",
+  scope_review: "file request",
+  verifying: "checking",
+  waiting_for_playtest: "ready to play",
+  completion_pending: "saving result",
+  completed: "completed",
+  failed: "stopped",
+  cancelled: "cancelled",
+  interrupted: "interrupted",
+};
 import { applyAcceptedSystemRoadmap, buildLegacyProjectModel } from "./project-model.js";
 import { applyAcceptedSystemQuests, nativeQuestIds } from "./system-quest-plan.js";
 
@@ -294,6 +309,19 @@ export class GeneratedProjectWorldService {
       });
 
       const sessions = await this.sessionReader.listProjectSessions(projectId);
+      const acceptedSystemRoadmap = await this.optionalSystemRoadmap(projectPath, projectId);
+      const acceptedSystemQuestPlan = await this.optionalSystemQuestPlan(projectPath, projectId);
+      const legacyQuestIds = new Set(quests.map((quest) => quest.questId));
+      const acceptedNativeIds = nativeQuestIds(acceptedSystemQuestPlan);
+      const unknownSession = sessions.find((session) => !legacyQuestIds.has(session.questId) && !acceptedNativeIds.has(session.questId));
+      if (unknownSession) throw new Error(`Work session ${unknownSession.runId} references an unknown quest.`);
+      const legacySessions = sessions.filter((session) => legacyQuestIds.has(session.questId));
+      const nativeSessions = sessions.filter((session) => acceptedNativeIds.has(session.questId));
+      const nativeHistoryEntries = chronicle.entries.filter((entry) => entry.type === "quest_completed" && acceptedNativeIds.has(entry.questId));
+      const legacyChronicle = chronicleV2Schema.parse({
+        ...chronicle,
+        entries: chronicle.entries.filter((entry) => entry.type !== "quest_completed" || !acceptedNativeIds.has(entry.questId)),
+      });
       const legacyProjectModel = buildLegacyProjectModel({
         manifest,
         vision,
@@ -301,16 +329,14 @@ export class GeneratedProjectWorldService {
         roadmap,
         quests,
         state,
-        chronicle,
-        sessions,
+        chronicle: legacyChronicle,
+        sessions: legacySessions,
       });
-      const acceptedSystemRoadmap = await this.optionalSystemRoadmap(projectPath, projectId);
       const roadmapProjectModel = acceptedSystemRoadmap
         ? applyAcceptedSystemRoadmap(legacyProjectModel, acceptedSystemRoadmap)
         : legacyProjectModel;
-      const acceptedSystemQuestPlan = await this.optionalSystemQuestPlan(projectPath, projectId);
       let projectModel = acceptedSystemQuestPlan
-        ? applyAcceptedSystemQuests(roadmapProjectModel, acceptedSystemQuestPlan)
+        ? applyAcceptedSystemQuests(roadmapProjectModel, acceptedSystemQuestPlan, nativeSessions, nativeHistoryEntries)
         : roadmapProjectModel;
 
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
@@ -318,11 +344,38 @@ export class GeneratedProjectWorldService {
       const selectedIsValid = state.selectedQuestId !== null && combinedQuestIds.includes(state.selectedQuestId);
       const selectedQuestId = selectedIsValid ? state.selectedQuestId! : combinedQuestIds[0]!;
       const selectedSystemId = projectModel.quests.find((quest) => quest.questId === selectedQuestId)?.systemId ?? projectModel.systems[0]!.systemId;
-      projectModel = projectModelSchema.parse({ ...projectModel, focus: { ...projectModel.focus, selectedSystemId, selectedQuestId } });
+      const savedNext = state.schemaVersion === 2 ? state.nextRecommendedQuestId : null;
+      const nextRecommendedQuestId = savedNext !== null && combinedQuestIds.includes(savedNext) ? savedNext : projectModel.focus.nextRecommendedQuestId;
+      projectModel = projectModelSchema.parse({ ...projectModel, focus: { ...projectModel.focus, selectedSystemId, selectedQuestId, nextRecommendedQuestId } });
       const repairNotice = selectedIsValid ? null : "The saved quest selection was unavailable. Forge focused the first roadmap quest in memory; choose a quest to persist the repair.";
-      const questBriefs: GeneratedQuestBrief[] = await Promise.all(quests.map(async (quest) => {
+      const nativeArtifacts = new Map<string, GeneratedQuestArtifactV2>();
+      for (const savedSystem of acceptedSystemQuestPlan?.systems ?? []) {
+        for (const [index, savedQuest] of savedSystem.quests.entries()) {
+          const modelQuest = projectModel.quests.find((quest) => quest.questId === savedQuest.questId);
+          if (!modelQuest) throw new Error(`Saved native quest ${savedQuest.questId} could not be projected.`);
+          nativeArtifacts.set(savedQuest.questId, createNativeQuestArtifact({
+            projectId,
+            savedQuest,
+            sequence: savedSystem.baseQuestIds.length + index + 1,
+            state: modelQuest.status === "active" ? "available" : modelQuest.status,
+          }));
+        }
+      }
+      const artifactById = new Map<string, GeneratedQuestArtifactV2>(quests.map((quest) => [quest.questId, quest]));
+      for (const [questId, quest] of nativeArtifacts) artifactById.set(questId, quest);
+      const questBriefs: GeneratedQuestBrief[] = await Promise.all(projectModel.quests.map(async (modelQuest) => {
+        const quest = artifactById.get(modelQuest.questId);
+        if (!quest) throw new Error(`Project quest ${modelQuest.questId} has no strict brief source.`);
         const summary = this.generatedRunner
-          ? await this.generatedRunner.getSummary(projectId, quest.questId)
+          ? await this.generatedRunner.getSummary(projectId, quest.questId).catch((error) => ({
+              eligibility: {
+                eligible: false,
+                reason: error instanceof Error ? error.message : String(error),
+                revision: quest.revision,
+                state: quest.state,
+              },
+              run: null,
+            }))
           : {
               eligibility: {
                 eligible: false,
@@ -335,9 +388,9 @@ export class GeneratedProjectWorldService {
         const implementationLabel = quest.implementation !== "not_enabled"
           ? `Quest completed · run ${quest.implementation.runId}`
           : summary.run
-            ? `Forge run · ${summary.run.phase.replaceAll("_", " ")}`
+            ? `Codex work · ${creatorRunPhaseLabels[summary.run.phase] ?? summary.run.phase.replaceAll("_", " ")}`
             : summary.eligibility.eligible
-              ? "Ready for bounded Forge implementation"
+              ? "Ready to check the work plan"
               : `Forge recommendation · ${summary.eligibility.reason}`;
         return {
           ...quest,
@@ -358,6 +411,7 @@ export class GeneratedProjectWorldService {
       const activity = [...authoritativeActivity, ...ideaSeeds.map(activityFromSeed)]
         .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt));
 
+      const completedNativeArtifacts = [...nativeArtifacts.values()].filter((quest) => quest.implementation !== "not_enabled");
       const documentCandidates: Array<readonly [string, string, string]> = [
         ["Project overview", "PROJECT.md", "Deterministic project record"],
         ["Game vision", ".forge/docs/game-vision.md", "game-vision.json"],
@@ -365,6 +419,7 @@ export class GeneratedProjectWorldService {
         ["Roadmap", ".forge/docs/roadmap.md", "roadmap.json"],
         ["Chronicle", ".forge/docs/chronicle.md", "chronicle.json"],
         ...quests.map((quest) => [`Quest · ${quest.title}`, `.forge/docs/quests/${quest.questId}.md`, `quests/${quest.questId}.json`] as const),
+        ...completedNativeArtifacts.map((quest) => [`Quest · ${quest.title}`, `.forge/docs/quests/${quest.questId}.md`, "system-quests.json"] as const),
       ];
       for (const [, relative] of documentCandidates) await this.ownedPath(projectPath, relative);
 

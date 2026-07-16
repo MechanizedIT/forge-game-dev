@@ -129,17 +129,19 @@ export const generatedQuestPlanStateSchema = z.enum(GENERATED_QUEST_PLAN_STATES)
 export const generatedEditableFileRoleSchema = z.enum(["main_scene", "main_script", "objective_visual"]);
 export const generatedVerificationProfileSchema = z.enum(["gravity_orb_presence_v1", "relay_activation_v1"]);
 
-const generatedQuestImplementationSchema = z.union([
+export const generatedQuestCompletionSchema = z.object({
+  status: z.literal("completed"),
+  runId: slugSchema,
+  completedAt: timestampSchema,
+  changedFiles: z.array(relativePathSchema).min(1).max(4),
+  verificationProfile: generatedVerificationProfileSchema.nullable(),
+  contractFingerprint: sha256Schema,
+  creatorConfirmation: z.literal("worked"),
+}).strict();
+
+export const generatedQuestImplementationSchema = z.union([
   z.literal("not_enabled"),
-  z.object({
-    status: z.literal("completed"),
-    runId: slugSchema,
-    completedAt: timestampSchema,
-    changedFiles: z.array(relativePathSchema).min(1).max(4),
-    verificationProfile: generatedVerificationProfileSchema.nullable(),
-    contractFingerprint: sha256Schema,
-    creatorConfirmation: z.literal("worked"),
-  }).strict(),
+  generatedQuestCompletionSchema,
 ]);
 
 export const generatedQuestArtifactV2Schema = z.object({

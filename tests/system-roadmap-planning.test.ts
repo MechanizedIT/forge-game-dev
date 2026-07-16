@@ -3,8 +3,9 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import test from "node:test";
+import { z } from "zod";
 
-import { projectModelSchema, systemRoadmapPlanningResultSchema, type AcceptedSystemRoadmap, type ProjectModel } from "../src/contracts/index.js";
+import { projectModelSchema, systemRoadmapModelOutputSchema, systemRoadmapPlanningResultSchema, type AcceptedSystemRoadmap, type ProjectModel } from "../src/contracts/index.js";
 import {
   SystemRoadmapPlanningConflictError,
   SystemRoadmapPlanningService,
@@ -55,6 +56,39 @@ test("open system planning contract has no capability, profile, starter, or game
   const unsafe = JSON.parse(proposal()) as { systems: Array<Record<string, unknown>> };
   unsafe.systems[0]!.capability = "beacon";
   assert.equal(systemRoadmapPlanningResultSchema.safeParse(unsafe).success, false);
+});
+
+test("live system suggestions use one required envelope without a top-level union", async () => {
+  const schema = z.toJSONSchema(systemRoadmapModelOutputSchema, { target: "draft-07", reused: "inline" }) as Record<string, unknown>;
+  assert.equal(Object.hasOwn(schema, "oneOf"), false);
+  assert.deepEqual(schema.required, ["resultType", "clarificationQuestions", "systems"]);
+  const executor = new QueueExecutor([JSON.stringify({ ...JSON.parse(proposal()), clarificationQuestions: [] })]);
+  const service = new SystemRoadmapPlanningService(executor);
+  service.begin(model(), "A quiet station greets the player before readable storms arrive.");
+  await service.waitForIdle();
+  assert.equal(service.getSnapshot().phase, "review");
+
+  const clarification = new SystemRoadmapPlanningService(new QueueExecutor([JSON.stringify({
+    resultType: "clarification",
+    clarificationQuestions: [{ questionId: "storm-timing", question: "When should storms begin?", whyItMatters: "This changes the broad roadmap order." }],
+    systems: [],
+  })]));
+  clarification.begin(model(), "A quiet station greets the player before readable storms arrive.");
+  await clarification.waitForIdle();
+  assert.equal(clarification.getSnapshot().phase, "clarification");
+
+  const validSystems = (JSON.parse(proposal()) as { systems: unknown[] }).systems;
+  const invalidEnvelopes = [
+    { resultType: "proposal", clarificationQuestions: [{ questionId: "storm-timing", question: "When should storms begin?", whyItMatters: "This changes the broad roadmap order." }], systems: validSystems },
+    { resultType: "proposal", clarificationQuestions: [], systems: [] },
+    { resultType: "proposal", clarificationQuestions: [], systems: validSystems.map((system, index) => index === 0 ? { ...(system as Record<string, unknown>), capability: "beacon" } : system) },
+  ];
+  for (const invalid of invalidEnvelopes) {
+    const rejected = new SystemRoadmapPlanningService(new QueueExecutor([JSON.stringify(invalid), JSON.stringify(invalid)]));
+    rejected.begin(model(), "A quiet station greets the player before readable storms arrive.");
+    await rejected.waitForIdle();
+    assert.equal(rejected.getSnapshot().phase, "failed");
+  }
 });
 
 test("free-form planning proposes three systems and accepts one exact planning record", async () => {

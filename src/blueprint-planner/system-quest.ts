@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   acceptedSystemQuestBatchSchema,
+  systemQuestModelOutputSchema,
   systemQuestPlanningResultSchema,
   type AcceptedSystemQuestBatch,
   type AcceptedSystemQuestPlan,
@@ -47,7 +48,7 @@ export interface SystemQuestPlanningSnapshot {
 export type SystemQuestPlanningEvent = { type: "refresh" };
 type Subscriber = (event: SystemQuestPlanningEvent) => void;
 
-const outputSchema = z.toJSONSchema(systemQuestPlanningResultSchema, { target: "draft-07", reused: "inline" });
+const outputSchema = z.toJSONSchema(systemQuestModelOutputSchema, { target: "draft-07", reused: "inline" });
 
 function blankProvenance(): BlueprintProvenance {
   return { model: "gpt-5.6", reasoningEffort: "high", sandbox: "read-only", network: "disabled", threadId: null, attempts: 0, latencyMs: null, usage: null };
@@ -128,12 +129,26 @@ function modelSummary(model: ProjectModel, systemId: string): string {
 }
 
 function planningPrompt(model: ProjectModel, systemId: string, description: string, answers: SystemQuestPlanningSnapshot["answers"], revision: string | null, remaining: number): string {
-  return `You help a game creator turn one broad game system into a few small quests.\n\nSELECTED SYSTEM\n${modelSummary(model, systemId)}\n\nCREATOR DESCRIPTION\n${description}\n\n${answers.length ? `ANSWERS\n${JSON.stringify(answers)}\n\n` : ""}${revision ? `REVISION REQUEST\n${revision}\n\n` : ""}Return strict JSON matching the supplied schema. Ask clarification only when an answer materially changes the quest list, at most three short questions, and never after answers were supplied. Otherwise return 1 to ${Math.min(4, remaining)} ordered new quests. Each quest needs a player-visible outcome, why it matters, one to four plain done-when checks, explicit excluded scope, and dependencyIndexes pointing only to earlier proposed quests. Do not repeat an existing quest. Do not mention files, tools, commands, game types, capabilities, starters, templates, profiles, or verifiers. Forge planning records only; no game file changes.`;
+  return `You help a game creator turn one broad game system into a few small quests.\n\nSELECTED SYSTEM\n${modelSummary(model, systemId)}\n\nCREATOR DESCRIPTION\n${description}\n\n${answers.length ? `ANSWERS\n${JSON.stringify(answers)}\n\n` : ""}${revision ? `REVISION REQUEST\n${revision}\n\n` : ""}Return strict JSON matching the supplied schema. Always include both lists. For clarification, return 1 to 3 clarificationQuestions and an empty quests list. For a proposal, return an empty clarificationQuestions list and 1 to ${Math.min(4, remaining)} ordered new quests. Ask clarification only when an answer materially changes the quest list, and never after answers were supplied. Each quest needs a player-visible outcome, why it matters, one to four plain done-when checks, explicit excluded scope, and dependencyIndexes pointing only to earlier proposed quests. Do not repeat an existing quest. Do not mention files, tools, commands, game types, capabilities, starters, templates, profiles, or verifiers. Forge planning records only; no game file changes.`;
 }
 
 function parseResult(text: string): { result: SystemQuestPlanningResult | null; problems: string[] } {
   try {
-    const parsed = systemQuestPlanningResultSchema.safeParse(JSON.parse(text));
+    const value = JSON.parse(text) as unknown;
+    const direct = systemQuestPlanningResultSchema.safeParse(value);
+    if (direct.success) return { result: direct.data, problems: [] };
+    const envelope = systemQuestModelOutputSchema.safeParse(value);
+    if (!envelope.success) return { result: null, problems: direct.error.issues.map((issue) => `${issue.path.join(".") || "result"}: ${issue.message}`) };
+    if (envelope.data.resultType === "clarification" && envelope.data.quests.length > 0) {
+      return { result: null, problems: ["quests: must be empty when clarification questions are returned"] };
+    }
+    if (envelope.data.resultType === "proposal" && envelope.data.clarificationQuestions.length > 0) {
+      return { result: null, problems: ["clarificationQuestions: must be empty when quests are returned"] };
+    }
+    const candidate = envelope.data.resultType === "clarification"
+      ? { resultType: "clarification" as const, clarificationQuestions: envelope.data.clarificationQuestions }
+      : { resultType: "proposal" as const, quests: envelope.data.quests };
+    const parsed = systemQuestPlanningResultSchema.safeParse(candidate);
     return parsed.success ? { result: parsed.data, problems: [] } : { result: null, problems: parsed.error.issues.map((issue) => `${issue.path.join(".") || "result"}: ${issue.message}`) };
   } catch { return { result: null, problems: ["The response was not valid JSON."] }; }
 }

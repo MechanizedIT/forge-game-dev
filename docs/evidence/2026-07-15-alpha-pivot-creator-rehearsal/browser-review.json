@@ -1,0 +1,27 @@
+{
+  "date": "2026-07-15",
+  "browser": "msedge 150.0.4078.65",
+  "states": [
+    "01-free-idea",
+    "02-check-systems",
+    "03-check-quests",
+    "04-confirm-work-plan",
+    "04-confirm-work-plan-mobile",
+    "05-owner-play-gate",
+    "05-owner-play-gate-mobile"
+  ],
+  "screenshots": [
+    "01-free-idea.png",
+    "02-check-systems.png",
+    "03-check-quests.png",
+    "04-confirm-work-plan.png",
+    "04-confirm-work-plan-mobile.png",
+    "05-owner-play-gate.png",
+    "05-owner-play-gate-mobile.png"
+  ],
+  "sourceProjectUnchanged": true,
+  "automationStoppedBeforeCreatorConfirmation": true,
+  "note": "All file changes and the fake launch happened in a disposable project copy. The browser did not choose Worked for the owner.",
+  "issues": [],
+  "result": "PASS"
+}

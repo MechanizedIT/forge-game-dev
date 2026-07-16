@@ -80,8 +80,8 @@ test("an active work session disables Play but keeps safe folder and Toolbox acc
   assert.equal(presentation.dock.playEnabled, false);
   assert.equal(presentation.dock.openFolderEnabled, true);
   assert.equal(presentation.dock.toolboxEnabled, true);
-  assert.equal(presentation.dock.status, "implementing");
-  assert.equal(presentation.context.primaryActionLabel, "View work progress");
+  assert.equal(presentation.dock.status, "Codex working");
+  assert.equal(presentation.context.primaryActionLabel, "View progress");
 });
 
 test("work on another quest locks the whole project workspace", () => {
@@ -105,8 +105,8 @@ test("work on another quest locks the whole project workspace", () => {
   });
   const presentation = buildGeneratedWorkspacePresentation(value);
   assert.equal(presentation.selectedQuest?.questId, "q2-carry-signal");
-  assert.equal(presentation.context.status, "implementing");
-  assert.equal(presentation.dock.status, "implementing");
+  assert.equal(presentation.context.status, "Codex working");
+  assert.equal(presentation.dock.status, "Codex working");
   assert.equal(presentation.locked, true);
   assert.equal(presentation.dock.playEnabled, false);
 });
@@ -118,7 +118,7 @@ test("the context panel does not offer a duplicate action inside a quest screen"
   assert.equal(presentation.context.primaryActionLabel, null);
 });
 
-test("contract review stays separate from approval and starting work", () => {
+test("work-plan review stays separate from approval and starting work", () => {
   const value = snapshot();
   value.quests[0]!.run = {
     phase: "contract_review",
@@ -126,6 +126,6 @@ test("contract review stays separate from approval and starting work", () => {
   } as NonNullable<(typeof value.quests)[number]["run"]>;
   const presentation = buildGeneratedWorkspacePresentation(value);
   assert.equal(presentation.locked, true);
-  assert.equal(presentation.context.primaryActionLabel, "Review work order");
-  assert.match(presentation.context.recommendation, /No file changes until you approve/i);
+  assert.equal(presentation.context.primaryActionLabel, "Check work plan");
+  assert.match(presentation.context.recommendation, /Confirming it will not start Codex/i);
 });

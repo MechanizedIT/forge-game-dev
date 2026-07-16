@@ -12,10 +12,23 @@ import {
   roadmapSchema,
 } from "../src/contracts/index.js";
 import type { DashboardSnapshot } from "../src/dashboard/shared.js";
+// @ts-expect-error The base test config omits JSX; the tsx test runner compiles this UI module.
+import { friendlyQuestPlanningError } from "../src/dashboard-v2/SystemQuestRefinement.js";
+// @ts-expect-error The base test config omits JSX; the tsx test runner compiles this UI module.
+import { friendlySystemPlanningError } from "../src/dashboard-v2/SystemRoadmapPlanning.js";
 import { buildSampleWorkflowPresentation } from "../src/dashboard-v2/sample-workflow.js";
 import { returnToLaunchpad, viewForLaunchChoice } from "../src/dashboard-v2/state.js";
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+test("live planning schema failures use friendly retry words", () => {
+  const raw = '{"type":"error","error":{"type":"invalid_request_error","code":"invalid_json_schema","message":"Invalid schema for response_format codex_output_schema: oneOf is not permitted.","param":"text.format.schema"},"status":400}';
+  const systemMessage = friendlySystemPlanningError(raw);
+  const questMessage = friendlyQuestPlanningError(raw);
+  assert.equal(systemMessage, "Forge could not suggest systems this time. Your idea is still here, so you can try again safely.");
+  assert.equal(questMessage, "Forge could not suggest quests this time. Your description is still here, so you can try again safely.");
+  assert.doesNotMatch(`${systemMessage} ${questMessage}`, /invalid_json_schema|response_format|oneOf|text\.format\.schema/iu);
+});
 
 async function readJson(relativePath: string): Promise<unknown> {
   return JSON.parse(await readFile(path.join(repositoryRoot, relativePath), "utf8")) as unknown;

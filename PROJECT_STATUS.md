@@ -2,11 +2,18 @@
 
 **Last updated:** 2026-07-15
 
-**Current milestone:** `Alpha Pivot Milestone 5 — System to Quests and Work Order`
+**Current milestone:** `Alpha Pivot Milestone 6 — Genuine Creator Rehearsal`
 
-**Overall state:** `ALPHA PIVOT MILESTONE 5 COMPLETE` — A creator can open one system, describe it in ordinary words, revise and accept a short quest list, then review the first quest's exact one-to-four-file work-order draft. Forge saves planning only. It does not prepare a runner contract, start an agent, or change a Godot file.
+**Overall state:** `COMPLETE` — The owner completed the isolated walkthrough, saw the promised result in Godot, and chose **Worked**. The full idea-to-game path is now proven by both automated evidence and a real creator play decision.
 
 ## What works now
+
+- A creator can move through one connected path: describe a game, confirm broad systems, edit one system into small quests, choose one to four files, confirm the work plan, and separately choose **Send to Codex**.
+- Native planned quests now use the existing profile-free runner. The creator's exact file choice is the only game-file permission; profiles remain optional extra checks and never decide which ideas are allowed.
+- The runner rechecks the saved planning files before Codex starts and before completion. Changed bytes, staged planning files, other dirty files, links, remotes, or a changed project stop safely.
+- After the checks pass, Forge shows **Play the real game**. **Worked**, **Did not work**, and **Not ready** appear only after a successful launch. Only the creator's **Worked** choice can save completion.
+- Native completion joins the quest, work session, result, History, project notes, one local Git commit, reload, restart recovery, and exact undo. Older Gravity Tap and Signal Sweep records keep their existing behavior.
+- Main buttons now use short words such as **Confirm this plan**, **Send to Codex**, and **Files Codex may change**. Pencil buttons use clear tooltips for editing systems and quests.
 
 - **Refine this system** opens from the connected roadmap. The creator explains the player-facing result in ordinary words; no game type, capability, profile, starter, template, tool, or verifier decides what is allowed.
 - Forge asks at most one short clarification round and proposes up to five ordered quests. The creator can revise repeatedly, cancel safely, retry the exact failed step, or accept the exact fingerprinted proposal.
@@ -87,9 +94,19 @@
 - Independent read-only review found five safety and truth gaps. Restart resume, active-work rechecking, semantic fingerprints, canonical exact paths, and work-order wording were corrected and rechecked.
 - Live read-only reload kept registry hash `a23042ae97c706285780d91642faed0a0e29261ab04b4feb2b6f75c840f06b86`. Gravity Tap kept 40 audited files and clean Git `f4cbba5928e22c0a3471239d7b67b490c7649a56`; Signal Sweep kept 37 audited files and clean Git `a0ad834d6c1f98a51b63c7313564acb1af274e41`. Both still have no remotes.
 
+## Alpha Pivot Milestone 6 evidence
+
+- Full tests pass 164/164. Protected v0.1 checks pass 38/38 with the production build. Type checks, dashboard build, context validation, and `git diff --check` pass.
+- The live planning repair accepts the current Codex response shape without weakening Forge's checks. The owner's exact idea returned three clear systems, and a follow-up returned one welcome-beacon quest. Both test proposals were canceled, so no planning record or Godot file changed. Failure screens now use short, friendly words instead of raw service errors.
+- The new creator rehearsal passes 7 desktop and phone states with zero issues and stops before **Worked**. The earlier roadmap, quest, workspace, and runner browser checks also pass: 51 screenshots total with zero issues.
+- Temporary tests prove failed launch cannot be confirmed, changed planning bytes cannot start, staged planning files and remotes are rejected, pre-commit failures restore records, exact undo restores the scene and removes only the approved unchanged new file, and restart repair reuses one completion commit.
+- The browser rehearsal copied a registered source project into an isolated Forge home. A recursive before/after audit says the real source project and real registry stayed unchanged.
+- The independent review found five serious gaps. Fixes now require successful launch before confirmation, recheck planning bytes throughout the run, preserve older completion notes, cover native recovery, and audit the whole source project.
+- The owner completed the named isolated temporary project, saw the welcome beacon in the launched Godot game, and chose **Worked**. Completion then reloaded successfully; the one local milestone commit is recorded in the closeout.
+
 ## How to test this milestone
 
-Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run forge`. Open a temporary generated project, choose **Roadmap**, select a system, then choose **Refine this system**. Stop after the screen says the work-order draft was saved. For automated proof, run `npm test`, `npm run check:v0.1`, and `npm run visual:review:alpha:system-quest`.
+For a repeatable automated proof, run `npm test`, `npm run check:v0.1`, and `npm run visual:review:alpha:creator-rehearsal`. The owner walkthrough is complete.
 
 ## Alpha Task B implementation evidence
 
@@ -120,6 +137,6 @@ Open PowerShell in `C:\Users\cwood\Documents\forge-game-dev` and run `npm run fo
 2. Deploy the static showcase, then configure the final video, live-site, and Devpost URLs.
 3. Confirm repository visibility and the final submission branch, then push or submit only with explicit owner authorization.
 
-The open project model, profile-free runner boundary, connected workspace shell, open system planning, and system-to-quest work-order drafting are complete. Forge still needs one honest end-to-end rehearsal that joins those parts. External import, broad scanning, non-Godot engines, and generalized integrations remain deferred. Signal Sweep remains unapproved and unimplemented. The next recommended milestone plans and runs one temporary-project creator rehearsal, with the owner's visible play confirmation kept separate from automated proof.
+The open project model, profile-free runner, connected workspace, open system planning, and system-to-quest planning now work together in a completed creator walkthrough. External import, broad scanning, non-Godot engines, and generalized integrations remain deferred. Signal Sweep remains unapproved and unimplemented. The next product milestone has not yet been selected; preserve this completed proof before choosing one.
 
-See the [Alpha Pivot Milestone 5 review](docs/reviews/2026-07-15-alpha-pivot-system-quest-refinement-review.md), [Alpha Pivot Milestone 4 review](docs/reviews/2026-07-15-alpha-pivot-open-roadmap-planning-review.md), and [judge guide](docs/JUDGE_GUIDE.md).
+See the [Alpha Pivot Milestone 6 closeout](docs/closeouts/2026-07-15-alpha-pivot-creator-rehearsal-closeout.md), [review](docs/reviews/2026-07-15-alpha-pivot-creator-rehearsal-review.md), [Alpha Pivot Milestone 5 review](docs/reviews/2026-07-15-alpha-pivot-system-quest-refinement-review.md), and [judge guide](docs/JUDGE_GUIDE.md).

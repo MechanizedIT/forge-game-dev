@@ -59,14 +59,21 @@ const activeRunPhases = new Set([
   "interrupted",
 ]);
 
+const creatorPhaseLabels: Record<string, string> = {
+  contract_review: "work plan ready", approved: "plan confirmed", implementing: "Codex working",
+  scope_review: "file request", verifying: "checking", waiting_for_playtest: "ready to play",
+  completion_pending: "saving result", completed: "completed", failed: "stopped",
+  cancelled: "cancelled", interrupted: "interrupted",
+};
+
 function contextForQuest(quest: GeneratedWorkspaceQuest): GeneratedWorkspaceContext {
   const run = quest.brief?.run ?? null;
   if (!run) {
     if (quest.nativePlan) {
       return {
         kind: "quest", title: quest.title, summary: quest.outcome, status: quest.status,
-        recommendation: "Review this planned quest and its exact one-to-four-file work-order draft. No runner contract exists yet.",
-        primaryActionLabel: "Review planned quest", questId: quest.questId,
+        recommendation: "Check this quest and the one-to-four files chosen for it. Codex has not started.",
+        primaryActionLabel: "Open quest", questId: quest.questId,
       };
     }
     const eligible = quest.brief?.eligibility.eligible ?? false;
@@ -76,7 +83,7 @@ function contextForQuest(quest: GeneratedWorkspaceQuest): GeneratedWorkspaceCont
       summary: quest.outcome,
       status: quest.status,
       recommendation: eligible
-        ? "Open this quest to review its visible result and exact work scope."
+        ? "Open this quest to check its visible result and chosen files."
         : quest.brief?.eligibility.reason ?? "This quest is planned, but it is not ready for work yet.",
       primaryActionLabel: quest.brief ? "Open quest" : null,
       questId: quest.questId,
@@ -84,12 +91,12 @@ function contextForQuest(quest: GeneratedWorkspaceQuest): GeneratedWorkspaceCont
   }
 
   const content = {
-    contract_review: ["The exact work scope is ready to review. No file changes until you approve it.", "Review work order"],
-    approved: ["The exact boundary is locked. Start only when you are ready for Codex to change those files.", "Open approved work"],
-    implementing: ["Forge is changing only the approved files. This may take a few minutes.", "View work progress"],
-    scope_review: ["Codex asked for more files. The original approval has not expanded.", "Review scope request"],
-    verifying: ["The approved change is finished. Forge is checking the project now.", "View verification"],
-    waiting_for_playtest: ["Automated checks passed. Play the real game and decide whether the result works.", "Play and review"],
+    contract_review: ["The work plan is ready. Confirming it will not start Codex.", "Check work plan"],
+    approved: ["The plan is confirmed. Send it only when you are ready for Codex to change those files.", "Send to Codex"],
+    implementing: ["Forge is changing only the chosen files. This may take a few minutes.", "View progress"],
+    scope_review: ["Codex asked for different files. Nothing was added.", "Review request"],
+    verifying: ["The change is finished. Forge is checking the project now.", "View checks"],
+    waiting_for_playtest: ["The checks passed. Play the real game and decide whether the result works.", "Play and review"],
     completion_pending: ["Your result is being recorded in local project history.", "View completion"],
     completed: ["This quest is complete and recorded in local project history.", "View completed result"],
     failed: ["Forge stopped safely. Open the work session to see the next safe action.", "Review stopped work"],
@@ -101,7 +108,7 @@ function contextForQuest(quest: GeneratedWorkspaceQuest): GeneratedWorkspaceCont
     kind: "quest",
     title: quest.title,
     summary: quest.outcome,
-    status: run.phase.replaceAll("_", " "),
+    status: creatorPhaseLabels[run.phase] ?? run.phase.replaceAll("_", " "),
     recommendation,
     primaryActionLabel,
     questId: quest.questId,
@@ -186,7 +193,7 @@ export function buildGeneratedWorkspacePresentation(
       playEnabled: !locked,
       openFolderEnabled: true,
       toolboxEnabled: true,
-      status: run && activeRunPhases.has(run.phase) ? run.phase.replaceAll("_", " ") : null,
+      status: run && activeRunPhases.has(run.phase) ? creatorPhaseLabels[run.phase] ?? run.phase.replaceAll("_", " ") : null,
     },
   };
 }

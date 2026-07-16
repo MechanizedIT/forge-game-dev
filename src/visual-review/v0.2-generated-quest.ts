@@ -268,10 +268,10 @@ async function openQuest(page: Page): Promise<void> {
 
 async function adjustAndPrepare(page: Page): Promise<void> {
   await page.getByLabel("Player-visible outcome").fill("A clearly identifiable gravity orb is present in the opening arena.");
-  await page.getByRole("button", { name: "Adjust outcome" }).click();
+  await page.getByRole("button", { name: "Edit result" }).click();
   await page.getByText(/Outcome adjusted and saved in local plan history/).waitFor();
-  await page.getByRole("button", { name: "Build with Forge" }).click();
-  await page.getByRole("button", { name: "Approve exact contract" }).waitFor();
+  await page.getByRole("button", { name: "Check work plan" }).click();
+  await page.getByRole("button", { name: "Confirm this plan" }).waitFor();
 }
 
 async function main(): Promise<void> {
@@ -290,25 +290,25 @@ async function main(): Promise<void> {
     observe(page, success.baseUrl, "success");
     await openWorld(page, success.baseUrl);
     await openQuest(page);
-    await audit(page, "generated-outcome-desktop", "Build with Forge");
+    await audit(page, "generated-outcome-desktop", "Check work plan");
     await capture(page, "generated-outcome-desktop");
     await page.getByLabel("Player-visible outcome").fill("A clearly identifiable gravity orb is present in the opening arena.");
-    await page.getByRole("button", { name: "Adjust outcome" }).click();
+    await page.getByRole("button", { name: "Edit result" }).click();
     await page.getByText(/Outcome adjusted and saved in local plan history/).waitFor();
     await capture(page, "generated-outcome-adjusted-desktop");
-    await page.getByRole("button", { name: "Build with Forge" }).click();
-    await page.getByRole("button", { name: "Approve exact contract" }).waitFor();
-    await audit(page, "generated-contract-desktop", "Approve exact contract");
+    await page.getByRole("button", { name: "Check work plan" }).click();
+    await page.getByRole("button", { name: "Confirm this plan" }).waitFor();
+    await audit(page, "generated-contract-desktop", "Confirm this plan");
     await capture(page, "generated-contract-desktop");
     await page.setViewportSize({ width: 390, height: 844 });
-    await audit(page, "generated-contract-mobile", "Approve exact contract");
+    await audit(page, "generated-contract-mobile", "Confirm this plan");
     await capture(page, "generated-contract-mobile");
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.getByRole("button", { name: "Approve exact contract" }).click();
-    await page.getByRole("button", { name: "Start approved build" }).waitFor();
+    await page.getByRole("button", { name: "Confirm this plan" }).click();
+    await page.getByRole("button", { name: "Send to Codex" }).waitFor();
     await capture(page, "generated-approved-desktop");
-    await page.getByRole("button", { name: "Start approved build" }).click();
-    await page.getByRole("heading", { name: "Forge is building the approved result" }).waitFor();
+    await page.getByRole("button", { name: "Send to Codex" }).click();
+    await page.getByRole("heading", { name: "Forge is making the confirmed change" }).waitFor();
     await audit(page, "generated-progress-desktop", "Cancel safely");
     await capture(page, "generated-progress-desktop");
     releaseImplementation();
@@ -318,7 +318,7 @@ async function main(): Promise<void> {
     await page.getByRole("button", { name: "Play the real game" }).click();
     await page.getByText(/Visible Gravity Tap browser-review playtest launched/).waitFor();
     await page.getByRole("button", { name: "Not ready" }).click();
-    await page.getByText(/The quest remains incomplete and ready for another playtest/).waitFor();
+    await page.getByRole("button", { name: "Play the real game" }).waitFor();
     await capture(page, "generated-not-ready-desktop");
     await page.getByRole("button", { name: "Play the real game" }).click();
     await page.waitForFunction(() => {
@@ -351,13 +351,13 @@ async function main(): Promise<void> {
     await openWorld(failurePage, failure.baseUrl);
     await openQuest(failurePage);
     await adjustAndPrepare(failurePage);
-    await failurePage.getByRole("button", { name: "Approve exact contract" }).click();
-    await failurePage.getByRole("button", { name: "Start approved build" }).click();
-    await failurePage.getByRole("button", { name: "Roll back reviewed changes" }).waitFor({ timeout: 30_000 });
-    await audit(failurePage, "generated-safe-rollback-desktop", "Roll back reviewed changes");
+    await failurePage.getByRole("button", { name: "Confirm this plan" }).click();
+    await failurePage.getByRole("button", { name: "Send to Codex" }).click();
+    await failurePage.getByRole("button", { name: "Undo chosen file changes" }).waitFor({ timeout: 30_000 });
+    await audit(failurePage, "generated-safe-rollback-desktop", "Undo chosen file changes");
     await capture(failurePage, "generated-safe-rollback-desktop");
-    await failurePage.getByRole("button", { name: "Roll back reviewed changes" }).click();
-    await failurePage.getByRole("button", { name: "Build with Forge" }).waitFor();
+    await failurePage.getByRole("button", { name: "Undo chosen file changes" }).click();
+    await failurePage.getByRole("button", { name: "Check work plan" }).waitFor();
     await capture(failurePage, "generated-rollback-complete-desktop");
     await failureContext.close();
     await new Promise<void>((resolve) => failure.server.close(() => resolve()));

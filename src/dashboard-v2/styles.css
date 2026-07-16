@@ -452,6 +452,7 @@ p { color: var(--secondary); line-height: 1.55; }
 .generated-quest-actions label { display: grid; gap: .45rem; color: #c9d4da; font-size: .75rem; font-weight: 800; }
 .generated-quest-actions textarea { min-height: 110px; resize: vertical; padding: .8rem; border: 1px solid #475663; border-radius: 7px; color: var(--text); background: #0b1218; line-height: 1.5; }
 .generated-run-actions { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; grid-column: 1 / -1; }
+.generated-run-card.phase-waiting_for_playtest .generated-run-actions:has(> button:only-child) { position: sticky; z-index: 16; bottom: 80px; padding: .5rem; border: 1px solid var(--line-soft); border-radius: 7px; background: rgba(12,19,25,.98); }
 .generated-contract { border-color: rgba(236,135,50,.42); }
 .generated-contract > header { max-width: 900px; }
 .generated-contract-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }

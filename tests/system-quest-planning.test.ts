@@ -6,10 +6,12 @@ import { once } from "node:events";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import test from "node:test";
+import { z } from "zod";
 
 import {
   acceptedSystemQuestPlanSchema,
   projectModelSchema,
+  systemQuestModelOutputSchema,
   systemQuestPlanningResultSchema,
   type AcceptedSystemQuestPlan,
   type ProjectModel,
@@ -75,6 +77,39 @@ test("quest proposal contract is open and rejects capability, profile, starter, 
   unsafe.quests[0]!.capability = undefined;
   unsafe.quests[0]!.existingFiles = ["scripts/beacon.gd"];
   assert.equal(systemQuestPlanningResultSchema.safeParse(unsafe).success, false);
+});
+
+test("live quest suggestions use one required envelope without a top-level union", async () => {
+  const schema = z.toJSONSchema(systemQuestModelOutputSchema, { target: "draft-07", reused: "inline" }) as Record<string, unknown>;
+  assert.equal(Object.hasOwn(schema, "oneOf"), false);
+  assert.deepEqual(schema.required, ["resultType", "clarificationQuestions", "quests"]);
+  const executor = new QueueExecutor([JSON.stringify({ ...JSON.parse(proposal()), clarificationQuestions: [] })]);
+  const service = new SystemQuestPlanningService(executor);
+  service.begin(model(), "system-first-playable", "Make the beacon welcome the player with one warm pulse.");
+  await service.waitForIdle();
+  assert.equal(service.getSnapshot().phase, "review");
+
+  const clarification = new SystemQuestPlanningService(new QueueExecutor([JSON.stringify({
+    resultType: "clarification",
+    clarificationQuestions: [{ questionId: "beacon-color", question: "Should the beacon always stay warm?", whyItMatters: "This changes the first visible quest." }],
+    quests: [],
+  })]));
+  clarification.begin(model(), "system-first-playable", "Make the beacon welcome the player with one warm pulse.");
+  await clarification.waitForIdle();
+  assert.equal(clarification.getSnapshot().phase, "clarification");
+
+  const validQuests = (JSON.parse(proposal()) as { quests: unknown[] }).quests;
+  const invalidEnvelopes = [
+    { resultType: "proposal", clarificationQuestions: [{ questionId: "beacon-color", question: "Should the beacon always stay warm?", whyItMatters: "This changes the first visible quest." }], quests: validQuests },
+    { resultType: "proposal", clarificationQuestions: [], quests: [] },
+    { resultType: "proposal", clarificationQuestions: [], quests: validQuests.map((quest, index) => index === 0 ? { ...(quest as Record<string, unknown>), existingFiles: ["scripts/beacon.gd"] } : quest) },
+  ];
+  for (const invalid of invalidEnvelopes) {
+    const rejected = new SystemQuestPlanningService(new QueueExecutor([JSON.stringify(invalid), JSON.stringify(invalid)]));
+    rejected.begin(model(), "system-first-playable", "Make the beacon welcome the player with one warm pulse.");
+    await rejected.waitForIdle();
+    assert.equal(rejected.getSnapshot().phase, "failed");
+  }
 });
 
 test("ordinary-language refinement accepts an exact short proposal and stops before runner preparation", async () => {
@@ -229,8 +264,19 @@ test("work-order save rechecks active runner work and leaves the fixed record by
       sourceFingerprint: fingerprintSystemQuestStructure(before.projectModel, system.systemId), proposalFingerprint: "f".repeat(64), acceptedAt: "2026-07-15T20:30:00.000Z",
       quests: [{ questId: "quest-welcome-signal", title: "Welcome Signal", playerVisibleOutcome: "A warm signal greets the player at the relay.", whyItMatters: "The first response makes the relay feel useful and alive.", doneWhen: ["A warm signal is visible."], excludedScope: ["No scoring system."], dependsOn: [] }],
     });
+    const planned = await service.loadWorld(fixture.projectId);
+    await service.saveSystemRoadmap(fixture.projectId, {
+      schemaVersion: 1, projectId: fixture.projectId,
+      creatorIdea: "A small station game where a welcoming relay wakes the harbor.",
+      sourceFingerprint: fingerprintProjectStructure(planned.projectModel), proposalFingerprint: "e".repeat(64), acceptedAt: "2026-07-15T20:31:00.000Z",
+      systems: [
+        { systemId: system.systemId, title: "Welcoming Relay", outcome: "The relay greets the player and wakes the station.", questIds: planned.projectModel.systems[0]!.questIds },
+        { systemId: "system-harbor-response", title: "Harbor Response", outcome: "The harbor answers the station.", questIds: [] },
+        { systemId: "system-storm-rhythm", title: "Storm Rhythm", outcome: "Weather changes the station rhythm.", questIds: [] },
+      ],
+    });
     const recordPath = path.join(fixture.projectPath, ".forge/system-quests.json");
-    for (const args of [["add", ".forge/system-quests.json"], ["commit", "-m", "Test planning record"]]) {
+    for (const args of [["add", ".forge/system-quests.json", ".forge/system-roadmap.json"], ["commit", "-m", "Test planning records"]]) {
       const result = spawnSync("git", args, { cwd: fixture.projectPath, encoding: "utf8", windowsHide: true });
       assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
     }

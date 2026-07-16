@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { lstat, readFile, readdir, realpath } from "node:fs/promises";
 import path from "node:path";
 
@@ -10,6 +11,7 @@ import {
 
 const excludedDirectoryPaths = new Set([".git", ".godot", ".forge/local", "node_modules"]);
 const allowedUntrackedPaths = new Set([".forge/idea-seeds.json"]);
+const fixedPlanningPaths = new Set([".forge/system-roadmap.json", ".forge/system-quests.json"]);
 const allowedWorkExtensions = new Set([".gd", ".tscn", ".tres", ".gdshader", ".gdshaderinc"]);
 const protectedWorkRoots = [".forge", ".git", ".godot", "addons", "node_modules"];
 
@@ -39,6 +41,11 @@ function excluded(relativePath: string): boolean {
     if (relativePath === directory || relativePath.startsWith(`${directory}/`)) return true;
   }
   return false;
+}
+
+export interface PlanningRecordAllowance {
+  relativePath: ".forge/system-roadmap.json" | ".forge/system-quests.json";
+  sha256: string;
 }
 
 function normalizedWorkPath(relativePath: string): string {
@@ -143,7 +150,25 @@ export function runGit(projectPath: string, args: string[], allowFailure = false
   return (result.stdout ?? "").trim();
 }
 
-export function inspectCleanGitStart(projectPath: string, baselineHead: string): GitStartState {
+function assertPlanningAllowance(projectPath: string, allowance: PlanningRecordAllowance): void {
+  if (!fixedPlanningPaths.has(allowance.relativePath)) throw new Error(`Forge planning allowance is not a fixed record: ${allowance.relativePath}`);
+  const root = realpathSync(path.resolve(projectPath));
+  const target = path.resolve(root, allowance.relativePath);
+  const info = lstatSync(target);
+  if (!info.isFile() || info.isSymbolicLink() || realpathSync(target) !== target) throw new Error(`Forge planning record is unsafe: ${allowance.relativePath}`);
+  if (sha256(readFileSync(target)) !== allowance.sha256) throw new Error(`Forge planning record changed after review: ${allowance.relativePath}`);
+}
+
+function normalizePorcelainLine(line: string): string {
+  if (/^[MADRCU] [^ ]/u.test(line)) return ` ${line}`;
+  return line;
+}
+
+export function inspectCleanGitStart(
+  projectPath: string,
+  baselineHead: string,
+  planningRecords: readonly PlanningRecordAllowance[] = [],
+): GitStartState {
   const startHead = runGit(projectPath, ["rev-parse", "HEAD"]);
   const ancestor = spawnSync("git", ["merge-base", "--is-ancestor", baselineHead, startHead], {
     cwd: projectPath,
@@ -152,15 +177,30 @@ export function inspectCleanGitStart(projectPath: string, baselineHead: string):
   });
   if ((ancestor.status ?? 1) !== 0) throw new Error("The verified Forge baseline is not an ancestor of the current project HEAD.");
   if (runGit(projectPath, ["remote"], true).trim() !== "") throw new Error("Generated quest execution requires a local project with no Git remotes.");
-  const tracked = spawnSync("git", ["diff", "--quiet", "--exit-code"], { cwd: projectPath, windowsHide: true });
-  const staged = spawnSync("git", ["diff", "--cached", "--quiet", "--exit-code"], { cwd: projectPath, windowsHide: true });
-  if ((tracked.status ?? 1) !== 0 || (staged.status ?? 1) !== 0) throw new Error("Generated quest execution requires a clean tracked index and worktree.");
-  const status = runGit(projectPath, ["status", "--porcelain", "--untracked-files=all"], true)
-    .split(/\r?\n/u)
-    .filter(Boolean)
-    .map((line) => line.slice(3).replaceAll("\\", "/"))
-    .filter((item) => !allowedUntrackedPaths.has(item) && !excluded(item));
-  if (status.length > 0) throw new Error(`Generated quest execution found unapproved local paths: ${status.join(", ")}`);
+  const planningByPath = new Map(planningRecords.map((record) => [record.relativePath, record]));
+  if (planningByPath.size !== planningRecords.length) throw new Error("Forge planning allowances must be unique.");
+  for (const allowance of planningRecords) assertPlanningAllowance(projectPath, allowance);
+  const problems: string[] = [];
+  for (const rawLine of runGit(projectPath, ["status", "--porcelain", "--untracked-files=all"], true).split(/\r?\n/u).filter(Boolean)) {
+    const line = normalizePorcelainLine(rawLine);
+    const relativePath = line.slice(3).replaceAll("\\", "/");
+    if (relativePath.includes(" -> ")) { problems.push(line); continue; }
+    if (allowedUntrackedPaths.has(relativePath) || excluded(relativePath)) continue;
+    const allowance = fixedPlanningPaths.has(relativePath)
+      ? planningByPath.get(relativePath as PlanningRecordAllowance["relativePath"])
+      : undefined;
+    if (allowance && (line.startsWith("?? ") || line.startsWith(" M "))) {
+      assertPlanningAllowance(projectPath, allowance);
+      continue;
+    }
+    problems.push(line);
+  }
+  if (problems.length > 0) {
+    if (planningRecords.length === 0 && problems.some((line) => !line.startsWith("?? "))) {
+      throw new Error("Generated quest execution requires a clean tracked index and worktree.");
+    }
+    throw new Error(`Generated quest execution found unapproved local changes: ${problems.join(", ")}`);
+  }
   return { baselineHead, startHead };
 }
 
@@ -174,6 +214,7 @@ export async function reviewBoundary(options: {
   const currentInventory = await captureControlledInventory(options.projectPath);
   const before = new Map(options.startInventory.map((entry) => [entry.relativePath, entry]));
   const after = new Map(currentInventory.map((entry) => [entry.relativePath, entry]));
+  const planning = new Map(options.startInventory.filter((entry) => fixedPlanningPaths.has(entry.relativePath)).map((entry) => [entry.relativePath, entry.sha256]));
   const allowed = new Set(options.allowedFiles.map((file) => file.relativePath));
   const approvedNew = new Set(options.allowedFiles.filter((file) => "kind" in file && file.kind === "new").map((file) => file.relativePath));
   const changed = new Set<string>();
@@ -198,14 +239,16 @@ export async function reviewBoundary(options: {
     }
   }
   const nameStatus = runGit(options.projectPath, ["status", "--porcelain", "--untracked-files=all"], true);
-  for (const line of nameStatus.split(/\r?\n/u).filter(Boolean)) {
+  for (const rawLine of nameStatus.split(/\r?\n/u).filter(Boolean)) {
+    const line = normalizePorcelainLine(rawLine);
     const untracked = line.startsWith("?? ");
-    const worktreeModified = line.startsWith(" M ") || line.startsWith("M ");
-    const relativePath = line.slice(untracked || line.startsWith(" M ") ? 3 : 2).replaceAll("\\", "/");
+    const worktreeModified = line.startsWith(" M ");
+    const relativePath = line.slice(3).replaceAll("\\", "/");
     const acceptedExisting = worktreeModified && allowed.has(relativePath) && !approvedNew.has(relativePath);
     const acceptedNew = untracked && approvedNew.has(relativePath);
+    const acceptedPlanning = (untracked || worktreeModified) && planning.get(relativePath) === after.get(relativePath)?.sha256;
     const ignoredOwned = allowedUntrackedPaths.has(relativePath) || excluded(relativePath);
-    if (!acceptedExisting && !acceptedNew && !ignoredOwned) {
+    if (!acceptedExisting && !acceptedNew && !acceptedPlanning && !ignoredOwned) {
       problems.push(`Git reported an unapproved change: ${line}`);
     }
   }
