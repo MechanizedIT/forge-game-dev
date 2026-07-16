@@ -47,6 +47,11 @@ function digest(contents: Buffer): string {
   return createHash("sha256").update(contents).digest("hex");
 }
 
+function gitBlobDigest(contents: string): string {
+  const bytes = Buffer.from(contents, "utf8");
+  return createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+}
+
 export function renderGeneratedQuestMarkdown(quest: ReturnType<typeof generatedQuestArtifactV2Schema.parse>): string {
   const implementation = quest.implementation === "not_enabled"
     ? "Implementation is ready for a reviewed Forge contract."
@@ -324,7 +329,8 @@ export async function completeNativeQuestTransaction(options: {
   for (const [relativePath, contents] of artifacts) {
     const previous = await readFile(path.join(root, relativePath)).catch((error: NodeJS.ErrnoException) => error.code === "ENOENT" ? null : Promise.reject(error));
     preimages.set(relativePath, previous);
-    if (previous === null || previous.toString("utf8") !== contents) expectedArtifactChanges.push(relativePath);
+    const indexedBlob = runGit(root, ["rev-parse", `:${relativePath}`], true);
+    if (!indexedBlob || indexedBlob !== gitBlobDigest(contents)) expectedArtifactChanges.push(relativePath);
   }
   const planningRoadmapDirty = runGit(root, ["status", "--porcelain", "--untracked-files=all", "--", systemRoadmapPath], true) !== "";
   const stageCandidates = [...new Set([...journal.changedFiles, ...artifacts.keys(), systemRoadmapPath])].sort();

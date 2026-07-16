@@ -211,7 +211,10 @@ async function main(): Promise<void> {
     });
     await capture(page, "03-check-quests");
     await page.getByRole("button", { name: "Confirm quests" }).click();
-    await page.getByRole("heading", { name: "Choose files for the first quest" }).waitFor();
+    await page.getByRole("heading", { name: /Quests saved for/ }).waitFor();
+    await capture(page, "03-saved-quests");
+    await page.getByRole("button", { name: "Prepare this quest" }).click();
+    await page.getByRole("heading", { name: /Choose files for:/ }).waitFor();
     await page.locator(".system-quest-file", { hasText: "scenes/main.tscn" }).getByRole("checkbox").check();
     await page.getByLabel("New files").fill("scripts/welcome_beacon.gd");
     await page.getByRole("button", { name: "Check chosen files" }).click();
@@ -221,7 +224,7 @@ async function main(): Promise<void> {
     await capture(page, "04-confirm-work-plan-mobile");
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.getByRole("button", { name: "Confirm this plan" }).click();
-    await page.getByRole("button", { name: "Open first quest" }).click();
+    await page.getByRole("button", { name: "Open quest" }).click();
     await page.getByRole("button", { name: "Check work plan" }).click();
     await page.getByRole("button", { name: "Confirm this plan" }).click();
     await page.getByRole("button", { name: "Send to Codex" }).click();

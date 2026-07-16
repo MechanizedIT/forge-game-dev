@@ -125,7 +125,7 @@ export function buildLegacyProjectModel(inputs: LegacyProjectModelInputs): Proje
   const roadmapIds = inputs.roadmap.quests.map((quest) => quest.questId);
   const selectedQuestId = inputs.state.selectedQuestId !== null && roadmapIds.includes(inputs.state.selectedQuestId)
     ? inputs.state.selectedQuestId
-    : roadmapIds[0]!;
+    : roadmapIds[0] ?? null;
   const savedNextRecommendedQuestId = inputs.state.schemaVersion === 2 ? inputs.state.nextRecommendedQuestId : null;
   const nextRecommendedQuestId = savedNextRecommendedQuestId !== null && roadmapIds.includes(savedNextRecommendedQuestId)
     ? savedNextRecommendedQuestId

@@ -38,13 +38,17 @@ import {
   type GitBaselineCreator,
 } from "./git-baseline.js";
 import {
+  createOpenGodotVerifier,
   createTopDownArenaVerifier,
+  type OpenGodotVerifier,
   type TopDownArenaVerifier,
 } from "./godot-verifier.js";
 import { ProjectRegistryStore } from "./registry.js";
 import {
+  assembleOpenGodotFoundation,
   assembleControlledStarter,
   assertStarterInventory,
+  openGodotFoundationPath,
   topDownArenaStarterPath,
 } from "./starter.js";
 import {
@@ -112,9 +116,11 @@ export class ProjectCreationCancelledError extends Error {
 export interface ProjectCreationServiceOptions {
   forgeHome?: string;
   starterPath?: string;
+  openFoundationPath?: string;
   now?: () => Date;
   randomId?: () => string;
   verifyGodot?: TopDownArenaVerifier;
+  verifyOpenGodot?: OpenGodotVerifier;
   createGitBaseline?: GitBaselineCreator;
   openFolder?: (projectPath: string) => void;
   requireCleanGit?: (projectPath: string) => void;
@@ -128,9 +134,11 @@ export class ProjectCreationService {
   private cancellationRequested = false;
   private readonly forgeHome: string;
   private readonly starterPath: string;
+  private readonly openFoundationPath: string;
   private readonly now: () => Date;
   private readonly randomId: () => string;
   private readonly verifyGodot: TopDownArenaVerifier;
+  private readonly verifyOpenGodot: OpenGodotVerifier;
   private readonly createGitBaseline: GitBaselineCreator;
   private readonly registry: ProjectRegistryStore;
   private readonly openFolder: (projectPath: string) => void;
@@ -140,9 +148,11 @@ export class ProjectCreationService {
   constructor(options: ProjectCreationServiceOptions = {}) {
     this.forgeHome = path.resolve(options.forgeHome ?? resolveForgeHome());
     this.starterPath = path.resolve(options.starterPath ?? topDownArenaStarterPath);
+    this.openFoundationPath = path.resolve(options.openFoundationPath ?? openGodotFoundationPath);
     this.now = options.now ?? (() => new Date());
     this.randomId = options.randomId ?? randomUUID;
     this.verifyGodot = options.verifyGodot ?? createTopDownArenaVerifier();
+    this.verifyOpenGodot = options.verifyOpenGodot ?? createOpenGodotVerifier();
     this.createGitBaseline = options.createGitBaseline ?? createGitBaselineCreator();
     this.openFolder = options.openFolder ?? ((projectPath) => {
       const command = process.platform === "win32"
@@ -208,6 +218,56 @@ export class ProjectCreationService {
     this.activeCreation = operation.finally(() => {
       this.activeCreation = null;
     });
+    this.emit();
+  }
+
+  beginOpenCreation(displayNameValue: string): void {
+    if (this.activeCreation) throw new ProjectCreationConflictError("A project creation transaction is already running.");
+    const displayName = displayNameValue.trim();
+    const blueprint = gameBlueprintSchema.parse({
+      projectName: displayName,
+      vision: "A new Godot project whose game idea will be shaped inside Forge.",
+      foundation: "top_down_arena",
+      inputMode: "keyboard",
+      coreAction: "The creator will define the game's core action in Forge.",
+      funTarget: "The creator will define what makes the game fun in Forge.",
+      smallestPlayableResult: "The creator will choose the smallest playable result after opening the project.",
+      firstPlayableMilestone: "Shape the game into systems and small quests inside Forge.",
+      quests: [
+        { reference: "Q1", title: "Shape the Game", visibleOutcome: "The creator describes the game as broad systems.", dependencies: [] },
+        { reference: "Q2", title: "Choose a System", visibleOutcome: "The creator selects one system to refine.", dependencies: ["Q1"] },
+        { reference: "Q3", title: "Plan a Quest", visibleOutcome: "The creator approves one small playable quest.", dependencies: ["Q2"] },
+      ],
+      includedScope: ["One Forge-owned Godot workspace"],
+      excludedScope: ["A predetermined game type", "Unapproved game-file changes"],
+      acceptanceCriteria: [
+        { reference: "AC-1", questReference: "Q1", criterion: "The creator can shape broad systems.", verificationReferences: ["V-1"] },
+        { reference: "AC-2", questReference: "Q2", criterion: "The creator can refine one system.", verificationReferences: ["V-2"] },
+        { reference: "AC-3", questReference: "Q3", criterion: "The creator can approve one small quest.", verificationReferences: ["V-3"] },
+      ],
+      verificationIdeas: [
+        { reference: "V-1", questReference: "Q1", idea: "Inspect the accepted system roadmap." },
+        { reference: "V-2", questReference: "Q2", idea: "Inspect the accepted system quest plan." },
+        { reference: "V-3", questReference: "Q3", idea: "Review the exact creator-approved files." },
+      ],
+      projectDocumentationSummary: "A neutral Forge-owned Godot project ready for the creator's idea.",
+      initialChronicleSummary: "Forge created a neutral Godot project without choosing the game type.",
+    });
+    const envelope: ApprovedBlueprintEnvelope = {
+      creationMode: "open",
+      blueprint,
+      blueprintSha256: fingerprintBlueprint(blueprint),
+      approvedAt: this.now().toISOString(),
+      provenance: {
+        model: "gpt-5.6", reasoningEffort: "high", sandbox: "read-only", network: "disabled",
+        threadId: null, attempts: 1, latencyMs: 0,
+        usage: { inputTokens: 0, cachedInputTokens: 0, outputTokens: 0, reasoningOutputTokens: 0 },
+      },
+    };
+    this.cancellationRequested = false;
+    this.snapshot = { ...blankSnapshot(), phase: "creating", startedAt: this.now().toISOString(), displayName, foundation: "open_godot", questCount: 0 };
+    const operation = this.runTransaction(envelope);
+    this.activeCreation = operation.finally(() => { this.activeCreation = null; });
     this.emit();
   }
 
@@ -344,21 +404,23 @@ export class ProjectCreationService {
     try {
       this.setStage("Validating the blueprint");
       const blueprint = gameBlueprintSchema.parse(envelope.blueprint);
+      const openCreation = envelope.creationMode === "open";
       if (fingerprintBlueprint(blueprint) !== envelope.blueprintSha256) {
         throw new Error("The approved blueprint changed after creator approval. Review and approve it again.");
       }
-      if (!envelope.proposal || !envelope.acceptedRoadmap || !envelope.acceptedRoadmapSha256) {
+      if (!openCreation && (!envelope.proposal || !envelope.acceptedRoadmap || !envelope.acceptedRoadmapSha256)) {
         if (!this.allowLegacyPlanningEnvelopes) throw new Error("Project creation requires the current approved blueprint and accepted-roadmap fingerprints.");
-      } else {
-        const acceptedRoadmap = validateAcceptedRoadmap(envelope.acceptedRoadmap, envelope.blueprintSha256);
+      } else if (!openCreation) {
+        const proposal = envelope.proposal!;
+        const acceptedRoadmap = validateAcceptedRoadmap(envelope.acceptedRoadmap!, envelope.blueprintSha256);
         if (!acceptedRoadmap.acceptedAt || acceptedRoadmap.fingerprint !== envelope.acceptedRoadmapSha256) {
           throw new Error("The accepted roadmap changed after creator approval. Review and accept it again.");
         }
-        if (envelope.proposal.blueprint.projectName !== blueprint.projectName || fingerprintBlueprint(envelope.proposal.blueprint) !== envelope.blueprintSha256) {
+        if (proposal.blueprint.projectName !== blueprint.projectName || fingerprintBlueprint(proposal.blueprint) !== envelope.blueprintSha256) {
           throw new Error("The immutable planning proposal no longer matches the approved blueprint.");
         }
       }
-      await this.rejectPersistedDuplicate(envelope.blueprintSha256);
+      if (!openCreation) await this.rejectPersistedDuplicate(envelope.blueprintSha256);
       this.requireNotCancelled();
 
       this.setStage("Preparing the workspace");
@@ -382,7 +444,9 @@ export class ProjectCreationService {
       this.requireNotCancelled();
 
       this.setStage("Assembling the starter");
-      const starter = await assembleControlledStarter(stagingPath, blueprint.projectName, this.starterPath);
+      const starter = openCreation
+        ? await assembleOpenGodotFoundation(stagingPath, blueprint.projectName, this.openFoundationPath)
+        : await assembleControlledStarter(stagingPath, blueprint.projectName, this.starterPath);
       await assertStarterInventory(stagingPath, starter);
       this.requireNotCancelled();
 
@@ -393,7 +457,8 @@ export class ProjectCreationService {
       this.requireNotCancelled();
 
       this.setStage("Checking the Godot project");
-      const godot: GodotVerificationResult = await this.verifyGodot({
+      const verifier = openCreation ? this.verifyOpenGodot : this.verifyGodot;
+      const godot: GodotVerificationResult = await verifier({
         projectPath: stagingPath,
         projectId,
         forgeHome: roots.forgeHome,
@@ -448,7 +513,7 @@ export class ProjectCreationService {
         projectId,
         displayName: blueprint.projectName,
         canonicalPath: finalPath,
-        foundation: "top_down_arena",
+        foundation: starter.foundation,
         createdAt,
         lastOpenedAt: completedAt,
         creationState: "created",

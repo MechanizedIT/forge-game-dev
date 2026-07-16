@@ -19,8 +19,8 @@ import { GeneratedProjectWorldService } from "../generated-project-world/service
 import { ProjectCreationService } from "../project-creation/service.js";
 
 const projectId = "last-moment-pulse-6631032087";
-const evidenceRoot = path.join(repositoryRoot, "docs", "evidence", "2026-07-15-alpha-pivot-system-quest-refinement");
-const report = { date: "2026-07-15", browser: "", channel: "", states: [] as string[], screenshots: [] as string[], unchangedProjectFiles: 0, gitStatusBefore: [] as string[], gitStatusAfter: [] as string[], issues: [] as string[], result: "PASS" as "PASS" | "FAIL" };
+const evidenceRoot = path.join(repositoryRoot, "docs", "evidence", "2026-07-16-alpha-quest-handoff");
+const report = { date: "2026-07-16", browser: "", channel: "", states: [] as string[], screenshots: [] as string[], unchangedProjectFiles: 0, gitStatusBefore: [] as string[], gitStatusAfter: [] as string[], issues: [] as string[], result: "PASS" as "PASS" | "FAIL" };
 
 class QueueExecutor implements BlueprintModelExecutor {
   constructor(private readonly responses: string[]) {}
@@ -155,8 +155,21 @@ async function main() {
     await page.emulateMedia({ reducedMotion: "reduce" }); await capture(page, "proposal-mobile-reduced-motion");
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.getByRole("button", { name: "Confirm quests" }).click();
-    await page.getByRole("heading", { name: "Choose files for the first quest" }).waitFor();
+    await page.getByRole("heading", { name: /Quests saved for/ }).waitFor();
+    await capture(page, "saved-quests-desktop");
+    await page.getByRole("button", { name: "Prepare this quest" }).click();
+    await page.getByRole("heading", { name: /Choose files for:/ }).waitFor();
     await capture(page, "file-choice-desktop");
+    await page.getByRole("button", { name: "Back to system" }).click();
+    await page.getByRole("button", { name: /Storm Rhythm/ }).click();
+    await page.getByRole("button", { name: "Edit this game system" }).click();
+    await page.getByRole("heading", { name: "Storm Rhythm" }).waitFor();
+    await page.getByRole("button", { name: "Back to roadmap" }).click();
+    await page.getByRole("button", { name: /Harbor Response/ }).click();
+    await page.getByRole("button", { name: "Edit this game system" }).click();
+    await page.getByRole("heading", { name: /Quests saved for/ }).waitFor();
+    await page.getByRole("button", { name: "Prepare this quest" }).click();
+    await page.getByRole("heading", { name: /Choose files for:/ }).waitFor();
     const firstFile = page.locator(".system-quest-file input").first();
     await firstFile.check();
     await page.getByLabel("New files").fill("scripts/welcome_beacon.gd");

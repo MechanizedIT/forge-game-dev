@@ -124,7 +124,7 @@ export function buildGeneratedWorkspacePresentation(
   const activeBrief = snapshot.quests.find((quest) => quest.run !== null && quest.run.phase !== "completed" && quest.run.phase !== "cancelled") ?? null;
   const savedQuestId = activeBrief && modelQuestById.has(activeBrief.questId)
     ? activeBrief.questId
-    : modelQuestById.has(snapshot.state.selectedQuestId)
+    : snapshot.state.selectedQuestId !== null && modelQuestById.has(snapshot.state.selectedQuestId)
     ? snapshot.state.selectedQuestId
     : snapshot.projectModel.focus.selectedQuestId;
   const savedQuest = savedQuestId ? modelQuestById.get(savedQuestId) ?? null : null;

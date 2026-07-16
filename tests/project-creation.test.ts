@@ -24,6 +24,7 @@ import { acceptRoadmap, buildBlueprintProposal, createSignalSweepRoadmap, revise
 import type { BlueprintPlanningService } from "../src/blueprint-planner/service.js";
 import { writeJsonAtomic } from "../src/quest-runner/artifacts.js";
 import { GeneratedQuestRunnerService } from "../src/generated-quest-runner/service.js";
+import { GeneratedProjectWorldService } from "../src/generated-project-world/service.js";
 import { createForgeDashboardServer } from "../src/dashboard-host/server.js";
 import type { ForgeDashboardService } from "../src/dashboard-host/service.js";
 import {
@@ -203,6 +204,44 @@ test("a validated approved blueprint creates the controlled project tree and rou
     const registry = projectRegistrySchema.parse(JSON.parse(await readFile(path.join(forgeHome, "project-registry.json"), "utf8")) as unknown);
     assert.equal(registry.projects[0]?.projectId, snapshot.projectId);
     assert.deepEqual(await readdir(path.join(forgeHome, "projects", ".staging")), []);
+  });
+});
+
+test("open creation makes one neutral runnable project without a model-planned game type", async () => {
+  await withRoot(async (root) => {
+    const forgeHome = path.join(root, "Forge");
+    const service = createService(forgeHome, {
+      verifyOpenGodot: async ({ projectId, verifiedAt }) => godotVerificationResultSchema.parse({
+        schemaVersion: 1,
+        projectId,
+        status: "passed",
+        godotVersion: "4.7.stable.test",
+        arguments: ["--headless", "--path", ".", "--script", "res://scripts/verify_project.gd"],
+        successMarker: "FORGE_OPEN_GODOT_VERIFY_OK",
+        output: "FORGE_OPEN_GODOT_VERIFY_OK main=pass scripts=pass",
+        verifiedAt,
+      }),
+    });
+    service.beginOpenCreation("Moonlight Courier");
+    await service.waitForIdle();
+    const created = service.getSnapshot().createdProject;
+    assert.ok(created, service.getSnapshot().error ?? "Open project creation failed");
+    assert.equal(created.foundation, "open_godot");
+    assert.equal(created.questCount, 0);
+    const manifest = generatedProjectManifestSchema.parse(JSON.parse(await readFile(path.join(created.projectLocation, ".forge/project-manifest.json"), "utf8")) as unknown);
+    assert.equal(manifest.foundation, "open_godot");
+    assert.equal(manifest.starter.id, "open-godot");
+    const roadmap = generatedRoadmapV2Schema.parse(JSON.parse(await readFile(path.join(created.projectLocation, manifest.artifacts.roadmap), "utf8")) as unknown);
+    assert.deepEqual(roadmap.quests, []);
+    const state = JSON.parse(await readFile(path.join(created.projectLocation, manifest.artifacts.projectState), "utf8")) as { selectedQuestId: unknown; nextRecommendedQuestId: unknown };
+    assert.equal(state.selectedQuestId, null);
+    assert.equal(state.nextRecommendedQuestId, null);
+    const registry = await new ProjectRegistryStore(forgeHome).load();
+    assert.equal(registry.projects[0]?.foundation, "open_godot");
+    assert.equal((await service.listRecentProjects())[0]?.projectId, created.projectId);
+    const world = await new GeneratedProjectWorldService({ forgeHome }).loadWorld(created.projectId);
+    assert.deepEqual(world.projectModel.quests, []);
+    assert.equal(world.projectModel.focus.selectedQuestId, null);
   });
 });
 
@@ -539,6 +578,7 @@ test("generated-project creation remains isolated from the sample workspace", as
 test("the creation endpoint requires same-origin, exact confirmation, and a one-time per-launch nonce before starting writes", async () => {
   await withRoot(async (root) => {
     let starts = 0;
+    let openStarts = 0;
     const creationSnapshot: ProjectCreationSnapshot = {
       phase: "idle", stage: null, completedStages: [], startedAt: null, displayName: null,
       foundation: null, projectId: null, relativeProjectIdentifier: null, questCount: null,
@@ -548,6 +588,7 @@ test("the creation endpoint requires same-origin, exact confirmation, and a one-
       getSnapshot: () => creationSnapshot,
       listRecentProjects: async () => [],
       beginCreation: () => { starts += 1; },
+      beginOpenCreation: (displayName: string) => { assert.equal(displayName, "Moonlight Courier"); openStarts += 1; },
       subscribe: () => () => {},
     } as unknown as ProjectCreationService;
     const planningStub = {
@@ -597,6 +638,15 @@ test("the creation endpoint requires same-origin, exact confirmation, and a one-
       });
       assert.equal(replay.status, 400);
       assert.equal(starts, 1);
+
+      const openState = await (await fetch(`${base}/api/projects/state`)).json() as { mutationToken: string };
+      const openAccepted = await fetch(`${base}/api/projects/create-open`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: base, "x-forge-mutation-token": openState.mutationToken },
+        body: JSON.stringify({ displayName: "Moonlight Courier" }),
+      });
+      assert.equal(openAccepted.status, 202);
+      assert.equal(openStarts, 1);
     } finally {
       await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     }

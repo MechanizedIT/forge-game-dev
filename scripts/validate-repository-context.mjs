@@ -14,6 +14,7 @@ const contextFiles = [
   "src/blueprint-planner/AGENTS.md",
   "src/project-creation/AGENTS.md",
   "src/generated-project-world/AGENTS.md",
+  "src/generated-quest-runner/AGENTS.md",
   "src/godot/AGENTS.md",
 ];
 
@@ -26,6 +27,7 @@ const requiredSubsystemIds = [
   "godot-verification",
   "project-registry",
   "generated-project-world",
+  "generated-quest-runner",
   "public-showcase",
   "visual-review-evidence",
   "documentation-status",
@@ -65,11 +67,12 @@ const changeMapFields = [
 const requiredChangeEntries = [
   "Launchpad or v0.2 UI change",
   "Prepared sample quest workflow change or failure",
-  "GPT planning failure or blueprint rule change",
+  "Open roadmap, system quest, or legacy blueprint planning failure",
   "Generated project creation failure",
   "Registry or restart failure",
   "Godot download, launch, or automated verification failure",
   "Generated roadmap, quest brief, or Project World display failure",
+  "Native planned-quest run, scope, Worked completion, or undo failure",
   "Persistence or Chronicle behavior change",
   "Responsive or browser-review failure",
   "Static showcase content, build, or review failure",

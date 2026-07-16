@@ -194,6 +194,17 @@ export function cancelProjectCreation(mutationToken: string): Promise<ProjectCre
   });
 }
 
+export function createOpenProject(displayName: string, mutationToken: string): Promise<ProjectCreationStateResponse> {
+  return request<ProjectCreationStateResponse>("/api/projects/create-open", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-forge-mutation-token": mutationToken,
+    },
+    body: JSON.stringify({ displayName }),
+  });
+}
+
 export function resetFailedProjectCreation(mutationToken: string): Promise<ProjectCreationStateResponse> {
   return request<ProjectCreationStateResponse>("/api/projects/create/reset", {
     method: "POST",
@@ -299,8 +310,9 @@ function systemQuestPlanningUrl(projectId: string, systemId: string, action: str
   return `/api/projects/${encodeURIComponent(projectId)}/systems/${encodeURIComponent(systemId)}/quest-planning/${action}`;
 }
 
-export function loadSystemQuestPlanning(projectId: string, systemId: string): Promise<SystemQuestPlanningSnapshot> {
-  return request(systemQuestPlanningUrl(projectId, systemId, "state"));
+export function loadSystemQuestPlanning(projectId: string, systemId: string, questId?: string): Promise<SystemQuestPlanningSnapshot> {
+  const suffix = questId ? `?questId=${encodeURIComponent(questId)}` : "";
+  return request(`${systemQuestPlanningUrl(projectId, systemId, "state")}${suffix}`);
 }
 
 export function listSystemQuestFiles(projectId: string, systemId: string): Promise<SystemQuestFileCandidate[]> {
@@ -327,8 +339,8 @@ export function acceptSystemQuestPlanning(projectId: string, systemId: string, f
   return request(systemQuestPlanningUrl(projectId, systemId, "accept-quests"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ decision: "ACCEPT SYSTEM QUESTS", fingerprint }) });
 }
 
-export function reviewSystemQuestWorkOrder(projectId: string, systemId: string, existingFiles: string[], newFiles: string[]): Promise<SystemQuestPlanningSnapshot> {
-  return request(systemQuestPlanningUrl(projectId, systemId, "review-work-order"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ existingFiles, newFiles }) });
+export function reviewSystemQuestWorkOrder(projectId: string, systemId: string, existingFiles: string[], newFiles: string[], questId?: string): Promise<SystemQuestPlanningSnapshot> {
+  return request(systemQuestPlanningUrl(projectId, systemId, "review-work-order"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ existingFiles, newFiles, ...(questId ? { questId } : {}) }) });
 }
 
 export function acceptSystemQuestWorkOrder(projectId: string, systemId: string, fingerprint: string): Promise<SystemQuestPlanningSnapshot> {

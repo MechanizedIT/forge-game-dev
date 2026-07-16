@@ -270,6 +270,36 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** The isolated owner rehearsal completes, reloads, and records one local commit for the Forge milestone. No push, pull request, merge, deploy, remote, tag, or release change occurs.
 
+#### Alpha Milestone 7 — Open Project and Repeatable Quest Loop
+
+- [x] Replace the active new-game ceremony with project name → neutral runnable Godot workspace → Project World.
+- [x] Create the neutral workspace without a Codex planning call, game-type fit, starter chooser, capability, or verification-profile gate.
+- [x] Keep staged creation, containment, pinned Godot verification, clean local Git, registry-last persistence, restart reopen, and old-project compatibility.
+- [x] Let every available accepted native quest receive its own creator-confirmed one-to-four-file work plan.
+- [x] Reuse the existing profile-free runner, scope pause, proof, play, **Worked**, completion, reload, and undo path.
+- [x] Prove empty-roadmap reopen, real Godot 4.7 creation, a real clean Git baseline, dependency unlock, second-quest scoping, full tests, protected tests, build, and context checks.
+
+**Status:** `COMPLETE`. A creator can create a neutral Godot project first, describe any simple idea inside the existing open roadmap flow, refine systems into quests, and repeat the safe quest loop. Project creation itself uses zero Codex planning turns. Each later planning or work step stays small and creator-triggered.
+
+**Truth boundary:** Forge still owns the project location and supports Godot only. It does not import arbitrary projects, scan broadly, choose files automatically, create art, export a finished game, or run quests autonomously.
+
+**Exit:** A temporary real project passed pinned Godot 4.7 and clean local Git creation. The full suite passes 166/166, protected v0.1 passes 38/38 with the production build, and the open project plus repeatable work-order checks pass.
+
+#### Alpha Milestone 8 — Clear Quest Handoff and Reliable Worked Completion
+
+- [x] Show every saved quest after system refinement and mark the next available quest as recommended.
+- [x] Carry the exact quest title, visible outcome, and done-when checks into file preparation.
+- [x] Suggest a small editable starting set from validated Godot files without another Codex turn or broader scan.
+- [x] Release transient quest-planning ownership when the creator leaves, while reconstructing saved quests and confirmed work orders later.
+- [x] Fix native **Worked** completion when finalized project state already differs from the Git index, including hidden local-state paths.
+- [x] Preserve exact completion-manifest equality, rollback, one commit, receipt, restart, protected sample behavior, and the four-file maximum.
+
+**Status:** `COMPLETE`. System refinement now ends with a visible quest list and one recommended next action. File preparation is explicitly about one named quest and starts with editable local recommendations. Leaving the chooser no longer blocks another system. Native completion compares deterministic records with the Git index, so the already-final project-state file is expected and committed instead of causing a false stopped result.
+
+**Truth boundary:** File suggestions are convenience only. They do not grant authority, call Codex, inspect beyond the existing bounded candidate list, or bypass the creator's exact work-plan review.
+
+**Exit:** Full tests pass 167/167, protected v0.1 passes 38/38 with the production build, context validation passes, the native hidden-state completion regression commits and reloads, and the nine-state Edge review switches systems and returns with zero issues. The owner then completed the repaired obstacle quest and passed the full restart/reopen/status/History/next-quest/game-launch check.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -304,8 +334,8 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Pivot Milestone 6 is complete. Its closeout preserves the completed creator
-rehearsal and local commit. Choose the next bounded milestone before implementation;
-the roadmap deliberately does not authorize a successor yet. Submission actions remain
+Alpha Milestone 8 is complete. Its closeout preserves the neutral new-project path,
+repeatable quest loop, clearer quest handoff, and reliable **Worked** completion. Choose the next bounded milestone before implementation; the
+roadmap deliberately does not authorize a successor yet. Submission actions remain
 owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a
 license, deploy the static site, and push or submit only when authorized.

@@ -15,6 +15,7 @@ export type ProjectCreationStage = (typeof projectCreationStages)[number];
 export type ProjectCreationPhase = "idle" | "creating" | "created" | "failed";
 
 export interface ApprovedBlueprintEnvelope {
+  creationMode?: "planned" | "open";
   blueprint: GameBlueprint;
   proposal?: BlueprintProposal;
   acceptedRoadmap?: AcceptedRoadmap;
@@ -27,13 +28,13 @@ export interface ApprovedBlueprintEnvelope {
 export interface CreatedProjectSummary {
   projectId: string;
   displayName: string;
-  foundation: "top_down_arena";
+  foundation: "top_down_arena" | "open_godot";
   projectLocation: string;
   createdAt: string;
   questCount: number;
   starterVersion: string;
   godotVersion: string;
-  godotSuccessMarker: "FORGE_TOP_DOWN_ARENA_VERIFY_OK";
+  godotSuccessMarker: "FORGE_TOP_DOWN_ARENA_VERIFY_OK" | "FORGE_OPEN_GODOT_VERIFY_OK";
   gitCommitSha: string;
   documentationSaved: true;
   chronicleInitialized: true;
@@ -46,7 +47,7 @@ export interface ProjectCreationSnapshot {
   completedStages: ProjectCreationStage[];
   startedAt: string | null;
   displayName: string | null;
-  foundation: "top_down_arena" | null;
+  foundation: "top_down_arena" | "open_godot" | null;
   projectId: string | null;
   relativeProjectIdentifier: string | null;
   questCount: number | null;
@@ -60,7 +61,7 @@ export interface RecentProjectSummary {
   projectId: string;
   displayName: string;
   canonicalPath: string;
-  foundation: "top_down_arena";
+  foundation: "top_down_arena" | "open_godot";
   createdAt: string;
   lastOpenedAt: string;
   starterVersion: string;

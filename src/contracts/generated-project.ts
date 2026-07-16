@@ -40,11 +40,28 @@ export const topDownArenaStarterManifestSchema = z.object({
   }
 });
 
+export const openGodotFoundationManifestSchema = z.object({
+  schemaVersion: schemaVersionSchema,
+  starterId: z.literal("open-godot"),
+  version: z.literal("1.0.0"),
+  foundation: z.literal("open_godot"),
+  projectFile: z.literal("project.godot"),
+  mainScene: z.literal("res://scenes/main.tscn"),
+  verificationScript: z.literal("res://scripts/verify_project.gd"),
+  successMarker: z.literal("FORGE_OPEN_GODOT_VERIFY_OK"),
+  requiredNodes: z.array(nonEmptyStringSchema).min(1),
+  requiredInputActions: z.array(nonEmptyStringSchema),
+  files: z.array(relativePathSchema).min(1),
+  substitutions: z.array(z.object({ file: relativePathSchema, token: nonEmptyStringSchema, owner: z.literal("forge") }).strict()),
+}).strict();
+
+export const starterManifestSchema = z.union([topDownArenaStarterManifestSchema, openGodotFoundationManifestSchema]);
+
 export const generatedProjectManifestSchema = z.object({
   schemaVersion: schemaVersionSchema,
   projectId: slugSchema,
   displayName: nonEmptyStringSchema,
-  foundation: z.literal("top_down_arena"),
+  foundation: z.enum(["top_down_arena", "open_godot"]),
   createdAt: timestampSchema,
   engine: z.object({
     kind: z.literal("godot"),
@@ -55,7 +72,7 @@ export const generatedProjectManifestSchema = z.object({
     mainScene: z.literal("res://scenes/main.tscn"),
   }).strict(),
   starter: z.object({
-    id: z.literal("top-down-arena"),
+    id: z.enum(["top-down-arena", "open-godot"]),
     version: nonEmptyStringSchema,
     manifest: relativePathSchema,
   }).strict(),
@@ -90,7 +107,7 @@ export const firstPlayableMilestoneSchema = z.object({
   projectId: slugSchema,
   title: z.literal("First Playable"),
   outcome: nonEmptyStringSchema,
-  questIds: z.array(slugSchema).min(3).max(5),
+  questIds: z.array(slugSchema).max(5),
 }).strict();
 
 export const generatedQuestArtifactSchema = z.object({
@@ -215,7 +232,7 @@ export const generatedRoadmapV2Schema = z.object({
   schemaVersion: z.literal(2),
   projectId: slugSchema,
   updatedAt: timestampSchema,
-  quests: z.array(generatedRoadmapQuestV2Schema).min(1).max(5),
+  quests: z.array(generatedRoadmapQuestV2Schema).max(5),
 }).strict();
 
 export const generatedProjectStateSchema = z.object({
@@ -333,7 +350,7 @@ export const godotVerificationResultSchema = z.object({
     z.literal("--script"),
     z.literal("res://scripts/verify_project.gd"),
   ]),
-  successMarker: z.literal("FORGE_TOP_DOWN_ARENA_VERIFY_OK"),
+  successMarker: z.enum(["FORGE_TOP_DOWN_ARENA_VERIFY_OK", "FORGE_OPEN_GODOT_VERIFY_OK"]),
   output: nonEmptyStringSchema,
   verifiedAt: timestampSchema,
 }).strict();
@@ -355,11 +372,11 @@ export const creationProvenanceSchema = z.object({
   transactionId: slugSchema,
   blueprintSha256: sha256Schema,
   acceptedRoadmapSha256: sha256Schema.optional(),
-  starterId: z.literal("top-down-arena"),
+  starterId: z.enum(["top-down-arena", "open-godot"]),
   starterVersion: nonEmptyStringSchema,
   createdAt: timestampSchema,
   completedAt: timestampSchema,
-  godotSuccessMarker: z.literal("FORGE_TOP_DOWN_ARENA_VERIFY_OK"),
+  godotSuccessMarker: z.enum(["FORGE_TOP_DOWN_ARENA_VERIFY_OK", "FORGE_OPEN_GODOT_VERIFY_OK"]),
   gitCommitSha: gitShaSchema,
   registryState: z.literal("registered"),
   modelCommandsExecuted: z.literal(0),
@@ -370,7 +387,7 @@ export const projectRegistryEntrySchema = z.object({
   projectId: slugSchema,
   displayName: nonEmptyStringSchema,
   canonicalPath: nonEmptyStringSchema,
-  foundation: z.literal("top_down_arena"),
+  foundation: z.enum(["top_down_arena", "open_godot"]),
   createdAt: timestampSchema,
   lastOpenedAt: timestampSchema,
   creationState: z.literal("created"),
@@ -400,6 +417,8 @@ export const creationFailureRecordSchema = z.object({
 }).strict();
 
 export type TopDownArenaStarterManifest = z.infer<typeof topDownArenaStarterManifestSchema>;
+export type OpenGodotFoundationManifest = z.infer<typeof openGodotFoundationManifestSchema>;
+export type StarterManifest = z.infer<typeof starterManifestSchema>;
 export type GeneratedProjectManifest = z.infer<typeof generatedProjectManifestSchema>;
 export type GeneratedQuestArtifact = z.infer<typeof generatedQuestArtifactSchema>;
 export type GeneratedQuestArtifactV2 = z.infer<typeof generatedQuestArtifactV2Schema>;

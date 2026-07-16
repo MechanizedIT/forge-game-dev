@@ -23,6 +23,7 @@ import {
 import { fingerprintProjectStructure } from "../src/blueprint-planner/system-roadmap.js";
 import type { BlueprintModelExecutor, BlueprintModelSession, BlueprintModelTurn } from "../src/blueprint-planner/types.js";
 import { GeneratedProjectWorldService } from "../src/generated-project-world/service.js";
+import { applyAcceptedSystemQuests } from "../src/generated-project-world/system-quest-plan.js";
 import { GeneratedQuestRunnerService } from "../src/generated-quest-runner/service.js";
 import { createForgeDashboardServer } from "../src/dashboard-host/server.js";
 import type { ForgeDashboardService } from "../src/dashboard-host/service.js";
@@ -147,7 +148,7 @@ test("proposal acceptance rejects changed prompt-driving system or quest wording
   }
 });
 
-test("cancel before acceptance writes nothing; cancel after acceptance keeps quests and drops only transient scope", async () => {
+test("cancel before acceptance writes nothing; cancel after acceptance releases transient ownership and reloads saved quests", async () => {
   const source = model();
   const first = new SystemQuestPlanningService(new QueueExecutor([proposal()]));
   first.begin(source, "system-first-playable", "Make the beacon welcome the player and let the harbor answer it.");
@@ -163,7 +164,7 @@ test("cancel before acceptance writes nothing; cancel after acceptance keeps que
   await service.acceptQuests("ACCEPT SYSTEM QUESTS", review.proposalFingerprint!, source, null, async (batch) => (saved = persistedPlan(batch)));
   service.setWorkOrderReview({ questId: saved.systems[0]!.quests[0]!.questId, existingFiles: ["scripts/beacon.gd"], newFiles: [], fingerprint: "a".repeat(64) });
   service.cancel("CANCEL QUEST PLANNING", saved);
-  assert.equal(service.getSnapshot().phase, "quests_accepted");
+  assert.equal(service.getSnapshot().phase, "cancelled");
   assert.equal(service.getSnapshot().workOrder, null);
   assert.equal(service.getSnapshotFor("welcome-beacon", "system-first-playable", saved).phase, "quests_accepted");
 });
@@ -251,6 +252,62 @@ test("bounded file review accepts exact safe paths, persists readiness, and neve
   } finally { await fixture.cleanup(); }
 });
 
+test("a completed native quest unlocks a separate confirmed work plan for the next quest", async () => {
+  const fixture = await createSignalSweepFixture();
+  try {
+    const service = new GeneratedProjectWorldService({ forgeHome: fixture.forgeHome, now: () => new Date("2026-07-15T22:00:00.000Z") });
+    const before = await service.loadWorld(fixture.projectId);
+    const system = before.projectModel.systems[0]!;
+    const firstId = "quest-welcome-signal";
+    const secondId = "quest-answer-signal";
+    const completedPlan = acceptedSystemQuestPlanSchema.parse({ schemaVersion: 1, projectId: fixture.projectId, systems: [{
+      systemId: system.systemId,
+      baseQuestIds: system.questIds,
+      creatorDescription: "Let the relay greet the player, then let the harbor answer it.",
+      sourceFingerprint: fingerprintSystemQuestStructure(before.projectModel, system.systemId),
+      proposalFingerprint: "a".repeat(64),
+      acceptedAt: "2026-07-15T20:30:00.000Z",
+      quests: [
+        {
+          questId: firstId,
+          title: "Welcome Signal",
+          playerVisibleOutcome: "A warm signal greets the player at the relay.",
+          whyItMatters: "The first response makes the relay feel useful and alive.",
+          doneWhen: ["A warm signal is visible."],
+          excludedScope: ["No scoring system."],
+          dependsOn: [],
+          workOrder: { existingFiles: ["scripts/main.gd"], newFiles: [], fingerprint: "b".repeat(64), acceptedAt: "2026-07-15T20:31:00.000Z" },
+          implementation: { status: "completed", runId: "run-welcome-signal", completedAt: "2026-07-15T20:32:00.000Z", changedFiles: ["scripts/main.gd"], verificationProfile: null, contractFingerprint: "c".repeat(64), creatorConfirmation: "worked" },
+        },
+        {
+          questId: secondId,
+          title: "Answer Signal",
+          playerVisibleOutcome: "The harbor answers after the welcome pulse finishes.",
+          whyItMatters: "The reply makes the small world feel responsive.",
+          doneWhen: ["The answer appears after the pulse."],
+          excludedScope: ["No scoring system."],
+          dependsOn: [firstId],
+        },
+      ],
+    }] });
+    const unlockedModel = applyAcceptedSystemQuests(before.projectModel, completedPlan);
+    assert.equal(unlockedModel.quests.find((quest) => quest.questId === secondId)?.status, "available");
+    const openPlan = structuredClone(completedPlan);
+    delete openPlan.systems[0]!.quests[0]!.workOrder;
+    delete openPlan.systems[0]!.quests[0]!.implementation;
+    openPlan.systems[0]!.quests[1]!.dependsOn = [];
+    await service.saveSystemQuestBatch(fixture.projectId, openPlan.systems[0]!);
+    const candidates = await service.listSystemQuestFiles(fixture.projectId, system.systemId);
+    const review = await service.reviewSystemQuestWorkOrder(fixture.projectId, system.systemId, secondId, { existingFiles: [candidates[0]!.relativePath], newFiles: [] });
+    const saved = await service.saveSystemQuestWorkOrder(fixture.projectId, system.systemId, secondId, { existingFiles: review.existingFiles, newFiles: [] }, review.fingerprint);
+    assert.equal(saved.systems[0]!.quests[1]!.workOrder?.fingerprint, review.fingerprint);
+    assert.equal(saved.systems[0]!.quests[0]!.workOrder, undefined);
+    const resumed = new SystemQuestPlanningService(new QueueExecutor([])).getSnapshotFor(fixture.projectId, system.systemId, saved, secondId);
+    assert.equal(resumed.phase, "ready");
+    assert.equal(resumed.workOrder?.questId, secondId);
+  } finally { await fixture.cleanup(); }
+});
+
 test("work-order save rechecks active runner work and leaves the fixed record byte-identical", async () => {
   const fixture = await createSignalSweepFixture();
   try {
@@ -315,6 +372,9 @@ test("system quest host routes require same origin, exact bodies, and both exact
     assert.equal((await fetch(`${base}/accept-quests`, { method: "POST", headers: { "content-type": "application/json", origin }, body: JSON.stringify({ decision: "APPROVE", fingerprint: review.proposalFingerprint }) })).status, 400);
     assert.equal((await fetch(`${base}/accept-quests`, { method: "POST", headers: { "content-type": "application/json", origin }, body: JSON.stringify({ decision: "ACCEPT SYSTEM QUESTS", fingerprint: review.proposalFingerprint }) })).status, 200);
     assert.ok(saved);
+    assert.equal((await fetch(`${base}/cancel`, { method: "POST", headers: { "content-type": "application/json", origin }, body: JSON.stringify({ decision: "CANCEL QUEST PLANNING" }) })).status, 200);
+    assert.equal((await fetch(`${origin}/api/projects/welcome-beacon/systems/system-another-piece/quest-planning/state`)).status, 200, "leaving saved quests must release the old system");
+    assert.equal((await fetch(`${base}/state`)).status, 200, "saved quests must reconstruct after leaving");
     assert.equal((await fetch(`${base}/review-work-order`, { method: "POST", headers: { "content-type": "application/json", origin }, body: JSON.stringify({ existingFiles: ["scripts/beacon.gd"], newFiles: [], extra: "hidden" }) })).status, 400);
     assert.equal((await fetch(`${base}/review-work-order`, { method: "POST", headers: { "content-type": "application/json", origin }, body: JSON.stringify({ existingFiles: ["scripts/beacon.gd"], newFiles: [] }) })).status, 200);
     assert.equal((await fetch(`${base}/accept-work-order`, { method: "POST", headers: { "content-type": "application/json", origin }, body: JSON.stringify({ decision: "ACCEPT QUEST WORK ORDER", fingerprint: "e".repeat(64) }) })).status, 200);

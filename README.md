@@ -7,7 +7,7 @@ Forge turns AI-assisted game development into a visual, guided series of quests.
 > **Forge is the platform. The assistant is your companion.**
 
 [![OpenAI Build Week](https://img.shields.io/badge/OpenAI-Build%20Week-black)](https://openai.devpost.com/)
-![Status](https://img.shields.io/badge/status-prototype-blue)
+![Status](https://img.shields.io/badge/status-open--idea%20alpha-blue)
 ![Engine](https://img.shields.io/badge/sample%20project-Godot%204-478CBF)
 
 ## Demo
@@ -28,10 +28,16 @@ Build and validate the deployable static output with `npm run showcase:check`; r
 
 ## The Build Week experience
 
-The prototype focuses on one polished workflow:
+The current alpha focuses on one polished workflow:
 
 ```text
-Choose a quest
+Name a Godot project
+    ↓
+Describe the game idea
+    ↓
+Shape systems and quests
+    ↓
+Choose one quest and its files
     ↓
 Review the plan
     ↓
@@ -42,11 +48,13 @@ Verify the change
 Play the result
     ↓
 Complete the quest
+    ↓
+Continue with the next quest
 ```
 
-The current bundled Godot experience starts with a visual roadmap backed by one real prepared quest. Select **Enemy Targeting** and the Forge companion explains what was planned, what Codex may change, and how the result will be verified. The creator can review the validated plan and explicitly approve or leave without starting work. Plan refinement and contextual questions remain later milestones.
+The active path creates one small neutral Godot project before asking what kind of game it will become. Inside Project World, an ordinary idea becomes broad systems, each system becomes smaller quests, and the creator approves the exact one-to-four-file work plan for one quest at a time. Forge recommends a next available quest without deciding what the creator is allowed to imagine.
 
-After approval, Forge gives Codex a bounded work packet, translates technical activity into understandable progress, verifies the result, launches the game, and updates the roadmap only after explicit creator confirmation.
+After approval, Forge gives Codex a bounded work packet, translates technical activity into understandable progress, verifies the real project, launches the game, and updates the quest, system, roadmap, History, project notes, and local Git record only after the creator chooses **Worked**. The protected Enemy Targeting sample remains available as compatibility evidence.
 
 ## Judge quick start
 
@@ -101,15 +109,15 @@ The dashboard reads the real persistent workspace, prepared quest and plan, road
 
 ### Create a new game
 
-Choose **Create a new game**, enter one small Top-down Arena idea, and review the GPT-5.6 blueprint. Blueprint approval writes nothing. A second explicit confirmation lets Forge copy only the controlled starter, validate its project records, run the pinned Godot smoke check, create a clean local Git baseline, and register the project last. Forge never uses model-authored paths, shell commands, packages, dependencies, or source files.
+Choose **Start a new game**, enter a project name, and choose **Create and open**. Forge copies only the controlled neutral Godot foundation, validates its records, runs the pinned Godot check, creates a clean local Git baseline, and registers the project last. No game type, template, capability, or model call is required to create the workspace.
 
-The resulting Project World shows the verified playable starter, persisted roadmap, quest briefs, documents, Chronicle, and idea seeds. Generated-quest implementation is deliberately unavailable in v0.2.
+In Project World, choose **Shape systems** and describe the game in ordinary words. Confirm the roadmap, refine one system into quests, prepare an available quest, review the exact files, and send the work to Codex. After the checks pass, play the game and choose **Worked** to save the result. Completing a quest unlocks the next dependency-safe quest.
 
 ### Open a generated Project World
 
-Run `npm run forge`, then choose **Open Project World** on a recent-project card. Forge resolves only the registered project ID, validates its project-local manifest and artifacts, and opens its persisted roadmap without regenerating the project.
+Run `npm run forge`, then choose **Open Project World** on a recent-project card. Forge resolves only the registered project ID, validates its project-local manifest and artifacts, and opens its persisted roadmap without regenerating the project. Saved systems, quests, work orders, results, History, and the next available quest survive a full Forge restart.
 
-The displayed arena is a **Verified starter layout** / **Playable-state preview** derived from the fixed Godot smoke result; it is not a captured game frame. Generated quest briefs are planning artifacts and explicitly state that Codex implementation is not enabled. Saving an idea records local planning input plus a separately labelled derived activity note; it does not create a quest, call GPT, start Codex, or alter the authoritative roadmap or Chronicle.
+Older starter-aware projects still show their labelled verified preview and retain their existing compatibility behavior. A new neutral project begins as a runnable foundation; its actual game appears only through creator-approved quests. Saving an idea for later remains separate from roadmap and Chronicle mutation.
 
 For repeatable verification:
 
@@ -224,7 +232,7 @@ PLAN → APPROVE → IMPLEMENT → REVIEW → DOCUMENT → COMPLETE
 
 ## What Forge is becoming
 
-Today, Forge is a focused Godot prototype proving that one gameplay idea can become an understandable, verified, playable accomplishment.
+Today, Forge is a focused Godot alpha proving that an open-ended game idea can become a visual roadmap, several understandable quests, and a verified playable game through repeated creator-approved Codex work.
 
 The longer-term vision is a project operating system for AI-assisted creators:
 
@@ -232,7 +240,7 @@ The longer-term vision is a project operating system for AI-assisted creators:
 Idea → Vision → Roadmap → Quest → Implementation → Evidence → Progress
 ```
 
-Future versions may create roadmaps from informal ideas, discover relevant project context, support additional engines, preserve long-term decision history, and adapt the companion to each creator's experience level. The goal is not to remove creators from development; it is to help more people direct complex projects without losing understanding or control.
+Future versions may discover more project context, support additional engines, deepen long-term decision history, and adapt the companion to each creator's experience level. The goal is not to remove creators from development; it is to help more people direct complex projects without losing understanding or control.
 
 ## Build Week provenance
 
@@ -248,13 +256,13 @@ The judge testing path is fully contained in this repository; the prior project 
 
 ## Prototype limitations
 
-- The bundled Godot project is the primary supported test environment.
-- Roadmap creation is template-driven.
+- Forge creates new Forge-owned Godot projects; arbitrary existing-project import is not implemented.
+- Godot is the only supported engine in the current alpha.
 - Repository scanning is intentionally limited.
 - Windows is the primary tested platform.
 - The companion lives inside Forge rather than in an operating-system-level overlay.
 - Live implementation requires Codex authentication and internet access.
-- Generated-project quests are planning briefs only; their Codex implementation is intentionally deferred.
+- File scope is limited to one to four creator-approved Godot text files per quest; art generation, export, publishing, and autonomous multi-quest work are not implemented.
 
 ## Built with
 

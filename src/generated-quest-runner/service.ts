@@ -17,11 +17,12 @@ import {
   generatedRoadmapV2Schema,
   gitBaselineResultSchema,
   roadmapSchema,
-  topDownArenaStarterManifestSchema,
+  starterManifestSchema,
   type GeneratedQuestArtifactV2,
   type GeneratedQuestImplementationContract,
   type GeneratedQuestRunJournal,
   type GeneratedRoadmapV2,
+  type StarterManifest,
 } from "../contracts/index.js";
 import { resolveForgeHome } from "../demo/paths.js";
 import { ensurePinnedGodot } from "../godot/bootstrap.js";
@@ -94,7 +95,7 @@ interface LoadedProject {
   source: "legacy" | "native";
   projectPath: string;
   manifest: z.infer<typeof generatedProjectManifestSchema>;
-  starter: z.infer<typeof topDownArenaStarterManifestSchema>;
+  starter: StarterManifest;
   baselineHead: string;
   roadmap: GeneratedRoadmapV2;
   quest: GeneratedQuestArtifactV2;
@@ -254,7 +255,7 @@ export class GeneratedQuestRunnerService {
     }
     const projectPath = entry.canonicalPath;
     const manifest = generatedProjectManifestSchema.parse(await readUnknown(path.join(projectPath, ".forge", "project-manifest.json")));
-    const starter = topDownArenaStarterManifestSchema.parse(await readUnknown(path.join(projectPath, manifest.starter.manifest)));
+    const starter = starterManifestSchema.parse(await readUnknown(path.join(projectPath, manifest.starter.manifest)));
     const baseline = gitBaselineResultSchema.parse(await readUnknown(path.join(projectPath, manifest.artifacts.localGitBaseline)));
     if (manifest.projectId !== projectId || entry.starterVersion !== starter.version || manifest.starter.version !== starter.version) {
       throw new GeneratedQuestRunConflictError("Registry, manifest, and controlled starter identity do not match.");

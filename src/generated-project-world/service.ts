@@ -26,7 +26,7 @@ import {
   planningProvenanceSchema,
   generatedRoadmapV2Schema,
   roadmapSchema,
-  topDownArenaStarterManifestSchema,
+  starterManifestSchema,
   type GeneratedProjectStateAny,
   type GeneratedQuestArtifactV2,
   type IdeaSeed,
@@ -252,7 +252,7 @@ export class GeneratedProjectWorldService {
       if (manifest.projectId !== projectId || manifest.displayName !== entry.displayName || manifest.foundation !== entry.foundation) {
         throw new Error("Registry and project manifest identity do not match.");
       }
-      const starter = await readValidated(await this.ownedPath(projectPath, manifest.starter.manifest), topDownArenaStarterManifestSchema);
+      const starter = await readValidated(await this.ownedPath(projectPath, manifest.starter.manifest), starterManifestSchema);
       if (starter.version !== manifest.starter.version) throw new Error("Starter manifest version does not match the project manifest.");
       const approvedBlueprint = await readValidated(await this.ownedPath(projectPath, manifest.artifacts.approvedBlueprint), gameBlueprintSchema);
       const acceptedRoadmapProvenance = manifest.artifacts.acceptedRoadmap
@@ -291,7 +291,7 @@ export class GeneratedProjectWorldService {
 
       const owned = [vision, firstPlayable, roadmap, state, chronicle, godot, planning, creation, git, ...quests];
       if (owned.some((artifact) => artifact.projectId !== projectId)) throw new Error("One or more Project World artifacts belong to another project.");
-      if (approvedBlueprint.projectName !== manifest.displayName || approvedBlueprint.foundation !== manifest.foundation) throw new Error("Approved blueprint identity does not match the project manifest.");
+      if (approvedBlueprint.projectName !== manifest.displayName || (manifest.foundation !== "open_godot" && approvedBlueprint.foundation !== manifest.foundation)) throw new Error("Approved blueprint identity does not match the project manifest.");
       if (acceptedRoadmapProvenance && (acceptedRoadmapProvenance.projectId !== projectId || acceptedRoadmapProvenance.acceptedRoadmap.fingerprint !== creation.acceptedRoadmapSha256 || !acceptedRoadmapProvenance.acceptedRoadmap.acceptedAt)) throw new Error("Accepted-roadmap provenance does not match creation authority.");
       if (creation.starterVersion !== starter.version || creation.godotSuccessMarker !== godot.successMarker || creation.gitCommitSha !== git.commitSha) throw new Error("Creation evidence does not match the verified starter and Git baseline.");
       const roadmapIds = roadmap.quests.map((quest) => quest.questId);
@@ -342,12 +342,12 @@ export class GeneratedProjectWorldService {
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
       const combinedQuestIds = projectModel.quests.map((quest) => quest.questId);
       const selectedIsValid = state.selectedQuestId !== null && combinedQuestIds.includes(state.selectedQuestId);
-      const selectedQuestId = selectedIsValid ? state.selectedQuestId! : combinedQuestIds[0]!;
+      const selectedQuestId = selectedIsValid ? state.selectedQuestId! : combinedQuestIds[0] ?? null;
       const selectedSystemId = projectModel.quests.find((quest) => quest.questId === selectedQuestId)?.systemId ?? projectModel.systems[0]!.systemId;
       const savedNext = state.schemaVersion === 2 ? state.nextRecommendedQuestId : null;
       const nextRecommendedQuestId = savedNext !== null && combinedQuestIds.includes(savedNext) ? savedNext : projectModel.focus.nextRecommendedQuestId;
       projectModel = projectModelSchema.parse({ ...projectModel, focus: { ...projectModel.focus, selectedSystemId, selectedQuestId, nextRecommendedQuestId } });
-      const repairNotice = selectedIsValid ? null : "The saved quest selection was unavailable. Forge focused the first roadmap quest in memory; choose a quest to persist the repair.";
+      const repairNotice = selectedIsValid || combinedQuestIds.length === 0 ? null : "The saved quest selection was unavailable. Forge focused the first roadmap quest in memory; choose a quest to persist the repair.";
       const nativeArtifacts = new Map<string, GeneratedQuestArtifactV2>();
       for (const savedSystem of acceptedSystemQuestPlan?.systems ?? []) {
         for (const [index, savedQuest] of savedSystem.quests.entries()) {
@@ -428,7 +428,7 @@ export class GeneratedProjectWorldService {
           projectId,
           displayName: manifest.displayName,
           foundation: manifest.foundation,
-          foundationLabel: "Top-down Arena",
+          foundationLabel: manifest.foundation === "open_godot" ? "Open Godot project" : "Top-down Arena",
           engineLabel: `Godot ${manifest.engine.version} · ${manifest.engine.dimension} · ${manifest.engine.language}`,
           starterVersion: manifest.starter.version,
           createdAt: manifest.createdAt,
@@ -442,7 +442,21 @@ export class GeneratedProjectWorldService {
           acceptedRoadmapFingerprint: acceptedRoadmapProvenance?.acceptedRoadmap.fingerprint ?? null,
           alreadyPlayable: acceptedRoadmapProvenance?.acceptedRoadmap.alreadyPlayable.map((fact) => fact.statement) ?? [],
         },
-        playable: {
+        playable: manifest.foundation === "open_godot" ? {
+          previewLabel: "Playable-state preview",
+          layoutLabel: "Verified starter layout",
+          summary: "The verified Godot project opens to a small Forge starting screen, ready for the creator's idea.",
+          facts: [
+            "The main scene and script load successfully.",
+            "The project opens with pinned Godot.",
+          ],
+          plannedNotPlayable: acceptedSystemRoadmap
+            ? acceptedSystemRoadmap.systems.map((system) => `${system.title}: ${system.outcome}`)
+            : ["The creator has not shaped the game systems yet."],
+          godotVersion: godot.godotVersion,
+          verifiedAt: godot.verifiedAt,
+          successMarker: godot.successMarker,
+        } : {
           previewLabel: "Playable-state preview",
           layoutLabel: "Verified starter layout",
           summary: "The verified starter loads a bounded arena with a keyboard-controlled player and an objective relay.",
@@ -626,11 +640,14 @@ export class GeneratedProjectWorldService {
     const choice = systemQuestFileChoiceSchema.parse(choiceValue);
     const current = await this.loadWorld(projectId);
     const savedSystem = current.systemQuestPlan?.systems.find((system) => system.systemId === systemId);
-    const quest = savedSystem?.quests[0];
-    if (!quest || quest.questId !== questId) throw new GeneratedProjectWorldConflictError("Review file scope only for the first accepted native quest.");
+    const quest = savedSystem?.quests.find((candidate) => candidate.questId === questId);
+    const modelQuest = current.projectModel.quests.find((candidate) => candidate.questId === questId && candidate.systemId === systemId);
+    if (!quest || !modelQuest) throw new GeneratedProjectWorldConflictError("Choose a saved quest from this game system.");
+    if (quest.implementation || modelQuest.status !== "available") throw new GeneratedProjectWorldConflictError("Choose an available incomplete quest before reviewing its files.");
     const { projectPath } = await this.resolveProject(projectId);
     for (const relativePath of choice.existingFiles) await this.validateWorkPath(projectPath, relativePath, "existing");
     for (const relativePath of choice.newFiles) await this.validateWorkPath(projectPath, relativePath, "new");
+    if (quest.workOrder) throw new GeneratedProjectWorldConflictError("This quest already has a confirmed work plan.");
     const review = {
       questId, title: quest.title, playerVisibleOutcome: quest.playerVisibleOutcome,
       doneWhen: quest.doneWhen, excludedScope: quest.excludedScope,
@@ -651,7 +668,7 @@ export class GeneratedProjectWorldService {
       ...previous,
       systems: previous.systems.map((system) => system.systemId !== systemId ? system : {
         ...system,
-        quests: system.quests.map((quest, index) => index !== 0 || quest.questId !== questId ? quest : {
+        quests: system.quests.map((quest) => quest.questId !== questId ? quest : {
           ...quest,
           workOrder: { existingFiles: review.existingFiles, newFiles: review.newFiles, fingerprint, acceptedAt: this.now().toISOString() },
         }),
@@ -668,7 +685,7 @@ export class GeneratedProjectWorldService {
   async saveState(projectId: string, input: GeneratedWorldStateInput): Promise<GeneratedProjectWorldSnapshot> {
     if (!generatedViews.has(input.currentView)) throw new GeneratedProjectWorldConflictError("A valid generated Project World view is required.");
     const snapshot = await this.loadWorld(projectId);
-    if (!snapshot.projectModel.quests.some((quest) => quest.questId === input.selectedQuestId)) {
+    if (input.selectedQuestId === null ? snapshot.projectModel.quests.length > 0 : !snapshot.projectModel.quests.some((quest) => quest.questId === input.selectedQuestId)) {
       throw new GeneratedProjectWorldConflictError("The selected quest does not belong to this project plan.");
     }
     const { projectPath } = await this.resolveProject(projectId);

@@ -99,7 +99,7 @@ export function contractFingerprint(value: Omit<GeneratedQuestImplementationCont
 
 export async function buildGeneratedQuestContract(options: {
   projectPath: string;
-  starterId: "top-down-arena";
+  starterId: "top-down-arena" | "open-godot";
   starterVersion: string;
   quest: GeneratedQuestArtifactV2;
   dependencyStates: Map<string, GeneratedQuestPlanState>;

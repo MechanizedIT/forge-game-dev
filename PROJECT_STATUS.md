@@ -1,12 +1,23 @@
 # Forge Project Status
 
-**Last updated:** 2026-07-15
+**Last updated:** 2026-07-16
 
-**Current milestone:** `Alpha Pivot Milestone 6 — Genuine Creator Rehearsal`
+**Current milestone:** `Alpha Milestone 8 — Clear Quest Handoff and Reliable Worked Completion`
 
-**Overall state:** `COMPLETE` — The owner completed the isolated walkthrough, saw the promised result in Godot, and chose **Worked**. The full idea-to-game path is now proven by both automated evidence and a real creator play decision.
+**Overall state:** `COMPLETE` — Forge now keeps the creator oriented from saved quests into one explicit work plan, releases abandoned planning cleanly, and records **Worked** without the false native completion-manifest failure.
+
+**Owner confirmation:** The complete open-idea journey is proven in the real robot project. After the repair, all six final checks passed across full Forge shutdown, restart, project reopen, obstacle completion state, system/History/next-quest persistence, and real game launch.
 
 ## What works now
+
+- After accepting quests, Forge shows the complete saved quest list and marks the next available quest as **Recommended next** instead of jumping directly into an unnamed file chooser.
+- Preparing work now names the exact quest, repeats its visible outcome and done-when checks, and suggests editable existing/new Godot files from the already bounded candidate list. This adds no Codex turn and grants no authority before confirmation.
+- **Back to system** discards unfinished file picks and releases transient planner ownership. Another system opens immediately; returning reconstructs saved quests and confirmed work orders from project records.
+- Native **Worked** completion now compares deterministic completion records with the Git index. An already-final `.forge/project-state.json` is included in the expected exact manifest and committed rather than falsely stopping after successful play.
+
+- **Start a new game** now asks only for a project name. Forge creates a tiny runnable Godot project, verifies it with pinned Godot, creates a clean local Git baseline, registers it last, and opens Project World.
+- The creator describes the actual game after the workspace opens. Existing open system and quest planners accept ordinary Godot ideas without a game-type, capability, starter, template, or profile permission gate.
+- Every available native quest can now receive its own one-to-four-file work plan. Completing one quest unlocks the next dependency-safe quest, which can be scoped, sent to the same runner, played, confirmed, reloaded, and undone independently.
 
 - A creator can move through one connected path: describe a game, confirm broad systems, edit one system into small quests, choose one to four files, confirm the work plan, and separately choose **Send to Codex**.
 - Native planned quests now use the existing profile-free runner. The creator's exact file choice is the only game-file permission; profiles remain optional extra checks and never decide which ideas are allowed.
@@ -106,7 +117,20 @@
 
 ## How to test this milestone
 
-For a repeatable automated proof, run `npm test`, `npm run check:v0.1`, and `npm run visual:review:alpha:creator-rehearsal`. The owner walkthrough is complete.
+Run `npm run forge`, open the robot project, refine a system, and confirm its quests. Check that the saved quest list appears, open the recommended quest, then choose **Back to system** and open another system. For the completion repair, finish a quest, play it, and choose **Worked**. For automated proof, run `npm test`, `npm run check:v0.1`, `npm run context:check`, and `npm run visual:review:alpha:system-quest`.
+
+## Alpha Milestone 8 evidence
+
+- Full tests pass 167/167. Protected v0.1 passes 38/38 with type checks and the production dashboard build. Repository context validation and `git diff --check` pass.
+- The native creator rehearsal reproduces project state that already matches the final selection while hidden from ordinary Git status. **Worked** stages the exact expected manifest, includes `.forge/project-state.json`, creates one commit and receipt, and reloads completed.
+- The dated Edge review passes nine screens with zero issues. It shows all saved quests, the recommended next quest, explicit quest context and suggestions, then leaves the chooser, opens another system, returns, finishes the work plan, and reloads it.
+- The owner closed Forge completely, restarted it, reopened the robot project, confirmed **Random obstacle appearances** completed, confirmed correct system progress, History, and next available quest, then launched the game successfully. All six checks passed.
+
+## Alpha Milestone 7 evidence
+
+- A temporary real **Moonlight Courier** project completed neutral creation with Godot `4.7.stable.official.5b4e0cb0f`, zero starter quests, and clean local Git commit `9dd6e0840a7d…`; the temporary project was removed after verification.
+- Full tests pass 166/166. The focused creation, world, runner, recovery, completion, host, UI, and repeated work-order suite passes 78/78. Protected v0.1 passes 38/38 with the production dashboard build.
+- Type checks, production build, repository context validation, and `git diff --check` pass. Empty-roadmap reopen keeps quest focus null, and a completed native quest makes the next dependency-safe quest available for its own confirmed file plan.
 
 ## Alpha Task B implementation evidence
 

@@ -421,10 +421,10 @@ export function createForgeDashboardServer(
         if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
         const body = await readJsonBody(request);
         if (Object.keys(body).some((key) => key !== "currentView" && key !== "selectedQuestId")) throw new Error("Project state accepts only currentView and selectedQuestId.");
-        if (typeof body.currentView !== "string" || typeof body.selectedQuestId !== "string") throw new Error("A Project World view and selected quest are required.");
+        if (typeof body.currentView !== "string" || (body.selectedQuestId !== null && typeof body.selectedQuestId !== "string")) throw new Error("A Project World view and optional selected quest are required.");
         sendJson(response, 200, await generatedWorldService.saveState(projectId, {
           currentView: body.currentView as GeneratedWorldView,
-          selectedQuestId: body.selectedQuestId,
+          selectedQuestId: body.selectedQuestId as string | null,
         } satisfies GeneratedWorldStateInput));
         return;
       }
@@ -466,18 +466,29 @@ export function createForgeDashboardServer(
         sendJson(response, 202, await creationState());
         return;
       }
+      if (request.method === "POST" && url.pathname === "/api/projects/create-open" && creationService) {
+        consumeCreationToken(request);
+        const body = await readJsonBody(request);
+        requireExactKeys(body, ["displayName"], "Open project creation accepts only the project name.");
+        if (typeof body.displayName !== "string") throw new Error("A project name is required.");
+        creationService.beginOpenCreation(body.displayName);
+        sendJson(response, 202, await creationState());
+        return;
+      }
       const systemQuestRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/systems\/([^/]+)\/quest-planning\/(state|events|files|start|answers|revise|retry|accept-quests|review-work-order|accept-work-order|cancel)$/u);
       if (systemQuestRoute && systemQuestPlanningService && generatedWorldService) {
         const projectId = safePathId(systemQuestRoute[1], "project ID");
         const systemId = safePathId(systemQuestRoute[2], "system ID");
         const action = systemQuestRoute[3]!;
         const active = systemQuestPlanningService.getSnapshot();
-        if (active.projectId && (active.projectId !== projectId || active.systemId !== systemId) && !["idle", "cancelled", "ready"].includes(active.phase)) {
+        const planningIsWritingOrRunning = ["planning", "revising", "accepting_quests", "accepting_work_order"].includes(active.phase);
+        if (active.projectId && (active.projectId !== projectId || active.systemId !== systemId) && planningIsWritingOrRunning) {
           throw new SystemQuestPlanningConflictError("Quest planning is open for another system.");
         }
         if (request.method === "GET" && action === "state") {
           const world = await generatedWorldService.loadWorld(projectId);
-          sendJson(response, 200, systemQuestPlanningService.getSnapshotFor(projectId, systemId, world.systemQuestPlan));
+          const targetQuestId = url.searchParams.has("questId") ? safePathId(url.searchParams.get("questId") ?? undefined, "quest ID") : undefined;
+          sendJson(response, 200, systemQuestPlanningService.getSnapshotFor(projectId, systemId, world.systemQuestPlan, targetQuestId));
           return;
         }
         if (request.method === "GET" && action === "events") {
@@ -530,10 +541,11 @@ export function createForgeDashboardServer(
           return;
         }
         if (action === "review-work-order") {
-          requireExactKeys(body, ["existingFiles", "newFiles"], "Work-order review accepts only exact existing and new file lists.");
+          requireExactKeys(body, "questId" in body ? ["existingFiles", "newFiles", "questId"] : ["existingFiles", "newFiles"], "Work-order review accepts only the selected quest and exact existing and new file lists.");
           if (!Array.isArray(body.existingFiles) || !Array.isArray(body.newFiles) || [...body.existingFiles, ...body.newFiles].some((item) => typeof item !== "string")) throw new Error("Work-order files must be exact path lists.");
           const world = await generatedWorldService.loadWorld(projectId);
-          systemQuestPlanningService.restorePersisted(projectId, systemId, world.systemQuestPlan);
+          const targetQuestId = "questId" in body ? safePathId(typeof body.questId === "string" ? body.questId : undefined, "quest ID") : undefined;
+          systemQuestPlanningService.restorePersisted(projectId, systemId, world.systemQuestPlan, targetQuestId);
           const snapshot = systemQuestPlanningService.getSnapshot();
           if (!snapshot.firstQuestId) throw new SystemQuestPlanningConflictError("Accept quests before reviewing a work order.");
           const review = await generatedWorldService.reviewSystemQuestWorkOrder(projectId, systemId, snapshot.firstQuestId, { existingFiles: body.existingFiles as string[], newFiles: body.newFiles as string[] });

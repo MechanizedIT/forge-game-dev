@@ -13,11 +13,26 @@ import {
 } from "../src/contracts/index.js";
 import type { DashboardSnapshot } from "../src/dashboard/shared.js";
 // @ts-expect-error The base test config omits JSX; the tsx test runner compiles this UI module.
-import { friendlyQuestPlanningError } from "../src/dashboard-v2/SystemQuestRefinement.js";
+import { friendlyQuestPlanningError, recommendQuestFiles } from "../src/dashboard-v2/SystemQuestRefinement.js";
 // @ts-expect-error The base test config omits JSX; the tsx test runner compiles this UI module.
 import { friendlySystemPlanningError } from "../src/dashboard-v2/SystemRoadmapPlanning.js";
 import { buildSampleWorkflowPresentation } from "../src/dashboard-v2/sample-workflow.js";
 import { returnToLaunchpad, viewForLaunchChoice } from "../src/dashboard-v2/state.js";
+
+test("quest file recommendations use validated game files without another planning turn", () => {
+  const recommendation = recommendQuestFiles({
+    title: "Random obstacle appearances",
+    playerVisibleOutcome: "Obstacles appear at varied times and positions ahead of the robot.",
+    doneWhen: ["The robot sees more than one obstacle pattern."],
+  }, [
+    { relativePath: "scenes/main.tscn", size: 10, sha256: "a".repeat(64) },
+    { relativePath: "scripts/robot.gd", size: 10, sha256: "b".repeat(64) },
+    { relativePath: "scripts/obstacle_controller.gd", size: 10, sha256: "c".repeat(64) },
+    { relativePath: "scripts/verify_project.gd", size: 10, sha256: "d".repeat(64) },
+  ]);
+  assert.deepEqual(recommendation.existingFiles, ["scripts/obstacle_controller.gd", "scripts/robot.gd"]);
+  assert.equal(recommendation.suggestedNewFile, "scripts/random_obstacle_appearances.gd");
+});
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 

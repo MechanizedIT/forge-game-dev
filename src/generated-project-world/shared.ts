@@ -14,8 +14,8 @@ export type GeneratedWorldView = Exclude<GeneratedProjectStateAny["currentView"]
 export interface GeneratedProjectIdentity {
   projectId: string;
   displayName: string;
-  foundation: "top_down_arena";
-  foundationLabel: "Top-down Arena";
+  foundation: "top_down_arena" | "open_godot";
+  foundationLabel: "Top-down Arena" | "Open Godot project";
   engineLabel: string;
   starterVersion: string;
   createdAt: string;
@@ -30,7 +30,7 @@ export interface GeneratedPlayableTruth {
   plannedNotPlayable: string[];
   godotVersion: string;
   verifiedAt: string;
-  successMarker: "FORGE_TOP_DOWN_ARENA_VERIFY_OK";
+  successMarker: "FORGE_TOP_DOWN_ARENA_VERIFY_OK" | "FORGE_OPEN_GODOT_VERIFY_OK";
 }
 
 export interface GeneratedQuestBrief extends GeneratedQuestArtifactV2 {
@@ -91,7 +91,7 @@ export interface GeneratedProjectWorldSnapshot {
   quests: GeneratedQuestBrief[];
   state: {
     currentView: GeneratedWorldView;
-    selectedQuestId: string;
+    selectedQuestId: string | null;
     nextRecommendedQuestId: string | null;
     repairNotice: string | null;
   };
@@ -109,7 +109,7 @@ export interface GeneratedProjectWorldSnapshot {
 
 export interface GeneratedWorldStateInput {
   currentView: GeneratedWorldView;
-  selectedQuestId: string;
+  selectedQuestId: string | null;
 }
 
 export interface GeneratedIdeaSaveResponse {

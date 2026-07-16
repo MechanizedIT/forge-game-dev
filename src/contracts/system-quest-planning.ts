@@ -90,7 +90,6 @@ export const acceptedSystemQuestPlanSchema = z.object({
         if (!allowedDependencies.has(dependency)) context.addIssue({ code: "custom", message: "Quest dependencies must point backward inside the same system", path: ["systems", plan.systems.indexOf(system), "quests", index, "dependsOn"] });
       }
       allowedDependencies.add(quest.questId);
-      if (quest.workOrder && index !== 0) context.addIssue({ code: "custom", message: "Only the first new quest may carry this milestone's work order", path: ["systems", plan.systems.indexOf(system), "quests", index, "workOrder"] });
       if (quest.implementation) {
         if (!quest.workOrder) {
           context.addIssue({ code: "custom", message: "Completed native quests must keep their confirmed work plan", path: ["systems", plan.systems.indexOf(system), "quests", index, "implementation"] });

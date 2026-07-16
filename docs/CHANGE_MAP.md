@@ -22,13 +22,13 @@ Use this map when the task arrives as a symptom or requested behavior. The subsy
 - **Neighboring consumers:** Default/legacy dashboard, v0.2 sample adapter, Proof/Chronicle UI, Godot launch, and demo reset.
 - **Do not change first:** v0.2 fixture-like presentation, generated-project services, global registry, or the immutable baseline unless the prepared quest contract itself is intentionally changing.
 
-### GPT planning failure or blueprint rule change
+### Open roadmap, system quest, or legacy blueprint planning failure
 
-- **Symptom or request:** Planning repeats questions, accepts unsupported scope, fails repair, uses the wrong model boundary, loses cancellation, or produces an invalid blueprint.
+- **Symptom or request:** Planning repeats questions, loses accepted systems/quests, blocks another system after leaving, fails repair, uses the wrong model boundary, or produces an invalid roadmap, quest list, or legacy blueprint.
 - **Owning subsystem:** `blueprint-planning`.
-- **Start:** [planning service](../src/blueprint-planner/service.ts), [prompt](../src/blueprint-planner/prompt.ts), [SDK adapter](../src/blueprint-planner/sdk.ts), and [blueprint schema](../src/contracts/game-blueprint.ts).
-- **Contracts and tests:** [game blueprint contract](../src/contracts/game-blueprint.ts), [planning transport](../src/blueprint-planner/shared.ts), [planning tests](../tests/blueprint-planning.test.ts), and [contract tests](../tests/contracts.test.ts).
-- **Neighboring consumers:** New Game Intake/Review, project-creation approval envelope, provenance artifact, and planning rehearsal.
+- **Start:** [system roadmap planner](../src/blueprint-planner/system-roadmap.ts), [system quest planner](../src/blueprint-planner/system-quest.ts), then the [legacy planning service](../src/blueprint-planner/service.ts) or [SDK adapter](../src/blueprint-planner/sdk.ts) when relevant.
+- **Contracts and tests:** [system roadmap contract](../src/contracts/system-roadmap-planning.ts), [system quest contract](../src/contracts/system-quest-planning.ts), [system roadmap tests](../tests/system-roadmap-planning.test.ts), [system quest tests](../tests/system-quest-planning.test.ts), and [blueprint compatibility tests](../tests/blueprint-planning.test.ts).
+- **Neighboring consumers:** Project World roadmap/system refinement, project-local planning records, host planning routes, and legacy blueprint provenance.
 - **Do not change first:** Project filesystem code, starter source, registry, Godot verifier, or generated Project World to compensate for invalid model output.
 
 ### Generated project creation failure
@@ -36,7 +36,7 @@ Use this map when the task arrives as a symptom or requested behavior. The subsy
 - **Symptom or request:** Confirmation is rejected, a destination collides, starter assembly is incomplete, artifact round-trip fails, Godot/Git blocks promotion, cleanup is unsafe, or a project is registered after failure.
 - **Owning subsystem:** `project-creation`; use `godot-verification` for runtime/bootstrap causes and `project-registry` only after promotion succeeds.
 - **Start:** [creation service](../src/project-creation/service.ts), then [filesystem](../src/project-creation/filesystem.ts), [starter](../src/project-creation/starter.ts), [artifacts](../src/project-creation/artifacts.ts), [creation verifier](../src/project-creation/godot-verifier.ts), or [Git baseline](../src/project-creation/git-baseline.ts) according to the failed stage.
-- **Contracts and tests:** [generated-project contracts](../src/contracts/generated-project.ts), [starter manifest](../fixtures/godot/top-down-arena/starter-manifest.json), and [project creation tests](../tests/project-creation.test.ts).
+- **Contracts and tests:** [generated-project contracts](../src/contracts/generated-project.ts), [neutral foundation manifest](../fixtures/godot/open-godot/starter-manifest.json), legacy [starter manifest](../fixtures/godot/top-down-arena/starter-manifest.json), and [project creation tests](../tests/project-creation.test.ts).
 - **Neighboring consumers:** Registry/recent projects, creation UI, generated Project World, failure evidence, and Godot cache.
 - **Do not change first:** GPT prompt, generated-world join, sample workspace/reset, or caller-selected filesystem paths.
 
@@ -54,7 +54,7 @@ Use this map when the task arrives as a symptom or requested behavior. The subsy
 - **Symptom or request:** Download consent/checksum/cache fails, extraction is rejected, an executable cannot be found, fixture verification fails, generated starter smoke fails, or a verified project will not launch.
 - **Owning subsystem:** `godot-verification`; the invoking subsystem owns the meaning of the result.
 - **Start:** [bootstrap](../src/godot/bootstrap.ts), [pinned build](../src/godot/pinned-build.ts), [executable discovery](../src/godot/find-executable.ts), [sample runner](../src/godot/run-fixture.ts), or [creation verifier](../src/project-creation/godot-verifier.ts).
-- **Contracts and tests:** [Godot bootstrap tests](../tests/godot-bootstrap.test.ts), [executable tests](../tests/godot-executable.test.ts), [workspace tests](../tests/workspace.test.ts), [project creation tests](../tests/project-creation.test.ts), and the exact starter [verification script](../fixtures/godot/top-down-arena/scripts/verify_project.gd).
+- **Contracts and tests:** [Godot bootstrap tests](../tests/godot-bootstrap.test.ts), [executable tests](../tests/godot-executable.test.ts), [workspace tests](../tests/workspace.test.ts), [project creation tests](../tests/project-creation.test.ts), and the controlled verification scripts under [fixtures/godot](../fixtures/godot).
 - **Neighboring consumers:** Demo prepare/play, sample completion, project creation, generated-world launch, and visual rehearsals.
 - **Do not change first:** Quest verdicts, registry entries, UI success labels, or persisted verification artifacts to turn a runtime failure into a pass.
 
@@ -66,6 +66,15 @@ Use this map when the task arrives as a symptom or requested behavior. The subsy
 - **Contracts and tests:** Manifest, roadmap, quest, state, Chronicle, idea, and verification schemas in [generated-project contracts](../src/contracts/generated-project.ts); [generated-world tests](../tests/generated-project-world.test.ts) and [creation tests](../tests/project-creation.test.ts).
 - **Neighboring consumers:** Launchpad open, quest brief, Documents, Chronicle, idea dock, Godot/folder actions, and restart restoration.
 - **Do not change first:** Registry canonical paths, starter source, blueprint prompt, or roadmap bytes merely to fit a UI expectation.
+
+### Native planned-quest run, scope, Worked completion, or undo failure
+
+- **Symptom or request:** A confirmed quest cannot start, Codex asks for undeclared files, progress is misleading, Godot proof/play cannot advance, **Worked** stops, completion records disagree, restart loses the run, or undo touches the wrong change.
+- **Owning subsystem:** `generated-quest-runner`; use `blueprint-planning` for the saved work order and `generated-project-world` only for read/presentation defects.
+- **Start:** [runner service](../src/generated-quest-runner/service.ts), [native quest adapter](../src/generated-quest-runner/native-quest.ts), [completion transaction](../src/generated-quest-runner/completion.ts), and [recovery](../src/generated-quest-runner/recovery.ts).
+- **Contracts and tests:** [runner contract](../src/generated-quest-runner/contract.ts), [runner tests](../tests/generated-quest-runner.test.ts), [recovery tests](../tests/generated-quest-recovery.test.ts), [completion tests](../tests/generated-quest-completion.test.ts), and [creator rehearsal](../tests/creator-rehearsal.test.ts).
+- **Neighboring consumers:** Dashboard host, Project World work session, optional profiles/proof, Godot launch, project records, History, local Git, and receipt files.
+- **Do not change first:** The protected sample runner, profile eligibility, React status labels, project registry, or exact Git boundary merely to conceal a stopped native run.
 
 ### Persistence or Chronicle behavior change
 

@@ -175,11 +175,12 @@ export class SystemQuestPlanningService {
 
   getSnapshot(): SystemQuestPlanningSnapshot { return structuredClone(this.snapshot); }
 
-  getSnapshotFor(projectId: string, systemId: string, persisted: AcceptedSystemQuestPlan | null): SystemQuestPlanningSnapshot {
-    if (this.snapshot.projectId === projectId && this.snapshot.systemId === systemId && !["idle", "cancelled"].includes(this.snapshot.phase)) return this.getSnapshot();
+  getSnapshotFor(projectId: string, systemId: string, persisted: AcceptedSystemQuestPlan | null, targetQuestId?: string): SystemQuestPlanningSnapshot {
+    if (this.snapshot.projectId === projectId && this.snapshot.systemId === systemId && (!targetQuestId || this.snapshot.firstQuestId === targetQuestId) && !["idle", "cancelled"].includes(this.snapshot.phase)) return this.getSnapshot();
     const saved = persisted?.systems.find((system) => system.systemId === systemId) ?? null;
     if (!saved) return { ...blankSnapshot(), projectId, systemId };
-    const first = saved.quests[0]!;
+    const first = targetQuestId ? saved.quests.find((quest) => quest.questId === targetQuestId) : saved.quests.find((quest) => !quest.workOrder) ?? saved.quests[0];
+    if (!first) throw new SystemQuestPlanningConflictError("Choose a saved quest from this system.");
     return {
       ...blankSnapshot(), phase: first.workOrder ? "ready" : "quests_accepted", projectId, systemId,
       description: saved.creatorDescription, sourceFingerprint: saved.sourceFingerprint,
@@ -189,11 +190,12 @@ export class SystemQuestPlanningService {
     };
   }
 
-  restorePersisted(projectId: string, systemId: string, persisted: AcceptedSystemQuestPlan | null): void {
-    if (this.snapshot.projectId === projectId && this.snapshot.systemId === systemId && !["idle", "cancelled"].includes(this.snapshot.phase)) return;
+  restorePersisted(projectId: string, systemId: string, persisted: AcceptedSystemQuestPlan | null, targetQuestId?: string): void {
     const saved = persisted?.systems.find((system) => system.systemId === systemId);
     if (!saved) throw new SystemQuestPlanningConflictError("Accept quests before reviewing a work order.");
-    const first = saved.quests[0]!;
+    const first = targetQuestId ? saved.quests.find((quest) => quest.questId === targetQuestId) : saved.quests.find((quest) => !quest.workOrder) ?? saved.quests[0];
+    if (!first) throw new SystemQuestPlanningConflictError("Choose a saved quest from this system.");
+    if (this.snapshot.projectId === projectId && this.snapshot.systemId === systemId && this.snapshot.firstQuestId === first.questId && !["idle", "cancelled"].includes(this.snapshot.phase)) return;
     this.snapshot = {
       ...blankSnapshot(), phase: first.workOrder ? "ready" : "quests_accepted", projectId, systemId,
       description: saved.creatorDescription, sourceFingerprint: saved.sourceFingerprint,
@@ -262,21 +264,13 @@ export class SystemQuestPlanningService {
     this.sourceModel = null;
     this.pendingRevision = null;
     const saved = persisted?.systems.find((system) => system.systemId === this.snapshot.systemId) ?? null;
-    this.snapshot = saved
-      ? {
-          ...blankSnapshot(), phase: saved.quests[0]?.workOrder ? "ready" : "quests_accepted",
-          projectId: this.snapshot.projectId, systemId: this.snapshot.systemId,
-          description: saved.creatorDescription, sourceFingerprint: saved.sourceFingerprint,
-          proposalFingerprint: saved.proposalFingerprint, firstQuestId: saved.quests[0]!.questId,
-          workOrder: saved.quests[0]!.workOrder ? {
-            questId: saved.quests[0]!.questId,
-            existingFiles: saved.quests[0]!.workOrder!.existingFiles,
-            newFiles: saved.quests[0]!.workOrder!.newFiles,
-            fingerprint: saved.quests[0]!.workOrder!.fingerprint,
-          } : null,
-          effects: { planningRecordsWritten: saved.quests[0]!.workOrder ? 2 : 1, gameFilesWritten: 0, commandsRun: 0 },
-        }
-      : { ...this.snapshot, phase: "cancelled", proposal: null, workOrder: null, error: null };
+    this.snapshot = {
+      ...blankSnapshot(),
+      phase: "cancelled",
+      projectId: this.snapshot.projectId,
+      systemId: this.snapshot.systemId,
+      description: saved?.creatorDescription ?? this.snapshot.description,
+    };
     this.emit();
   }
 
@@ -329,7 +323,7 @@ export class SystemQuestPlanningService {
   }
 
   setWorkOrderReview(draft: SystemQuestWorkOrderDraft): void {
-    if (!["quests_accepted", "choosing_files", "work_order_review"].includes(this.snapshot.phase) || draft.questId !== this.snapshot.firstQuestId) throw new SystemQuestPlanningConflictError("Choose files for the first accepted quest.");
+    if (!["quests_accepted", "choosing_files", "work_order_review"].includes(this.snapshot.phase) || draft.questId !== this.snapshot.firstQuestId) throw new SystemQuestPlanningConflictError("Choose files for the selected accepted quest.");
     this.snapshot = { ...this.snapshot, phase: "work_order_review", workOrder: structuredClone(draft), error: null };
     this.emit();
   }

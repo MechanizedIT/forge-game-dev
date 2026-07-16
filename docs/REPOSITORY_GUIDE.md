@@ -58,52 +58,52 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 - **Protect:** Immutable fixture intent, exact approval/play phrases, allowed three-file scope, offline fake-SDK tests, and reset isolation from generated projects.
 
 <!-- forge-subsystem:launchpad-project-world -->
-### launchpad-project-world — v0.2 Launchpad and sample Project World
+### launchpad-project-world — Launchpad and Project World
 
-- **Purpose:** Present the two v0.2 journeys and recompose the real sample workflow as an understandable workshop without becoming a workflow owner.
+- **Purpose:** Present the active open-project journey, persisted Project World, and protected sample workflow without becoming a workflow owner.
 - **Owns:** React view state, visual hierarchy, responsive layout, Launchpad navigation, sample snapshot-to-presentation adaptation, and calls to backend APIs.
 - **Does not own:** Sample run/completion state, blueprint truth, creation transactions, generated project artifacts, or registry persistence.
 - **Start:** [v0.2 app](../src/dashboard-v2/App.tsx), [sample presentation adapter](../src/dashboard-v2/sample-workflow.ts), [new-game flow](../src/dashboard-v2/NewGameFlow.tsx), and [styles](../src/dashboard-v2/styles.css).
 - **Contracts and artifacts:** Consumes [dashboard snapshot types](../src/dashboard/shared.ts), [planning transport types](../src/blueprint-planner/shared.ts), [creation transport types](../src/project-creation/shared.ts), and [generated-world transport types](../src/generated-project-world/shared.ts); it persists no independent roadmap.
 - **Consumers:** Browser users and visual-review harnesses.
 - **Tests:** [v0.2 tests](../tests/dashboard-v2.test.ts), [dashboard host tests](../tests/dashboard-host.test.ts), and the focused visual-review entry points under [visual review](../src/visual-review).
-- **Decisions:** [Task 2.1 visual hierarchy closeout](closeouts/2026-07-13-v0.2-task-2-1-visual-hierarchy-closeout.md) and [Task 3 closeout](closeouts/2026-07-14-v0.2-task-3-sample-integration-closeout.md).
+- **Decisions:** [Task 3 closeout](closeouts/2026-07-14-v0.2-task-3-sample-integration-closeout.md), [open-project closeout](closeouts/2026-07-15-alpha-open-project-repeatable-quests-closeout.md), and [quest-handoff closeout](closeouts/2026-07-16-alpha-quest-handoff-reliable-completion-closeout.md).
 - **Protect:** Default/legacy sample behavior, truthful state labels, progressive disclosure, and the rule that presentation never advances authoritative state by itself.
 
 <!-- forge-subsystem:blueprint-planning -->
-### blueprint-planning — GPT blueprint planning
+### blueprint-planning — Open roadmap and quest planning
 
-- **Purpose:** Turn one bounded game idea into either one clarification screen or a strict, reviewable Top-down Arena blueprint.
-- **Owns:** Session-scoped planning state, prompt/repair construction, official SDK configuration, one-repair limit, cancellation, approval envelope, provenance, and blueprint fingerprinting.
+- **Purpose:** Turn ordinary game language into broad systems and turn one system into small ordered quests; preserve the older bounded blueprint planner for compatibility.
+- **Owns:** Session-scoped roadmap/quest planning state, prompt and repair construction, official SDK configuration, cancellation, accepted fingerprints, and legacy blueprint provenance.
 - **Does not own:** Output directories, source files, shell commands, starter selection beyond the fixed contract, Godot execution, project persistence, or quest implementation.
-- **Start:** [planning service](../src/blueprint-planner/service.ts), [prompt boundary](../src/blueprint-planner/prompt.ts), [SDK adapter](../src/blueprint-planner/sdk.ts), and [blueprint schema](../src/contracts/game-blueprint.ts).
-- **Contracts and artifacts:** `GameBlueprint` and planning-result schemas in [game blueprint contracts](../src/contracts/game-blueprint.ts); planning state is in memory until project creation writes approved blueprint/provenance into a generated project.
-- **Consumers:** Host planning routes, new-game UI, project-creation approval envelope, and the planning rehearsal.
-- **Tests:** [blueprint planning tests](../tests/blueprint-planning.test.ts), [contract tests](../tests/contracts.test.ts), and [v0.2 integration tests](../tests/dashboard-v2.test.ts).
+- **Start:** [system roadmap planner](../src/blueprint-planner/system-roadmap.ts), [system quest planner](../src/blueprint-planner/system-quest.ts), [legacy planning service](../src/blueprint-planner/service.ts), and [SDK adapter](../src/blueprint-planner/sdk.ts).
+- **Contracts and artifacts:** Open planning contracts live in [system roadmap](../src/contracts/system-roadmap-planning.ts) and [system quest](../src/contracts/system-quest-planning.ts); accepted records persist under each project's `.forge/` directory, while unfinished session state remains in memory.
+- **Consumers:** Host planning routes, Project World roadmap/refinement UI, project records, and planning rehearsals.
+- **Tests:** [system roadmap tests](../tests/system-roadmap-planning.test.ts), [system quest tests](../tests/system-quest-planning.test.ts), [blueprint compatibility tests](../tests/blueprint-planning.test.ts), and [v0.2 integration tests](../tests/dashboard-v2.test.ts).
 - **Decisions:** [Task 4A closeout](closeouts/2026-07-14-v0.2-task-4a-blueprint-planning-closeout.md) and [Task 4A review](reviews/2026-07-14-v0.2-task-4a-blueprint-planning-review.md).
-- **Protect:** Fixed Godot 4/2D/GDScript/Top-down Arena scope, maximum three questions, no second clarification loop, no silent model fallback, and no writes on approval.
+- **Protect:** Ideas are not capability-gated; model output remains schema-validated and fingerprinted; cancellation releases unfinished ownership without deleting accepted records; planning never grants file authority or starts implementation.
 
 <!-- forge-subsystem:project-creation -->
-### project-creation — Project creation and starter fixture
+### project-creation — Neutral project creation and legacy starters
 
-- **Purpose:** Deterministically turn a current approved blueprint into one verified, clean, registered local Godot project.
+- **Purpose:** Deterministically create one neutral, verified, clean, registered local Godot project before game planning, while preserving older starter-aware projects.
 - **Owns:** Exact creation confirmation, safe root allocation, controlled starter assembly, artifact writes/reloads, fixed Godot verification, local Git baseline, staging/promotion, failure evidence, cleanup, and registry-last transaction ordering.
-- **Does not own:** Blueprint generation, sample reset, generated-world rendering, or generated-quest implementation.
-- **Start:** [creation service](../src/project-creation/service.ts), [filesystem safety](../src/project-creation/filesystem.ts), [artifact writer](../src/project-creation/artifacts.ts), [starter assembler](../src/project-creation/starter.ts), and the [Top-down Arena fixture](../fixtures/godot/top-down-arena).
-- **Contracts and artifacts:** [generated-project schemas](../src/contracts/generated-project.ts); controlled starter manifest; generated project tree at `%LOCALAPPDATA%/Forge/projects/<project-id>/`; failed-creation evidence at `%LOCALAPPDATA%/Forge/evidence/creation-failures/`.
+- **Does not own:** Open roadmap/quest planning, sample reset, generated-world rendering, or quest implementation.
+- **Start:** [creation service](../src/project-creation/service.ts), [filesystem safety](../src/project-creation/filesystem.ts), [artifact writer](../src/project-creation/artifacts.ts), [foundation assembler](../src/project-creation/starter.ts), and the [neutral Godot fixture](../fixtures/godot/open-godot).
+- **Contracts and artifacts:** [generated-project schemas](../src/contracts/generated-project.ts); controlled neutral/legacy manifests; generated project tree at `%LOCALAPPDATA%/Forge/projects/<project-id>/`; failed-creation evidence at `%LOCALAPPDATA%/Forge/evidence/creation-failures/`.
 - **Consumers:** Host creation routes, new-game UI, project registry, generated Project World, and creation rehearsal.
 - **Tests:** [project creation tests](../tests/project-creation.test.ts), [contract tests](../tests/contracts.test.ts), and [Godot bootstrap tests](../tests/godot-bootstrap.test.ts).
-- **Decisions:** [Task 5 closeout](closeouts/2026-07-14-v0.2-task-5-project-creation-closeout.md) and [Task 5 review](reviews/2026-07-14-v0.2-task-5-project-creation-review.md).
+- **Decisions:** [Task 5 closeout](closeouts/2026-07-14-v0.2-task-5-project-creation-closeout.md) and [open-project closeout](closeouts/2026-07-15-alpha-open-project-repeatable-quests-closeout.md).
 - **Protect:** Canonical direct-child containment, no caller-selected destination, no arbitrary model files/commands, register last, no remotes, and cleanup only of verified transaction-owned directories.
 
 <!-- forge-subsystem:godot-verification -->
 ### godot-verification — Godot bootstrap, launch, and verification
 
-- **Purpose:** Provide one pinned, checksummed Godot runtime and deterministic verification/launch boundaries for the sample fixture and controlled starter.
+- **Purpose:** Provide one pinned, checksummed Godot runtime and deterministic verification/launch boundaries for the sample, neutral foundation, and legacy starter.
 - **Owns:** Pinned version/URL/hash, explicit download consent, verified cache, safe extraction, executable selection, process invocation helpers, and sample fixture verification/launch.
 - **Does not own:** Quest criteria, project registration, generated-world claims, or creator confirmation.
 - **Start:** [pinned build](../src/godot/pinned-build.ts), [bootstrap](../src/godot/bootstrap.ts), [fixture runner](../src/godot/run-fixture.ts), and [creation verifier](../src/project-creation/godot-verifier.ts).
-- **Contracts and artifacts:** Verified runtime cache under `%LOCALAPPDATA%/Forge/tools/`; exact sample success tokens in [fixture runner](../src/godot/run-fixture.ts); starter verification arguments/marker in [creation verifier](../src/project-creation/godot-verifier.ts) and [starter manifest](../fixtures/godot/top-down-arena/starter-manifest.json).
+- **Contracts and artifacts:** Verified runtime cache under `%LOCALAPPDATA%/Forge/tools/`; exact sample success tokens in [fixture runner](../src/godot/run-fixture.ts); creation verification arguments/markers in [creation verifier](../src/project-creation/godot-verifier.ts) and the controlled fixture manifests under [fixtures/godot](../fixtures/godot).
 - **Consumers:** Demo preparation/play, quest completion launch, project creation, generated-world launch, and rehearsals.
 - **Tests:** [Godot executable tests](../tests/godot-executable.test.ts), [bootstrap/extraction tests](../tests/godot-bootstrap.test.ts), [project creation tests](../tests/project-creation.test.ts), and [completion tests](../tests/quest-completion.test.ts).
 - **Decisions:** [pinned Godot closeout](closeouts/2026-07-13-pinned-godot-bootstrap-closeout.md), [fixture closeout](closeouts/2026-07-13-godot-fixture-foundation-closeout.md), and [Task 5 closeout](closeouts/2026-07-14-v0.2-task-5-project-creation-closeout.md).
@@ -123,17 +123,30 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 - **Protect:** Missing projects remain represented; malformed data is backed up rather than deleting projects; path resolution must remain canonical and contained; read-only world load must not update recency.
 
 <!-- forge-subsystem:generated-project-world -->
-### generated-project-world — Generated Project World
+### generated-project-world — Persistent Project World
 
-- **Purpose:** Reopen a registered generated project by joining its strict project-local artifacts into a truthful, restart-safe Project World.
-- **Owns:** Validated cross-artifact join, read-only snapshot, starter-aware accepted facts and quest eligibility presentation, in-memory stale-selection repair, explicit selection persistence, atomic idea seeds plus derived activity, and bounded launch/folder actions.
-- **Does not own:** Registry identity/location, project creation, authoritative roadmap/Chronicle mutation, starter verification truth, or generated-quest implementation.
+- **Purpose:** Reopen a registered project by joining its strict project-local artifacts into a truthful, restart-safe world of systems, quests, work, and history.
+- **Owns:** Validated cross-artifact join, read-only snapshot, system/quest status presentation, in-memory stale-selection repair, explicit selection persistence, atomic idea seeds plus derived activity, and bounded launch/folder actions.
+- **Does not own:** Registry identity/location, project creation, roadmap/quest planning mutations, runner mutations, automated verification truth, or creator confirmation.
 - **Start:** [world service](../src/generated-project-world/service.ts), [transport types](../src/generated-project-world/shared.ts), [world UI](../src/dashboard-v2/GeneratedProjectWorld.tsx), [generated-project contracts](../src/contracts/generated-project.ts), and the closed [generated-quest profile catalog](../src/generated-quest-runner/profiles.ts).
 - **Contracts and artifacts:** Project-local `.forge/project-manifest.json` points to identity/vision/first-playable/roadmap/quests/state/Chronicle/provenance/verification artifacts, including optional immutable accepted-roadmap provenance for starter-aware v2 projects; `.forge/idea-seeds.json` alone owns saved ideas and their derived activity notes.
 - **Consumers:** Host generated-project routes, v0.2 Launchpad/World, project-world rehearsal, and visual review.
 - **Tests:** [generated Project World tests](../tests/generated-project-world.test.ts), [generated quest runner tests](../tests/generated-quest-runner.test.ts), [project creation tests](../tests/project-creation.test.ts), and [v0.2 tests](../tests/dashboard-v2.test.ts).
-- **Decisions:** [Task 6 closeout](closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md), [Task 6 review](reviews/2026-07-14-v0.2-task-6-generated-project-world-review.md), and the approved [Alpha Task B plan](plans/2026-07-14-alpha-task-b-starter-aware-planning.md).
-- **Protect:** GET remains byte-for-byte read-only; Chronicle/roadmap remain unchanged by idea saves; legacy and unregistered quests remain ineligible, while only Forge-owned closed profiles may enable preparation; starter visuals remain labelled preview rather than captured gameplay.
+- **Decisions:** [Task 6 closeout](closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md), [open-project closeout](closeouts/2026-07-15-alpha-open-project-repeatable-quests-closeout.md), and [quest-handoff closeout](closeouts/2026-07-16-alpha-quest-handoff-reliable-completion-closeout.md).
+- **Protect:** GET remains byte-for-byte read-only; idea saves do not rewrite Chronicle/roadmap; only dependency-safe quests are available; legacy starter previews remain labelled; presentation cannot bypass planning, file authority, runner, play, or completion gates.
+
+<!-- forge-subsystem:generated-quest-runner -->
+### generated-quest-runner — Native planned-quest work and completion
+
+- **Purpose:** Turn one creator-confirmed native quest work order into bounded Codex work, exact verification, real play, explicit creator confirmation, persistent completion, and safe undo.
+- **Owns:** Saved-plan rechecks, exact allowed-path scope, SDK execution, progress translation, scope review, generic Godot health, optional extra proof, launch gate, completion transaction, receipt, recovery, and undo.
+- **Does not own:** Roadmap/quest proposal generation, file recommendation presentation, project registration, Codex authentication, or the creator's verdict.
+- **Start:** [runner service](../src/generated-quest-runner/service.ts), [native quest adapter](../src/generated-quest-runner/native-quest.ts), [completion transaction](../src/generated-quest-runner/completion.ts), and [runner contract](../src/generated-quest-runner/contract.ts).
+- **Contracts and artifacts:** Confirmed work orders in `.forge/system-quests.json`; run state and receipts under `.forge/runs/`; deterministic completion records in project state, roadmap, quest, Chronicle, and generated Markdown documents; one local Git completion commit.
+- **Consumers:** Generated Project World work-session UI, dashboard host routes, History, restart recovery, and undo.
+- **Tests:** [generated runner tests](../tests/generated-quest-runner.test.ts), [recovery tests](../tests/generated-quest-recovery.test.ts), [completion tests](../tests/generated-quest-completion.test.ts), [creator rehearsal](../tests/creator-rehearsal.test.ts), and [v0.2 tests](../tests/dashboard-v2.test.ts).
+- **Decisions:** [generated quest loop closeout](closeouts/2026-07-14-alpha-task-a-generated-quest-loop-closeout.md), [creator rehearsal closeout](closeouts/2026-07-15-alpha-pivot-creator-rehearsal-closeout.md), and [quest-handoff closeout](closeouts/2026-07-16-alpha-quest-handoff-reliable-completion-closeout.md).
+- **Protect:** One-to-four exact creator-approved text paths, saved planning bytes, clean no-remote Git, no completion before successful launch plus **Worked**, exact staged manifest, rollback on failure, one commit/receipt, restart repair, and exact run-owned undo.
 
 <!-- forge-subsystem:public-showcase -->
 ### public-showcase — Static public showcase and guided replay

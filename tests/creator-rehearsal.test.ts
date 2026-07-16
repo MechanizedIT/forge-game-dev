@@ -86,6 +86,13 @@ test("a native quest completes through the plain five-stage creator rehearsal an
     });
     const { world, questId } = await prepareNativeQuest(fixture, runner);
     const beforeHead = runGit(fixture.projectPath, ["rev-parse", "HEAD"]);
+    const statePath = path.join(fixture.projectPath, ".forge", "project-state.json");
+    const state = JSON.parse(await readFile(statePath, "utf8")) as Record<string, unknown>;
+    const roadmap = JSON.parse(await readFile(path.join(fixture.projectPath, ".forge", "roadmap.json"), "utf8")) as { quests: Array<{ questId: string; state: string }> };
+    const nextRecommendedQuestId = roadmap.quests.find((quest) => quest.state === "available")?.questId ?? null;
+    await writeFile(statePath, `${JSON.stringify({ ...state, schemaVersion: 2, selectedQuestId: questId, nextRecommendedQuestId }, null, 2)}\n`, "utf8");
+    runGit(fixture.projectPath, ["update-index", "--skip-worktree", "--", ".forge/project-state.json"]);
+    assert.match(runGit(fixture.projectPath, ["ls-files", "-v", "--", ".forge/project-state.json"]), /^S/u, "project state should reproduce the live hidden local-state path");
     const summary = await runner.getSummary(fixture.projectId, questId);
     assert.equal(summary.eligibility.eligible, true, summary.eligibility.reason ?? "");
     const prepared = await runner.prepare(fixture.projectId, questId);
@@ -109,6 +116,7 @@ test("a native quest completes through the plain five-stage creator rehearsal an
     const committed = runGit(fixture.projectPath, ["show", "--format=", "--name-only", "HEAD"]).split(/\r?\n/u).filter(Boolean);
     assert.ok(committed.includes(".forge/system-roadmap.json"));
     assert.ok(committed.includes(".forge/system-quests.json"));
+    assert.ok(committed.includes(".forge/project-state.json"));
     assert.ok(committed.includes("scenes/main.tscn"));
     assert.ok(committed.includes("scripts/welcome_beacon.gd"));
     const reloaded = await new GeneratedProjectWorldService({ forgeHome: fixture.forgeHome }).loadWorld(fixture.projectId);

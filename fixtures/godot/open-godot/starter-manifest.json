@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "starterId": "open-godot",
+  "version": "1.0.0",
+  "foundation": "open_godot",
+  "projectFile": "project.godot",
+  "mainScene": "res://scenes/main.tscn",
+  "verificationScript": "res://scripts/verify_project.gd",
+  "successMarker": "FORGE_OPEN_GODOT_VERIFY_OK",
+  "requiredNodes": ["Main"],
+  "requiredInputActions": [],
+  "files": [".gitignore", "project.godot", "scenes/main.tscn", "scripts/main.gd", "scripts/verify_project.gd"],
+  "substitutions": [{ "file": "project.godot", "token": "__FORGE_PROJECT_NAME__", "owner": "forge" }]
+}

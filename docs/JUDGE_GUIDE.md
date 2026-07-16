@@ -1,8 +1,8 @@
-# Forge v0.2 Judge Guide
+# Forge Open-Idea Alpha Judge Guide
 
 ## No-install public overview
 
-The additional Task 8 showcase under `showcase/` gives judges a static, shareable explanation and guided replay of both verified v0.2 paths. It is explicitly labelled **Guided replay of verified Forge workflows** and does not run Codex, call GPT-5.6, launch Godot or Git, access files, modify a project, or persist visitor state.
+The additional Task 8 showcase under `showcase/` preserves a static, shareable explanation and guided replay of the earlier verified v0.2 paths. It does not run Codex, call GPT, launch Godot or Git, access files, modify a project, or persist visitor state. The local alpha path below is newer and is the authoritative product demonstration.
 
 Run it locally with `npm run showcase`, validate it with `npm run showcase:check`, or review the production build with `npm run showcase:review`. The public deployment URL remains an owner-supplied submission link; the real judged application path below is unchanged.
 
@@ -12,7 +12,7 @@ Forge turns AI game-development work into visible, bounded, verified quests. It 
 
 ## Setup
 
-Requirements: 64-bit Windows 10 or 11, Node.js 20.19+ or 22.12+, Git 2.x, internet access, Codex authentication, and GPT-5.6 API/model access for the new-game path.
+Requirements: 64-bit Windows 10 or 11, Node.js 20.19+ or 22.12+, Git 2.x, internet access, Codex authentication, and model access for live roadmap/quest planning.
 
 ```powershell
 git clone https://github.com/MechanizedIT/forge-game-dev.git
@@ -27,39 +27,33 @@ npm run forge
 
 Forge builds the UI, starts `http://127.0.0.1:4173/v0.2.html`, and opens the default browser. The first prepare explicitly authorizes the pinned Godot download and verifies its checksum. Live GPT and Codex work can take several minutes.
 
-`npm run forge` is the v0.2 judge launch. `npm run forge:v0.1` remains the protected direct compatibility path, and `npm run forge:v0.2` is retained as an explicit alias.
+`npm run forge` is the alpha judge launch. `npm run forge:v0.1` remains the protected direct sample path, and `npm run forge:v0.2` is retained as an explicit alias.
 
 ## Fastest judge path
 
-Choose **Explore the sample game** first.
+Choose **Start a new game**.
 
-1. Open **Review Enemy Targeting**.
-2. Review the three-file boundary, automated proof, and personal playtest.
-3. Choose **Approve & build with Codex**. This is the official Codex SDK boundary.
-4. Wait for the five truthful stages and automated evidence.
-5. Choose **Play the result**. Pinned Godot opens the real workspace.
-6. Move with WASD or arrow keys. Approach and retreat until the enemy visibly changes `IDLE → CHASING → IDLE`.
-7. Close Godot and choose **I saw it work** only if observed.
-8. Reload Forge to see persisted roadmap and Chronicle completion.
+1. Enter a project name and choose **Create and open**. Forge creates one neutral runnable Godot project, verifies it, creates a clean local Git baseline, and registers it last. No game type or template is selected.
+2. In Project World, choose **Shape systems** and describe any simple Godot game idea in ordinary words.
+3. Review and confirm the broad systems. Open one system and refine it into small ordered quests.
+4. Confirm the quests. Forge shows every saved quest and marks the next available one as **Recommended next**.
+5. Prepare that quest. Review its outcome, success checks, and editable file suggestions, then confirm the exact one-to-four-file work plan.
+6. Open the quest, choose **Send to Codex**, and wait for the plain-language work and verification stages.
+7. Choose **Play the real game**. After seeing the mechanic, close Godot and choose **Worked** only if it worked.
+8. Confirm the quest, parent system, roadmap, History, project notes, and next available quest update.
+9. Repeat with a second quest to show that one open idea can grow through multiple independent mechanics.
+10. Close Forge completely, restart it, reopen the project, and launch the game. The completed work and next quest persist.
 
-Then choose **Create a new game**.
-
-1. Enter one small 2D Top-down Arena idea.
-2. GPT-5.6 high reasoning creates the validated blueprint; Forge never substitutes another model.
-3. Approve the blueprint, then separately confirm project creation.
-4. Forge copies only the controlled starter, validates records, runs pinned Godot verification, creates a clean local Git baseline, and registers the project last.
-5. Open Project World, inspect the playable starter and planning-only quest briefs, save an idea, launch Godot, and open the folder.
-6. Restart Forge and reopen the same project. Its roadmap, selected quest, documents, Chronicle, and idea seed persist.
-
-Generated-quest Codex implementation is intentionally deferred. The sample path demonstrates the complete build-and-verify loop; the new-game path demonstrates GPT planning, deterministic creation, verification, persistence, and project organization.
+The owner proved this path with an endlessly running robot on an alien landscape, then separate jump and random-obstacle quests. The protected **Explore the sample game** / Enemy Targeting journey remains available when a shorter prebuilt compatibility demonstration is useful.
 
 ## Likely recovery actions
 
 - **Codex authentication:** run `npx codex login status`, then `npx codex login`, and restart Forge.
-- **GPT-5.6 unavailable:** configure an authorized OpenAI API key/model entitlement and retry. Forge stops; it does not fall back.
+- **Planning model unavailable:** configure authorized model access and retry. Forge stops; it does not silently invent a fallback roadmap.
 - **Godot unavailable:** run `npm run demo:prepare -- confirm-download` again. Only a checksum-valid archive becomes the cache.
 - **Port 4173 occupied:** stop the other Forge host, or run `$env:FORGE_PORT=4174; npm run forge` and open the printed URL.
 - **Completed/preserved sample:** use **Start Fresh Demo**, or stop Forge and run `npm run demo:reset -- confirm-reset` before relaunching.
+- **A native quest stops:** open its preserved work session and follow the displayed retry, scope-review, or safe-undo action. Forge does not silently broaden file authority or record completion.
 - **Browser does not open:** open the exact printed localhost URL manually.
 - **Windows security prompt:** confirm only the pinned Godot executable under the Forge tools cache after the prepare command reports checksum success.
 
@@ -73,3 +67,6 @@ Generated-quest Codex implementation is intentionally deferred. The sample path 
 - Build Week provenance: `BUILD_WEEK_BASELINE.md`, `BUILD_WEEK_CHANGELOG.md`, `docs/AI_WORK_LOG.md`, and Git history
 - Static showcase: `showcase/README.md`
 - Showcase responsive evidence: `docs/evidence/2026-07-14-v0.2-task-8-showcase-review/`
+- Open-project milestone: `docs/closeouts/2026-07-15-alpha-open-project-repeatable-quests-closeout.md`
+- Quest handoff and completion milestone: `docs/closeouts/2026-07-16-alpha-quest-handoff-reliable-completion-closeout.md`
+- Latest quest-handoff Edge evidence: `docs/evidence/2026-07-16-alpha-quest-handoff/`
