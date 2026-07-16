@@ -300,6 +300,21 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Full tests pass 167/167, protected v0.1 passes 38/38 with the production build, context validation passes, the native hidden-state completion regression commits and reloads, and the nine-state Edge review switches systems and returns with zero issues. The owner then completed the repaired obstacle quest and passed the full restart/reopen/status/History/next-quest/game-launch check.
 
+#### React dashboard World Map prototype redesign
+
+- [x] Replace the active v0.2 launch shell with World Forge and Existing Worlds routes.
+- [x] Add the visual World → Region → Town → Building → Part hierarchy with changing generated art, breadcrumbs, carousels, add/edit forms, and Part Detail.
+- [x] Add functional prototype screens for Atlas, Build, Repair, Publish, and the small Forgie assistant.
+- [x] Preserve the real New World and generated-project quest-runner paths behind the redesigned launch experience.
+- [x] Add normalized local persistence for frontend-only hierarchy concepts and keep backend gaps outside presentation components.
+- [x] Verify desktop and phone layouts, browser history, primary interactions, console output, type checks, production build, and the full repository suite.
+
+**Status:** `IMPLEMENTED`. The new UI is the active v0.2 dashboard. Four project-local generated images replace the mockup's CSS-only scene art. Full tests pass 170/170.
+
+**Truth boundary:** Rust Runner is a local visual prototype. Region/Town persistence, repairs, Atlas, and release readiness do not write authoritative Forge project artifacts. Real project creation and quest execution still use the existing services and safety boundaries.
+
+**Exit:** The owner can run Forge, open Rust Runner, understand the five-level hierarchy within seconds, reach every major screen without a dead primary action, and still enter the protected real project workflow.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -334,8 +349,8 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-Alpha Milestone 8 is complete. Its closeout preserves the neutral new-project path,
-repeatable quest loop, clearer quest handoff, and reliable **Worked** completion. Choose the next bounded milestone before implementation; the
-roadmap deliberately does not authorize a successor yet. Submission actions remain
-owner-controlled: review public copy, supply the demo/live/Devpost URLs, select a
-license, deploy the static site, and push or submit only when authorized.
+The dashboard prototype is implemented. The next bounded product milestone should
+map real open Project Model systems and quests into the new hierarchy shell, then
+decide whether Region/Town organization needs an authoritative persisted contract.
+Do not build that backend migration until the owner has reviewed the new visual flow.
+Submission actions remain owner-controlled.

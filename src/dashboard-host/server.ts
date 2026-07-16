@@ -105,7 +105,7 @@ async function serveDashboardAsset(
   response.writeHead(200, {
     "content-type": contentTypes[path.extname(filePath)] ?? "application/octet-stream",
     "content-length": file.size,
-    "cache-control": filePath.endsWith("index.html") ? "no-store" : "public, max-age=3600",
+    "cache-control": path.extname(filePath) === ".html" ? "no-store" : "public, max-age=3600",
   });
   createReadStream(filePath).pipe(response);
 }

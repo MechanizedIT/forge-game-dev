@@ -670,3 +670,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** One authorized local Milestone 6 commit (`feat: complete genuine creator rehearsal`); the final SHA is reported in the owner handoff.
 - **Session ID:** Codex task delegated from source thread `019f6313-ebd0-72a2-a4a7-6462ebbce5d4`; temporary automated SDK events are test-owned and not a creator confirmation.
 - **Next step:** Preserve the completed proof and select the next bounded milestone before starting new implementation.
+
+---
+
+## 2026-07-16 — Redesign the React dashboard around the World Map
+
+- **Actor/model surface:** Codex desktop implementation; supplied HTML/image mockup; built-in image generation; React/TypeScript; local Forge host; in-app browser
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Requested the quickest coherent redesign, allowed frontend-only screens before backend support exists, required preservation and wiring of useful backend behavior, and requested generic replacement imagery. No commit, push, pull request, deployment, release, registered-project mutation, or agent-run approval was requested.
+- **AI contribution:** Chose a new route-driven shell around the existing backend paths; added a normalized local Rust Runner hierarchy; created World Forge, Existing Worlds, World Map, Part Detail, add/edit, Atlas, Build, Repair, Publish, Inspector, quick-action, mobile-drawer, and Forgie experiences; kept New World and real generated-project work connected; generated and integrated four original sci-fi scene assets behind image keys; made all HTML shell responses refresh-safe after a rebuild.
+- **Files changed:** New `src/dashboard-v2/forge-workspace/` model, repository, routes, components, screens, styles, fixture, and artwork; new `ForgeDashboard.tsx`; v0.2 entry point; HTML cache policy and focused host regression; focused workspace tests and package test list; bounded plan, closeout, roadmap/status, and this work-log entry.
+- **Verification:** `npm run typecheck` passed; `npm run dashboard:build` passed; `npm test` passed 170/170; `npm run check:v0.1` passed 38/38 with build; and `npm run context:check` passed. Desktop and 390×844 browser checks covered drill-down art, breadcrumbs, Back/Forward, add/save, Atlas filter, Build, Repair, Publish, Forgie, mobile Inspector, and zero console warnings/errors. The built local host loaded the existing New World API flow successfully, and a focused host regression proves v0.2 HTML is not cached after rebuilds.
+- **Known limitation:** Rust Runner Region/Town organization, Atlas, repairs, and publish readiness are prototype-local. Real generated projects open the preserved operational workspace until a separate owner-approved mapping milestone connects their Project Model to the new shell.
+- **Commit:** Not created.
+- **Session ID:** Current Codex task.
+- **Next step:** Owner reviews the dashboard visually, then separately approves or revises the smallest real-project mapping milestone.

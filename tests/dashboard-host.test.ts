@@ -292,6 +292,7 @@ test("the local HTTP host serves the dashboard and validated state API", async (
     const staticRoot = path.join(path.dirname(forgeHome), "static");
     await mkdir(staticRoot, { recursive: true });
     await writeFile(path.join(staticRoot, "index.html"), "<main>Forge host test</main>", "utf8");
+    await writeFile(path.join(staticRoot, "v0.2.html"), "<main>Forge v0.2 host test</main>", "utf8");
     const server = createForgeDashboardServer(createService(forgeHome), staticRoot);
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     try {
@@ -301,7 +302,12 @@ test("the local HTTP host serves the dashboard and validated state API", async (
       const snapshot = (await state.json()) as { quest: { questId: string } };
       assert.equal(state.status, 200);
       assert.equal(snapshot.quest.questId, "enemy-targeting");
-      assert.match(await (await fetch(base)).text(), /Forge host test/);
+      const index = await fetch(base);
+      assert.equal(index.headers.get("cache-control"), "no-store");
+      assert.match(await index.text(), /Forge host test/);
+      const v02 = await fetch(`${base}/v0.2.html`);
+      assert.equal(v02.headers.get("cache-control"), "no-store");
+      assert.match(await v02.text(), /Forge v0.2 host test/);
 
       const invalidReset = await fetch(`${base}/api/demo/reset`, {
         method: "POST",

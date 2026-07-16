@@ -2,15 +2,21 @@
 
 **Last updated:** 2026-07-16
 
-**Current milestone:** `Alpha Milestone 8 — Clear Quest Handoff and Reliable Worked Completion`
+**Current milestone:** `React dashboard World Map prototype redesign`
 
-**Overall state:** `COMPLETE` — Forge now keeps the creator oriented from saved quests into one explicit work plan, releases abandoned planning cleanly, and records **Worked** without the false native completion-manifest failure.
+**Overall state:** `IMPLEMENTED` — The new route-driven Forge dashboard is runnable, responsive, and connected to the existing New World and generated-project work paths. Owner visual review is the remaining product check.
 
-**Owner confirmation:** The complete open-idea journey is proven in the real robot project. After the repair, all six final checks passed across full Forge shutdown, restart, project reopen, obstacle completion state, system/History/next-quest persistence, and real game launch.
+**Owner confirmation:** Pending review of the new dashboard look and flow. The earlier complete open-idea and **Worked** journey remains preserved behind Existing Worlds.
 
-**Milestone implementation commit:** `3c8c1903887040f51833b06c8bf16550bdd35e9d`
+**Milestone implementation commit:** Not created; this dashboard redesign remains in the working tree.
 
 ## What works now
+
+- `npm run forge` now opens a polished World Forge launch screen and a three-column World Map workspace based on the supplied mockup.
+- The Rust Runner visual prototype drills through **World → Region → Town → Building → Part** with changing generated scene art, URL-backed breadcrumbs, Back/Forward behavior, carousels, a dynamic Inspector, and mobile drawers.
+- Add/Edit, Part Detail, Atlas search and filters, Build, Repair, Publish, and Forgie interactions work through a normalized local repository instead of dead buttons.
+- **Forge a New World** still opens the real project-creation flow. **Existing Worlds** still loads registered projects and opens the existing backend-connected quest, Codex, verification, Godot, completion, and undo workspace.
+- Region/Town organization, Atlas indexing, repair intake, and release readiness remain prototype-local until matching backend contracts are approved.
 
 - After accepting quests, Forge shows the complete saved quest list and marks the next available quest as **Recommended next** instead of jumping directly into an unnamed file chooser.
 - Preparing work now names the exact quest, repeats its visible outcome and done-when checks, and suggests editable existing/new Godot files from the already bounded candidate list. This adds no Codex turn and grants no authority before confirmation.
