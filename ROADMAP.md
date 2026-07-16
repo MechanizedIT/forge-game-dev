@@ -332,6 +332,21 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Real World → Building → Part navigation and work preparation are visible and responsive; focused safety checks pass 45/45; full-suite evidence is recorded in the closeout.
 
+#### World → Experiences → Steps creator refinement
+
+- [x] Replace normal Building/Part and Project/System/Quest presentation with World/Experience/Step while retaining the typed backend mapping.
+- [x] Make **Add Experience** propose one playable outcome and its editable, removable, addable Steps.
+- [x] Add contextual Test at World, Experience, and Step level with Worked, Needs a Change, Broken, and Not Sure results.
+- [x] Turn change and repair feedback into follow-up Steps that reuse the exact planner, runner, Git safety, verification, playtest, completion, and undo path.
+- [x] Add persistent presentation edits, history, explicit tuning values, and a real Assets screen with safe image handling.
+- [x] Verify persistence without dirtying game Git, full compatibility, desktop/mobile layout, Back/Forward, and a fresh host with real Assets.
+
+**Status:** `IMPLEMENTED`. The active shell now presents the creator model as **World → Experiences → Steps**. The backend remains Project/System/Quest, and “mechanic” is used only as optional descriptive language.
+
+**Truth boundary:** Tuning stores explicit file/property links and values in Forge presentation metadata. It does not yet rewrite Godot scripts or settings automatically. Browser review did not start Codex or launch Godot in a registered project.
+
+**Exit:** Full tests pass 173/173, protected v0.1 checks pass 38/38 with typecheck and production build, presentation state reloads without dirtying game Git, and fresh-host browser checks pass at desktop and 390×844.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -366,7 +381,4 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The redesigned shell now uses the real Project Model. The next bounded step is one
-owner-run Part from **Start Building** through **Playtest** and **Worked**, followed by
-small wording or layout fixes from that real use. Region/Town does not need a backend
-contract for the current three-level path. Submission actions remain owner-controlled.
+Run one real creator journey from **Add Experience** through suggested Steps, **Start Building**, playtest feedback, one follow-up Step, and **Worked**. Use that real experience to make only the smallest wording or layout corrections. Submission actions remain owner-controlled.

@@ -305,6 +305,31 @@ test("selection and one-file idea activity survive a fresh service while Chronic
   });
 });
 
+test("creator presentation metadata persists edits, feedback, tuning, and uploaded hierarchy images without dirtying Git", async () => {
+  await withFixture(async ({ forgeHome, projectId, projectPath }) => {
+    for (const args of [["init"], ["config", "user.name", "Forge Test"], ["config", "user.email", "forge-test@example.invalid"], ["add", "--all"], ["commit", "-m", "Fixture baseline"]]) {
+      const result = spawnSync("git", args, { cwd: projectPath, encoding: "utf8", windowsHide: true });
+      assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+    }
+    const service = new GeneratedProjectWorldService({ forgeHome, now: () => new Date(openedAt), randomId: ids("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "33333333-3333-3333-3333-333333333333") });
+    let snapshot = await service.mutatePresentation(projectId, { action: "edit_entity", entityId: projectId, name: "Pulse World", description: "A tuned pulse playground.", outcome: "The pulse feels clear.", acceptanceCriteria: ["The pulse is readable."] });
+    snapshot = await service.mutatePresentation(projectId, { action: "record_feedback", entityId: projectId, result: "needs_change", note: "Make the pulse ring linger.", relatedFiles: ["scripts/main.gd"] });
+    snapshot = await service.mutatePresentation(projectId, { action: "save_tunable", tunable: { tunableId: "pulse-strength", entityId: projectId, label: "Pulse strength", filePath: "scripts/main.gd", propertyName: "pulse_strength", valueType: "number", value: 4, defaultValue: 3, minimum: 1, maximum: 8 } });
+    const png = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Buffer.alloc(16)]);
+    snapshot = await service.uploadPresentationImage(projectId, projectId, png, "png");
+    assert.equal(snapshot.presentation.entities[projectId]?.name, "Pulse World");
+    assert.equal(snapshot.presentation.tunables[0]?.value, 4);
+    assert.equal(snapshot.presentation.history.some((entry) => entry.result === "needs_change"), true);
+    assert.match(snapshot.presentation.entities[projectId]?.imageRef ?? "", /^project:\.forge\/presentation-assets\//u);
+    const restored = await new GeneratedProjectWorldService({ forgeHome }).loadWorld(projectId);
+    assert.equal(restored.presentation.entities[projectId]?.name, "Pulse World");
+    assert.equal(restored.assets.some((asset) => asset.relativePath.startsWith(".forge/presentation-assets/")), true);
+    const gitStatus = spawnSync("git", ["status", "--porcelain"], { cwd: projectPath, encoding: "utf8", windowsHide: true });
+    assert.equal(gitStatus.status, 0);
+    assert.equal(gitStatus.stdout.trim(), "");
+  });
+});
+
 test("concurrent idea saves serialize without lost records", async () => {
   await withFixture(async ({ forgeHome, projectId }) => {
     const service = new GeneratedProjectWorldService({

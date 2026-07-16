@@ -47,20 +47,28 @@ export function adaptGeneratedProjectWorld(snapshot: GeneratedProjectWorldSnapsh
     (snapshot.systemQuestPlan?.systems ?? []).flatMap((system) => system.quests.map((quest) => [quest.questId, quest] as const)),
   );
   const completedQuestCount = snapshot.projectModel.quests.filter((quest) => quest.status === "completed").length;
+  const overrides = snapshot.presentation?.entities ?? {};
+  const imageRef = (entityId: string, fallback: string) => {
+    const ref = overrides[entityId]?.imageRef;
+    if (!ref?.startsWith("project:")) return ref ?? fallback;
+    const relativePath = ref.slice("project:".length);
+    return `/api/projects/${encodeURIComponent(snapshot.project.projectId)}/assets/content?path=${encodeURIComponent(relativePath)}`;
+  };
+  const copy = (entityId: string) => overrides[entityId] ?? {};
 
   entities[snapshot.project.projectId] = {
     id: snapshot.project.projectId,
     kind: "world",
     parentId: null,
     childIds: snapshot.projectModel.systems.map((system) => system.systemId),
-    name: snapshot.project.displayName,
-    description: snapshot.projectModel.project.vision,
-    outcome: snapshot.vision.smallestPlayableResult,
-    imageRef: "world-rust-runner",
+    name: copy(snapshot.project.projectId).name ?? snapshot.project.displayName,
+    description: copy(snapshot.project.projectId).description ?? snapshot.projectModel.project.vision,
+    outcome: copy(snapshot.project.projectId).outcome ?? snapshot.vision.smallestPlayableResult,
+    imageRef: imageRef(snapshot.project.projectId, "world-rust-runner"),
     status: snapshot.projectModel.quests.length > 0 && completedQuestCount === snapshot.projectModel.quests.length ? "complete" : "building",
     progress: percent(completedQuestCount, snapshot.projectModel.quests.length),
     relatedFiles: [snapshot.projectModel.project.engine.projectFile, snapshot.projectModel.project.engine.mainScene],
-    acceptanceCriteria: [snapshot.vision.smallestPlayableResult],
+    acceptanceCriteria: copy(snapshot.project.projectId).acceptanceCriteria ?? [snapshot.vision.smallestPlayableResult],
   };
 
   snapshot.projectModel.systems.forEach((system, systemIndex) => {
@@ -71,14 +79,14 @@ export function adaptGeneratedProjectWorld(snapshot: GeneratedProjectWorldSnapsh
       kind: "building",
       parentId: snapshot.project.projectId,
       childIds: system.questIds,
-      name: system.title,
-      description: system.outcome,
-      outcome: system.outcome,
-      imageRef: ["building-run", "building-dodge", "building-collect", "building-upgrade"][systemIndex % 4]!,
+      name: copy(system.systemId).name ?? system.title,
+      description: copy(system.systemId).description ?? system.outcome,
+      outcome: copy(system.systemId).outcome ?? system.outcome,
+      imageRef: imageRef(system.systemId, ["building-run", "building-dodge", "building-collect", "building-upgrade"][systemIndex % 4]!),
       status: systemStatus(system.status),
       progress: percent(complete, quests.length),
       relatedFiles: [],
-      acceptanceCriteria: quests.map((quest) => quest!.playerVisibleOutcome),
+      acceptanceCriteria: copy(system.systemId).acceptanceCriteria ?? quests.map((quest) => quest!.playerVisibleOutcome),
     };
   });
 
@@ -93,14 +101,14 @@ export function adaptGeneratedProjectWorld(snapshot: GeneratedProjectWorldSnapsh
       kind: "part",
       parentId: quest.systemId,
       childIds: [],
-      name: quest.title,
-      description: native?.whyItMatters ?? brief?.whyItMatters ?? quest.playerVisibleOutcome,
-      outcome: quest.playerVisibleOutcome,
-      imageRef: ["part-run", "part-jump", "part-coyote", "part-obstacles"][questIndex % 4]!,
+      name: copy(quest.questId).name ?? quest.title,
+      description: copy(quest.questId).description ?? native?.whyItMatters ?? brief?.whyItMatters ?? quest.playerVisibleOutcome,
+      outcome: copy(quest.questId).outcome ?? quest.playerVisibleOutcome,
+      imageRef: imageRef(quest.questId, ["part-run", "part-jump", "part-coyote", "part-obstacles"][questIndex % 4]!),
       status: questStatus(quest.status),
       progress: progressForQuest(quest.status),
       relatedFiles: approvedFiles,
-      acceptanceCriteria: quest.doneWhen,
+      acceptanceCriteria: copy(quest.questId).acceptanceCriteria ?? quest.doneWhen,
     };
   });
 

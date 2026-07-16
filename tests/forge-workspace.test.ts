@@ -4,6 +4,7 @@ import test from "node:test";
 import type { GeneratedProjectWorldSnapshot } from "../src/generated-project-world/shared.js";
 import { createRustRunnerFixture } from "../src/dashboard-v2/forge-workspace/fixture.js";
 import { adaptGeneratedProjectWorld } from "../src/dashboard-v2/forge-workspace/real-project-adapter.js";
+import { backendPresentationLabels, kindLabels } from "../src/dashboard-v2/forge-workspace/model.js";
 import { addEntity, updateEntity } from "../src/dashboard-v2/forge-workspace/repository.js";
 import { addRouteFor, ancestorsOf, detailRouteFor, editRouteFor, mapRouteFor } from "../src/dashboard-v2/forge-workspace/routes.js";
 
@@ -29,7 +30,7 @@ test("workspace routes preserve hierarchy and support Back/Forward-friendly URLs
   assert.equal(addRouteFor(state, building, "part"), "/world/rust-runner/building/run-and-jump/add/part");
 });
 
-test("real Project, System, and Quest state adapts to World, Building, and Part", () => {
+test("real Project, System, and Quest state adapts to World, Experience, and Step", () => {
   const snapshot = {
     project: { projectId: "signal-sweep", displayName: "Signal Sweep", lastOpenedAt: "2026-07-16T00:00:00.000Z" },
     projectModel: {
@@ -54,6 +55,14 @@ test("real Project, System, and Quest state adapts to World, Building, and Part"
   assert.equal(state.entities["relay"]?.kind, "part");
   assert.equal(state.entities["signal-sweep"]?.progress, 50);
   assert.equal(state.entities["first-playable"]?.progress, 50);
+});
+
+test("primary hierarchy labels hide backend and prototype terminology", () => {
+  assert.deepEqual(backendPresentationLabels, { Project: "World", System: "Experience", Quest: "Step" });
+  assert.equal(kindLabels.world, "World");
+  assert.equal(kindLabels.building, "Experience");
+  assert.equal(kindLabels.part, "Step");
+  assert.doesNotMatch(`${kindLabels.world} ${kindLabels.building} ${kindLabels.part}`, /System|Quest|Building|Part|Piece/u);
 });
 
 test("prototype repository helpers keep entities normalized and immutable", () => {

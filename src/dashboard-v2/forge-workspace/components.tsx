@@ -57,7 +57,7 @@ export function ProjectRail({ state }: { state: ForgeWorldState }) {
   const buildings = Object.values(state.entities).filter((item) => item.kind === "building");
   const completedWorldBuildings = worldBuildings.filter((item) => item.status === "complete").length;
   const completedBuildings = buildings.filter((item) => item.status === "complete").length;
-  return <aside className="forge-project-rail" aria-label="Project overview"><section className="forge-panel world-summary"><p className="panel-kicker">Current world</p><img alt="" src={imageFor(world.imageRef)} /><h2>{world.name}</h2><p>{world.description.split(".")[0]}</p><strong>{completedWorldBuildings} / {worldBuildings.length}<small> Buildings complete</small></strong><ProgressBar value={world.progress} /><div className="summary-stats"><span><b>{completedBuildings} / {buildings.length}</b><small>Buildings</small></span><span><b>{state.repairs.length}</b><small>Open repairs</small></span></div></section><section className="forge-panel recent-panel"><p className="panel-kicker">Recently updated</p>{state.activity.map((activity) => <article key={activity.id}><span className={"activity-dot tone-" + activity.tone} /><div><strong>{activity.title}</strong><small>{activity.detail}</small></div><time>{activity.when}</time></article>)}</section></aside>;
+  return <aside className="forge-project-rail" aria-label="World overview"><section className="forge-panel world-summary"><p className="panel-kicker">Current World</p><img alt="" src={imageFor(world.imageRef)} /><h2>{world.name}</h2><p>{world.description.split(".")[0]}</p><strong>{completedWorldBuildings} / {worldBuildings.length}<small> Experiences complete</small></strong><ProgressBar value={world.progress} /><div className="summary-stats"><span><b>{completedBuildings} / {buildings.length}</b><small>Experiences</small></span><span><b>{state.repairs.length}</b><small>Open repairs</small></span></div></section><section className="forge-panel recent-panel"><p className="panel-kicker">Recently updated</p>{state.activity.map((activity) => <article key={activity.id}><span className={"activity-dot tone-" + activity.tone} /><div><strong>{activity.title}</strong><small>{activity.detail}</small></div><time>{activity.when}</time></article>)}</section></aside>;
 }
 
 export function InspectorRail({ current, onAction, onEdit, state }: { current: ForgeEntity; onAction: (action: string) => void; onEdit: () => void; state: ForgeWorldState }) {
@@ -68,7 +68,7 @@ export function InspectorRail({ current, onAction, onEdit, state }: { current: F
 }
 
 export function ForgiePanel({ onOpen }: { onOpen: () => void }) {
-  return <button className="forge-panel forgie-panel" onClick={onOpen} type="button"><span className="forgie-orb"><i /><b /></span><span><small>Ask Forgie</small><strong>What part should we work on?</strong><em>Build, find, fix, or test something.</em></span><Icon name="chevron" /></button>;
+  return <button className="forge-panel forgie-panel" onClick={onOpen} type="button"><span className="forgie-orb"><i /><b /></span><span><small>Ask Forgie</small><strong>What Step should we work on?</strong><em>Build, find, fix, or test something.</em></span><Icon name="chevron" /></button>;
 }
 
 export function WorkspaceShell({ active, children, current, hideRails = false, onAction, onEdit, onNavigate, state }: {
@@ -82,7 +82,7 @@ export function WorkspaceShell({ active, children, current, hideRails = false, o
   state: ForgeWorldState;
 }) {
   const [drawer, setDrawer] = useState<"project" | "inspector" | null>(null);
-  return <div className="forge-v3-app"><TopNavigation active={active} onNavigate={onNavigate} /><div className={"forge-workspace" + (hideRails ? " rails-hidden" : "")}><div className={"mobile-drawer project-drawer" + (drawer === "project" ? " open" : "")}><button aria-label="Close project panel" className="drawer-close" onClick={() => setDrawer(null)} type="button"><Icon name="close" /></button><ProjectRail state={state} /></div><main className="forge-main-viewport">{children}</main><div className={"mobile-drawer inspector-drawer" + (drawer === "inspector" ? " open" : "")}><button aria-label="Close inspector" className="drawer-close" onClick={() => setDrawer(null)} type="button"><Icon name="close" /></button><InspectorRail current={current} onAction={onAction} onEdit={onEdit} state={state} /></div></div>{!hideRails && <nav aria-label="Mobile workspace panels" className="mobile-panel-nav"><button onClick={() => setDrawer("project")} type="button"><Icon name="map" /> Project</button><button onClick={() => onAction("forgie")} type="button"><Icon name="spark" /> Ask Forgie</button><button onClick={() => setDrawer("inspector")} type="button"><Icon name="panel" /> Inspector</button></nav>}</div>;
+  return <div className="forge-v3-app"><TopNavigation active={active} onNavigate={onNavigate} /><div className={"forge-workspace" + (hideRails ? " rails-hidden" : "")}><div className={"mobile-drawer project-drawer" + (drawer === "project" ? " open" : "")}><button aria-label="Close project panel" className="drawer-close" onClick={() => setDrawer(null)} type="button"><Icon name="close" /></button><ProjectRail state={state} /></div><main className="forge-main-viewport">{children}</main><div className={"mobile-drawer inspector-drawer" + (drawer === "inspector" ? " open" : "")}><button aria-label="Close inspector" className="drawer-close" onClick={() => setDrawer(null)} type="button"><Icon name="close" /></button><InspectorRail current={current} onAction={onAction} onEdit={onEdit} state={state} /></div></div>{!hideRails && <nav aria-label="Mobile workspace panels" className="mobile-panel-nav"><button onClick={() => setDrawer("project")} type="button"><Icon name="map" /> World</button><button onClick={() => onAction("forgie")} type="button"><Icon name="spark" /> Ask Forgie</button><button onClick={() => setDrawer("inspector")} type="button"><Icon name="panel" /> Inspector</button></nav>}</div>;
 }
 
 export function HierarchyHero({ entity, onEdit, onPrimary }: { entity: ForgeEntity; onEdit: () => void; onPrimary: () => void }) {
@@ -98,16 +98,17 @@ function EntityCard({ entity, onOpen }: { entity: ForgeEntity; onOpen: () => voi
 }
 
 export function EntityCarousel({ items, kind, onAdd, onOpen }: { items: ForgeEntity[]; kind: EntityKind; onAdd: () => void; onOpen: (entity: ForgeEntity) => void }) {
+  const article = kind === "building" ? "an" : "a";
   const rail = useRef<HTMLDivElement>(null);
   const scroll = (direction: number) => rail.current?.scrollBy({ left: direction * 340, behavior: "smooth" });
   const wheel = (event: WheelEvent<HTMLDivElement>) => {
     if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) rail.current?.scrollBy({ left: event.deltaY, behavior: "auto" });
   };
-  return <section className="carousel-section"><header><h2>{kindLabels[kind]}s</h2><span>{items.length} total</span><button className="small-add" onClick={onAdd} type="button"><Icon name="plus" /> Add {kindLabels[kind]}</button></header><div className="carousel-frame"><button aria-label="Previous cards" className="carousel-arrow prev" onClick={() => scroll(-1)} type="button">‹</button><div className="entity-carousel" onWheel={wheel} ref={rail} tabIndex={0}>{items.map((item) => <EntityCard entity={item} key={item.id} onOpen={() => onOpen(item)} />)}<button className="entity-card add-card" onClick={onAdd} type="button"><span><Icon name="plus" /></span><b>Add {kindLabels[kind]}</b><small>Create the next clear step.</small></button></div><button aria-label="Next cards" className="carousel-arrow next" onClick={() => scroll(1)} type="button">›</button></div><p className="carousel-hint">Choose a {kindLabels[kind].toLowerCase()} to open it, or add one to create the next milestone.</p></section>;
+  return <section className="carousel-section"><header><h2>{kindLabels[kind]}s</h2><span>{items.length} total</span><button className="small-add" onClick={onAdd} type="button"><Icon name="plus" /> Add {kindLabels[kind]}</button></header><div className="carousel-frame"><button aria-label="Previous cards" className="carousel-arrow prev" onClick={() => scroll(-1)} type="button">‹</button><div className="entity-carousel" onWheel={wheel} ref={rail} tabIndex={0}>{items.map((item) => <EntityCard entity={item} key={item.id} onOpen={() => onOpen(item)} />)}<button className="entity-card add-card" onClick={onAdd} type="button"><span><Icon name="plus" /></span><b>Add {kindLabels[kind]}</b><small>Create the next clear step.</small></button></div><button aria-label="Next cards" className="carousel-arrow next" onClick={() => scroll(1)} type="button">›</button></div><p className="carousel-hint">Choose {article} {kindLabels[kind].toLowerCase()} to open it, or add one to create the next milestone.</p></section>;
 }
 
 export function StatusBadge({ status }: { status: ForgeEntity["status"] }) {
-  return <span className={"status-badge status-" + status}>{status === "building" ? "Building now" : status}</span>;
+  return <span className={"status-badge status-" + status}>{status === "building" ? "In progress" : status}</span>;
 }
 
 export function EmptyState({ action, body, onAction, title }: { action: string; body: string; onAction: () => void; title: string }) {

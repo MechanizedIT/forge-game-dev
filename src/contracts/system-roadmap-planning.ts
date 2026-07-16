@@ -24,7 +24,7 @@ export const systemRoadmapPlanningResultSchema = z.discriminatedUnion("resultTyp
   }).strict(),
   z.object({
     resultType: z.literal("proposal"),
-    systems: z.array(systemRoadmapProposalSystemSchema).min(3).max(6),
+    systems: z.array(systemRoadmapProposalSystemSchema).min(1).max(6),
   }).strict(),
 ]);
 
@@ -51,7 +51,7 @@ export const acceptedSystemRoadmapSchema = z.object({
   sourceFingerprint: sha256DigestSchema,
   proposalFingerprint: sha256DigestSchema,
   acceptedAt: timestampSchema,
-  systems: z.array(acceptedSystemRoadmapSystemSchema).min(3).max(6),
+  systems: z.array(acceptedSystemRoadmapSystemSchema).min(1).max(6),
 }).strict().superRefine((roadmap, context) => {
   const systemIds = roadmap.systems.map((system) => system.systemId);
   if (new Set(systemIds).size !== systemIds.length) {

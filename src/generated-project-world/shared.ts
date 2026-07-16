@@ -98,6 +98,8 @@ export interface GeneratedProjectWorldSnapshot {
   chronicle: ChronicleV2;
   ideaSeeds: IdeaSeed[];
   activity: GeneratedActivity[];
+  presentation: ForgePresentationState;
+  assets: ForgeProjectAsset[];
   documents: GeneratedDocumentDisclosure[];
   actions: {
     launchGodot: true;
@@ -111,6 +113,65 @@ export interface GeneratedWorldStateInput {
   currentView: GeneratedWorldView;
   selectedQuestId: string | null;
 }
+
+export type ForgeAssetCategory = "images" | "audio" | "scenes" | "scripts" | "other";
+
+export interface ForgeProjectAsset {
+  relativePath: string;
+  name: string;
+  category: ForgeAssetCategory;
+  size: number;
+  previewUrl: string | null;
+}
+
+export interface ForgePresentationEntityOverride {
+  name?: string | undefined;
+  description?: string | undefined;
+  outcome?: string | undefined;
+  acceptanceCriteria?: string[] | undefined;
+  imageRef?: string | undefined;
+}
+
+export interface ForgeTunable {
+  tunableId: string;
+  entityId: string;
+  label: string;
+  filePath: string;
+  propertyName: string;
+  valueType: "number" | "boolean";
+  value: number | boolean;
+  defaultValue: number | boolean;
+  minimum?: number | undefined;
+  maximum?: number | undefined;
+}
+
+export type ForgePlaytestResult = "worked" | "needs_change" | "broken" | "not_sure";
+
+export interface ForgePresentationHistoryEntry {
+  entryId: string;
+  occurredAt: string;
+  entityId: string;
+  type: "playtest" | "change_request" | "repair" | "tuning" | "image" | "edit";
+  summary: string;
+  result?: ForgePlaytestResult | undefined;
+  relatedFiles: string[];
+}
+
+export interface ForgePresentationState {
+  schemaVersion: 1;
+  projectId: string;
+  entities: Record<string, ForgePresentationEntityOverride>;
+  tunables: ForgeTunable[];
+  history: ForgePresentationHistoryEntry[];
+}
+
+export type ForgePresentationMutation =
+  | { action: "edit_entity"; entityId: string; name: string; description: string; outcome: string; acceptanceCriteria: string[] }
+  | { action: "choose_image"; entityId: string; relativePath: string }
+  | { action: "restore_image"; entityId: string }
+  | { action: "record_feedback"; entityId: string; result: ForgePlaytestResult; note: string; relatedFiles: string[] }
+  | { action: "save_tunable"; tunable: ForgeTunable }
+  | { action: "reset_tunable"; tunableId: string };
 
 export interface GeneratedIdeaSaveResponse {
   seed: IdeaSeed;

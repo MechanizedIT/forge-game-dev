@@ -25,5 +25,6 @@ export const forgeArt: Record<string, string> = {
 };
 
 export function imageFor(ref: string): string {
+  if (ref.startsWith("/api/") || ref.startsWith("data:") || ref.startsWith("blob:")) return ref;
   return forgeArt[ref] ?? forgeArt.default!;
 }

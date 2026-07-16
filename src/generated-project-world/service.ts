@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
-import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, realpath, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 
@@ -56,6 +56,9 @@ import type {
   SystemQuestWorkOrderReview,
   GeneratedWorldStateInput,
   GeneratedWorldView,
+  ForgePresentationMutation,
+  ForgePresentationState,
+  ForgeProjectAsset,
 } from "./shared.js";
 
 const creatorRunPhaseLabels: Record<string, string> = {
@@ -77,7 +80,54 @@ import { applyAcceptedSystemQuests, nativeQuestIds } from "./system-quest-plan.j
 const ideaRelativePath = ".forge/idea-seeds.json";
 const systemRoadmapRelativePath = ".forge/system-roadmap.json";
 const systemQuestRelativePath = ".forge/system-quests.json";
+const presentationRelativePath = ".forge/presentation.json";
+const presentationAssetsRelativePath = ".forge/presentation-assets";
 const generatedViews = new Set<GeneratedWorldView>(["project_world", "quest_brief", "chronicle", "documents"]);
+
+const entityOverrideSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  description: z.string().trim().min(1).max(1_500).optional(),
+  outcome: z.string().trim().min(1).max(500).optional(),
+  acceptanceCriteria: z.array(z.string().trim().min(1).max(240)).max(8).optional(),
+  imageRef: z.string().trim().min(1).max(500).optional(),
+}).strict();
+const tunableSchema = z.object({
+  tunableId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
+  entityId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
+  label: z.string().trim().min(1).max(80),
+  filePath: z.string().trim().min(1).max(240),
+  propertyName: z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/u),
+  valueType: z.enum(["number", "boolean"]),
+  value: z.union([z.number().finite(), z.boolean()]),
+  defaultValue: z.union([z.number().finite(), z.boolean()]),
+  minimum: z.number().finite().optional(),
+  maximum: z.number().finite().optional(),
+}).strict().superRefine((value, context) => {
+  if ((value.valueType === "number") !== (typeof value.value === "number") || (value.valueType === "number") !== (typeof value.defaultValue === "number")) context.addIssue({ code: "custom", message: "Tunable values must match their type" });
+  if (typeof value.value === "number" && (value.minimum !== undefined && value.value < value.minimum || value.maximum !== undefined && value.value > value.maximum)) context.addIssue({ code: "custom", message: "Tunable value is outside its range" });
+});
+const historySchema = z.object({
+  entryId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
+  occurredAt: z.string().datetime(),
+  entityId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
+  type: z.enum(["playtest", "change_request", "repair", "tuning", "image", "edit"]),
+  summary: z.string().trim().min(1).max(1_000),
+  result: z.enum(["worked", "needs_change", "broken", "not_sure"]).optional(),
+  relatedFiles: z.array(z.string().trim().min(1).max(240)).max(8),
+}).strict();
+const presentationSchema = z.object({
+  schemaVersion: z.literal(1),
+  projectId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
+  entities: z.record(z.string(), entityOverrideSchema),
+  tunables: z.array(tunableSchema).max(40),
+  history: z.array(historySchema).max(200),
+}).strict();
+
+const assetCategoryByExtension = new Map<string, ForgeProjectAsset["category"]>([
+  [".png", "images"], [".jpg", "images"], [".jpeg", "images"], [".webp", "images"], [".svg", "images"],
+  [".wav", "audio"], [".ogg", "audio"], [".mp3", "audio"],
+  [".tscn", "scenes"], [".scn", "scenes"], [".gd", "scripts"], [".gdshader", "scripts"],
+]);
 
 export class GeneratedProjectWorldNotFoundError extends Error {
   constructor(message: string) {
@@ -242,6 +292,150 @@ export class GeneratedProjectWorldService {
     return artifact;
   }
 
+  private blankPresentation(projectId: string): ForgePresentationState {
+    return { schemaVersion: 1, projectId, entities: {}, tunables: [], history: [] };
+  }
+
+  private async optionalPresentation(projectPath: string, projectId: string): Promise<ForgePresentationState> {
+    const target = path.join(projectPath, presentationRelativePath);
+    const info = await lstat(target).catch(() => null);
+    if (!info) return this.blankPresentation(projectId);
+    const presentation = await readValidated(await this.ownedPath(projectPath, presentationRelativePath), presentationSchema);
+    if (presentation.projectId !== projectId) throw new Error("Forge presentation data belongs to another project.");
+    return presentation;
+  }
+
+  private async ensurePresentationIgnored(projectPath: string): Promise<void> {
+    const gitDirectory = path.join(projectPath, ".git");
+    const gitStats = await stat(gitDirectory).catch(() => null);
+    if (!gitStats?.isDirectory()) return;
+    const excludePath = path.join(gitDirectory, "info", "exclude");
+    const contents = await readFile(excludePath, "utf8").catch(() => "");
+    const lines = new Set(contents.split(/\r?\n/u));
+    const additions = [presentationRelativePath, `${presentationAssetsRelativePath}/`].filter((entry) => !lines.has(entry));
+    if (!additions.length) return;
+    const separator = contents.length === 0 || contents.endsWith("\n") ? "" : "\n";
+    await writeFile(excludePath, `${contents}${separator}${additions.join("\n")}\n`, "utf8");
+  }
+
+  private async writePresentation(projectPath: string, value: ForgePresentationState): Promise<ForgePresentationState> {
+    const presentation = presentationSchema.parse(value);
+    await this.ensurePresentationIgnored(projectPath);
+    await this.ownedPath(projectPath, ".forge", "directory");
+    const target = path.join(projectPath, presentationRelativePath);
+    const existing = await lstat(target).catch(() => null);
+    if (existing && (existing.isSymbolicLink() || !existing.isFile())) throw new GeneratedProjectWorldConflictError("Forge presentation data is unsafe.");
+    await writeJsonAtomic(target, presentation);
+    return presentation;
+  }
+
+  private async listAssets(projectPath: string, projectId: string): Promise<ForgeProjectAsset[]> {
+    const assets: ForgeProjectAsset[] = [];
+    const walk = async (relativeDirectory: string): Promise<void> => {
+      if (assets.length >= 300) return;
+      const absolute = path.join(projectPath, relativeDirectory);
+      const entries = await readdir(absolute, { withFileTypes: true }).catch(() => []);
+      for (const entry of entries) {
+        if (assets.length >= 300 || entry.isSymbolicLink()) break;
+        const relativePath = path.posix.join(relativeDirectory.replaceAll("\\", "/"), entry.name).replace(/^\.\//u, "");
+        if (entry.isDirectory()) {
+          if (relativePath === ".git" || relativePath === "node_modules" || (relativePath.startsWith(".forge/") && relativePath !== presentationAssetsRelativePath && !relativePath.startsWith(`${presentationAssetsRelativePath}/`))) continue;
+          await walk(relativePath);
+          continue;
+        }
+        if (!entry.isFile() || (relativePath.startsWith(".forge/") && !relativePath.startsWith(`${presentationAssetsRelativePath}/`))) continue;
+        const extension = path.extname(entry.name).toLowerCase();
+        const category = assetCategoryByExtension.get(extension) ?? "other";
+        if (category === "other" && ![".tres", ".cfg", ".json", ".md", ".txt"].includes(extension)) continue;
+        const file = await stat(path.join(projectPath, relativePath)).catch(() => null);
+        if (!file?.isFile() || file.size > 12_000_000) continue;
+        const previewUrl = category === "images" ? `/api/projects/${encodeURIComponent(projectId)}/assets/content?path=${encodeURIComponent(relativePath)}` : null;
+        assets.push({ relativePath, name: entry.name, category, size: file.size, previewUrl });
+      }
+    };
+    await walk("");
+    return assets.sort((left, right) => left.category.localeCompare(right.category) || left.relativePath.localeCompare(right.relativePath));
+  }
+
+  async resolveAsset(projectId: string, relativePath: string): Promise<{ filePath: string; size: number; contentType: string }> {
+    const normalized = relativePath.replaceAll("\\", "/");
+    if (!normalized || normalized.startsWith("/") || normalized.split("/").some((part) => part === ".." || part === "")) throw new GeneratedProjectWorldConflictError("Choose a safe project asset.");
+    const extension = path.extname(normalized).toLowerCase();
+    const category = assetCategoryByExtension.get(extension);
+    if (!category) throw new GeneratedProjectWorldConflictError("This file type cannot be opened from Assets.");
+    const { projectPath } = await this.resolveProject(projectId);
+    const filePath = await this.ownedPath(projectPath, normalized);
+    const file = await stat(filePath);
+    const contentType = ({ ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".wav": "audio/wav", ".ogg": "audio/ogg", ".mp3": "audio/mpeg" } as Record<string, string>)[extension] ?? "application/octet-stream";
+    return { filePath, size: file.size, contentType };
+  }
+
+  async uploadPresentationImage(projectId: string, entityId: string, bytes: Buffer, extensionValue: string): Promise<GeneratedProjectWorldSnapshot> {
+    const current = await this.loadWorld(projectId);
+    if (!current.projectModel.systems.some((system) => system.systemId === entityId) && current.project.projectId !== entityId && !current.projectModel.quests.some((quest) => quest.questId === entityId)) throw new GeneratedProjectWorldConflictError("Choose a World, Experience, or Step from this project.");
+    const extension = extensionValue.toLowerCase() === "jpg" || extensionValue.toLowerCase() === "jpeg" ? ".jpg" : extensionValue.toLowerCase() === "webp" ? ".webp" : ".png";
+    if (bytes.length < 16 || bytes.length > 5_000_000) throw new GeneratedProjectWorldConflictError("Choose an image smaller than 5 MB.");
+    const valid = extension === ".png" ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+      : extension === ".jpg" ? bytes[0] === 0xff && bytes[1] === 0xd8
+        : bytes.subarray(8, 12).toString("ascii") === "WEBP";
+    if (!valid) throw new GeneratedProjectWorldConflictError("The uploaded image contents do not match its file type.");
+    const { projectPath } = await this.resolveProject(projectId);
+    await this.ensurePresentationIgnored(projectPath);
+    const root = path.join(projectPath, presentationAssetsRelativePath);
+    await mkdir(root, { recursive: true });
+    const relativePath = `${presentationAssetsRelativePath}/${this.randomId()}${extension}`;
+    await writeFile(path.join(projectPath, relativePath), bytes, { flag: "wx" });
+    const presentation = current.presentation;
+    await this.writePresentation(projectPath, { ...presentation, entities: { ...presentation.entities, [entityId]: { ...presentation.entities[entityId], imageRef: `project:${relativePath}` } }, history: [...presentation.history, { entryId: `image-${this.randomId()}`.toLowerCase(), occurredAt: this.now().toISOString(), entityId, type: "image" as const, summary: "Replaced the hierarchy image.", relatedFiles: [] }].slice(-200) });
+    return this.loadWorld(projectId);
+  }
+
+  async mutatePresentation(projectId: string, mutationValue: ForgePresentationMutation): Promise<GeneratedProjectWorldSnapshot> {
+    const current = await this.loadWorld(projectId);
+    const entityIds = new Set([projectId, ...current.projectModel.systems.map((item) => item.systemId), ...current.projectModel.quests.map((item) => item.questId)]);
+    const mutation = mutationValue;
+    const entityId = mutation.action === "save_tunable" ? mutation.tunable.entityId : mutation.action === "reset_tunable" ? null : mutation.entityId;
+    if (entityId !== null && !entityIds.has(entityId)) throw new GeneratedProjectWorldConflictError("Choose a World, Experience, or Step from this project.");
+    let next = structuredClone(current.presentation);
+    const history = (type: ForgePresentationState["history"][number]["type"], targetId: string, summary: string, relatedFiles: string[] = [], result?: ForgePresentationState["history"][number]["result"]) => {
+      next.history = [...next.history, { entryId: `${type.replaceAll("_", "-")}-${this.randomId()}`.toLowerCase(), occurredAt: this.now().toISOString(), entityId: targetId, type, summary, ...(result ? { result } : {}), relatedFiles }].slice(-200);
+    };
+    if (mutation.action === "edit_entity") {
+      const parsed = entityOverrideSchema.parse({ name: mutation.name, description: mutation.description, outcome: mutation.outcome, acceptanceCriteria: mutation.acceptanceCriteria });
+      next.entities[mutation.entityId] = { ...next.entities[mutation.entityId], ...parsed };
+      history("edit", mutation.entityId, `Updated the creator-facing ${mutation.entityId} details.`);
+    } else if (mutation.action === "choose_image") {
+      const asset = current.assets.find((item) => item.relativePath === mutation.relativePath && item.category === "images");
+      if (!asset) throw new GeneratedProjectWorldConflictError("Choose an image from this project's Assets view.");
+      next.entities[mutation.entityId] = { ...next.entities[mutation.entityId], imageRef: `project:${asset.relativePath}` };
+      history("image", mutation.entityId, `Selected ${asset.name} as the hierarchy image.`);
+    } else if (mutation.action === "restore_image") {
+      const override = { ...next.entities[mutation.entityId] };
+      delete override.imageRef;
+      next.entities[mutation.entityId] = override;
+      history("image", mutation.entityId, "Restored the default hierarchy image.");
+    } else if (mutation.action === "record_feedback") {
+      const note = z.string().trim().max(1_000).parse(mutation.note);
+      const files = z.array(z.string().trim().min(1).max(240)).max(8).parse(mutation.relatedFiles);
+      history(mutation.result === "needs_change" ? "change_request" : mutation.result === "broken" ? "repair" : "playtest", mutation.entityId, note || mutation.result.replaceAll("_", " "), files, mutation.result);
+    } else if (mutation.action === "save_tunable") {
+      const tunable = tunableSchema.parse(mutation.tunable);
+      if (!entityIds.has(tunable.entityId)) throw new GeneratedProjectWorldConflictError("Choose an Experience or Step for this tuning value.");
+      const index = next.tunables.findIndex((item) => item.tunableId === tunable.tunableId);
+      if (index >= 0) next.tunables[index] = tunable;
+      else next.tunables.push(tunable);
+      history("tuning", tunable.entityId, `Saved ${tunable.label}: ${String(tunable.value)}.`, [tunable.filePath]);
+    } else {
+      const tunable = next.tunables.find((item) => item.tunableId === mutation.tunableId);
+      if (!tunable) throw new GeneratedProjectWorldConflictError("This tuning value no longer exists.");
+      tunable.value = tunable.defaultValue;
+      history("tuning", tunable.entityId, `Reset ${tunable.label} to ${String(tunable.defaultValue)}.`, [tunable.filePath]);
+    }
+    const { projectPath } = await this.resolveProject(projectId);
+    await this.writePresentation(projectPath, next);
+    return this.loadWorld(projectId);
+  }
+
   async loadWorld(projectId: string): Promise<GeneratedProjectWorldSnapshot> {
     try {
       const { projectPath, entry } = await this.resolveProject(projectId);
@@ -340,6 +534,8 @@ export class GeneratedProjectWorldService {
         : roadmapProjectModel;
 
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
+      const presentation = await this.optionalPresentation(projectPath, projectId);
+      const assets = await this.listAssets(projectPath, projectId);
       const combinedQuestIds = projectModel.quests.map((quest) => quest.questId);
       const selectedIsValid = state.selectedQuestId !== null && combinedQuestIds.includes(state.selectedQuestId);
       const selectedQuestId = selectedIsValid ? state.selectedQuestId! : combinedQuestIds[0] ?? null;
@@ -485,6 +681,8 @@ export class GeneratedProjectWorldService {
         chronicle,
         ideaSeeds,
         activity,
+        presentation,
+        assets,
         documents: documentCandidates.map(([label, relativePath, owner]) => ({ label, relativePath, owner })),
         actions: { launchGodot: true, openFolder: true, saveIdea: true, generatedQuestImplementation: this.generatedRunner !== undefined },
       };

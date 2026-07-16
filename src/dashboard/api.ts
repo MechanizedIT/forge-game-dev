@@ -29,6 +29,7 @@ import type {
   GeneratedProjectWorldSnapshot,
   GeneratedWorldStateInput,
   SystemQuestFileCandidate,
+  ForgePresentationMutation,
 } from "../generated-project-world/shared.js";
 import type {
   GeneratedQuestAdjustmentInput,
@@ -260,6 +261,23 @@ export function openCreatedProjectFolder(projectId: string): Promise<{ opened: t
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ projectId }),
+  });
+}
+
+export function mutateForgePresentation(projectId: string, mutation: ForgePresentationMutation): Promise<GeneratedProjectWorldSnapshot> {
+  return request<GeneratedProjectWorldSnapshot>(`/api/projects/${encodeURIComponent(projectId)}/presentation`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(mutation),
+  });
+}
+
+export function uploadForgePresentationImage(projectId: string, entityId: string, file: File): Promise<GeneratedProjectWorldSnapshot> {
+  const extension = file.name.split(".").at(-1)?.toLowerCase() ?? "png";
+  return request<GeneratedProjectWorldSnapshot>(`/api/projects/${encodeURIComponent(projectId)}/presentation/image`, {
+    method: "POST",
+    headers: { "content-type": file.type || "application/octet-stream", "x-forge-entity-id": entityId, "x-forge-image-extension": extension },
+    body: file,
   });
 }
 

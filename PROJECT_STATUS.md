@@ -2,23 +2,25 @@
 
 **Last updated:** 2026-07-16
 
-**Current milestone:** `Real World → Building → Part shell integration`
+**Current milestone:** `World → Experiences → Steps creator refinement`
 
-**Overall state:** `IMPLEMENTED` — Real registered projects now open inside the redesigned shell as Worlds with their real Systems shown as Buildings and Quests shown as Parts. The existing protected work runner remains underneath the simpler presentation.
+**Overall state:** `IMPLEMENTED` — Real registered projects now open as **World → Experiences → Steps**. Creators can add one playable Experience, review suggested Steps, test at any level, turn feedback or a repair into a follow-up Step, browse Assets, and save presentation and tuning metadata without weakening the protected runner.
 
-**Owner confirmation:** Pending one owner-run **Start Building → Playtest → Worked** pass in the joined shell. Browser review stopped before starting real Codex work.
+**Owner confirmation:** Pending one owner-run **Add Experience → Review Suggested Steps → Start Building → Playtest → Needs a Change → Submit Change → Playtest Again → Worked** pass. Browser review stopped before starting real Codex work or launching Godot.
 
-**Milestone implementation commit:** Not created. The redesign checkpoint is `d373b16`; this integration remains in the working tree.
+**Milestone checkpoint:** `7795305` records the tested real-project integration and simplified hierarchy. This terminology and creator-loop refinement remains in the working tree.
 
 ## What works now
 
 - `npm run forge` opens the supplied FORGIE / GAME DEV WORKSHOP logo, World Forge, and the responsive World Map shell.
-- Existing registered projects open as **World → Building → Part**. Project/System/Quest remain the authoritative backend names and schema.
+- Existing registered projects open as **World → Experiences → Steps**. Project/System/Quest remain the authoritative backend names and schema under Advanced Details and service contracts.
 - Real completion counts, activity, Inspector details, Atlas entries, recommended files, acceptance checks, and status flow into the redesigned screens.
-- **Add Building** and **Add Part** reuse existing open system and quest planning. Region/Town are dormant and are no longer navigation gates.
-- Part Detail shows **What Forgie will do**, editable recommended files, one normal **Start Building** action, plain progress, **Playtest**, **Worked**, **Needs Fixing**, **Not Sure**, and optional advanced details.
+- **Add Experience** asks for one playable outcome, recommends focused Steps, and lets the creator edit, remove, or add suggestions before saving.
+- Step Detail shows **What Forgie will do**, editable recommended files, one normal **Start Building** action, plain progress, contextual testing, four clear playtest results, follow-up Steps, repair, tuning, history, and optional Advanced Details.
+- Assets is a real project-file screen with safe image upload, image selection for Worlds and Experiences, default-image restore, filters, and local-folder access.
+- Presentation edits, playtest history, selected images, and tuning values persist in ignored `.forge` presentation metadata so they do not dirty game Git state.
 - The existing exact work order, Codex runner, file boundary, verification, Godot launch, completion, reload, recovery, and undo remain unchanged underneath the new presentation.
-- Full tests pass 171/171. Typecheck, production build, protected compatibility, desktop/mobile navigation, Back/Forward, overflow, and browser console checks pass.
+- Full tests pass 173/173. Typecheck, production build, protected compatibility 38/38, desktop/mobile navigation, Back/Forward, overflow, real Assets data, and fresh-host browser console checks pass.
 
 - After accepting quests, Forge shows the complete saved quest list and marks the next available quest as **Recommended next** instead of jumping directly into an unnamed file chooser.
 - Preparing work now names the exact quest, repeats its visible outcome and done-when checks, and suggests editable existing/new Godot files from the already bounded candidate list. This adds no Codex turn and grants no authority before confirmation.
@@ -127,7 +129,7 @@
 
 ## How to test this milestone
 
-Run `npm run forge`, open the robot project, refine a system, and confirm its quests. Check that the saved quest list appears, open the recommended quest, then choose **Back to system** and open another system. For the completion repair, finish a quest, play it, and choose **Worked**. For automated proof, run `npm test`, `npm run check:v0.1`, `npm run context:check`, and `npm run visual:review:alpha:system-quest`.
+Run `npm run forge`, choose **Open an Existing World**, open **Signal Sweep**, and choose **Add Experience**. Describe one playable outcome, review its suggested Steps, open one Step, choose **Start Building**, playtest it, choose **Needs a Change**, submit the follow-up, play again, and choose **Worked**. For automated proof, run `npm test` and `npm run check:v0.1`.
 
 ## Alpha Milestone 8 evidence
 

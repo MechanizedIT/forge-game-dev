@@ -700,3 +700,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Requested redesign checkpoint `d373b16`; integration work remains uncommitted.
 - **Session ID:** Current Codex task.
 - **Next step:** Owner runs one real Part through Start Building, Playtest, and Worked, then reports any wording or layout friction.
+
+---
+
+## 2026-07-16 — Refine Forge around World → Experiences → Steps
+
+- **Actor/model surface:** Codex desktop; React/TypeScript; local Forge services; in-app browser; local Git
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Explicitly requested a reviewed checkpoint, selected World → Experiences → Steps, defined Experience as a playable outcome and Step as bounded work, and kept mechanic as an optional category. Requested Add Experience suggestions, playtest feedback, repair, tuning, Assets, tests, and a manual verification path.
+- **AI contribution:** Reviewed and checkpointed the prior tested integration; added the typed presentation mapping, one-Experience planning mode, editable Step recommendations, contextual playtest results, follow-up and repair routing, persistent presentation edits/history/tuning, safe asset listing/upload/selection, compatibility fallbacks, responsive styles, and focused persistence and terminology tests.
+- **Files changed:** Planner bounds and prompts; dashboard host/API; generated-project presentation service/contracts; dashboard shell, planning, workflow, tools, screens, model, adapter, art, and styles; focused tests; roadmap, status, plan, closeout, and this log.
+- **Verification:** `npm test` passed 173/173. `npm run check:v0.1` passed 38/38 with typecheck and production build. Browser review covered real Signal Sweep data, Add Experience fields, World Test, real Assets, Back/Forward, 390×844 overflow, and a clean fresh-host console. Persistence tests prove presentation metadata survives service restart without dirtying game Git.
+- **Protected boundaries:** Browser review did not start Codex, launch Godot, approve a run, choose Worked, complete or undo a real Step, push, open a PR, deploy, add remotes, or alter registered game files. Backend Project/System/Quest contracts and runner safety remain authoritative.
+- **Commit:** Prior tested integration checkpoint `7795305`; this refinement remains uncommitted.
+- **Session ID:** Current Codex task.
+- **Next step:** Owner runs the complete Add Experience → follow-up Step → Worked journey once in a real World.

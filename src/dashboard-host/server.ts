@@ -29,7 +29,7 @@ import {
   GeneratedProjectWorldNotFoundError,
   GeneratedProjectWorldService,
 } from "../generated-project-world/service.js";
-import type { GeneratedWorldStateInput, GeneratedWorldView } from "../generated-project-world/shared.js";
+import type { ForgePresentationMutation, GeneratedWorldStateInput, GeneratedWorldView } from "../generated-project-world/shared.js";
 import {
   GeneratedQuestRunConflictError,
   GeneratedQuestRunNotFoundError,
@@ -169,6 +169,18 @@ function openProjectCreationEventStream(
     clearInterval(heartbeat);
     unsubscribe();
   });
+}
+
+async function readBinaryBody(request: IncomingMessage, maximum = 5_000_000): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+    if (size > maximum) throw new Error("Uploaded image is too large.");
+    chunks.push(buffer);
+  }
+  return Buffer.concat(chunks);
 }
 
 function openSystemRoadmapEventStream(
@@ -396,6 +408,45 @@ export function createForgeDashboardServer(
           sendJson(response, 200, await generatedRunner.rollback(projectId, questId, "ROLL BACK REVIEWED CHANGES"));
           return;
         }
+      }
+      const generatedAssetMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/assets\/content$/u);
+      if ((request.method === "GET" || request.method === "HEAD") && generatedAssetMatch && generatedWorldService) {
+        const projectId = safePathId(generatedAssetMatch[1], "project ID");
+        const relativePath = url.searchParams.get("path");
+        if (!relativePath) throw new Error("Choose a project asset.");
+        const asset = await generatedWorldService.resolveAsset(projectId, relativePath);
+        response.writeHead(200, { "content-type": asset.contentType, "content-length": asset.size, "cache-control": "no-store" });
+        if (request.method === "HEAD") response.end();
+        else createReadStream(asset.filePath).pipe(response);
+        return;
+      }
+      const generatedPresentationMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/presentation$/u);
+      if (request.method === "POST" && generatedPresentationMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = safePathId(generatedPresentationMatch[1], "project ID");
+        const body = await readJsonBody(request);
+        if (typeof body.action !== "string") throw new Error("Choose a Forge presentation action.");
+        const keysByAction: Record<string, string[]> = {
+          edit_entity: ["acceptanceCriteria", "action", "description", "entityId", "name", "outcome"],
+          choose_image: ["action", "entityId", "relativePath"],
+          restore_image: ["action", "entityId"],
+          record_feedback: ["action", "entityId", "note", "relatedFiles", "result"],
+          save_tunable: ["action", "tunable"],
+          reset_tunable: ["action", "tunableId"],
+        };
+        const expected = keysByAction[body.action];
+        if (!expected || Object.keys(body).sort().join(",") !== [...expected].sort().join(",")) throw new Error("Forge presentation data contains unsupported fields.");
+        sendJson(response, 200, await generatedWorldService.mutatePresentation(projectId, body as unknown as ForgePresentationMutation));
+        return;
+      }
+      const generatedPresentationImageMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/presentation\/image$/u);
+      if (request.method === "POST" && generatedPresentationImageMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = safePathId(generatedPresentationImageMatch[1], "project ID");
+        const entityId = safePathId(typeof request.headers["x-forge-entity-id"] === "string" ? request.headers["x-forge-entity-id"] : undefined, "entity ID");
+        const extension = typeof request.headers["x-forge-image-extension"] === "string" ? request.headers["x-forge-image-extension"] : "png";
+        sendJson(response, 201, await generatedWorldService.uploadPresentationImage(projectId, entityId, await readBinaryBody(request), extension));
+        return;
       }
       const generatedWorldMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/world$/u);
       if (request.method === "GET" && generatedWorldMatch && generatedWorldService) {

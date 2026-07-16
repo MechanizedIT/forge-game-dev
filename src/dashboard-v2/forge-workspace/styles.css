@@ -433,6 +433,45 @@ button.atlas-card:hover { border-color: var(--forge-gold); }
   .forge-toast { right: 12px; bottom: 70px; left: 12px; }
 }
 
+.detail-inline-actions, .playtest-results, .asset-image-actions, .suggested-step-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+.detail-inline-actions { margin-top: .8rem; }
+.detail-inline-actions button, .asset-image-actions button, .asset-image-actions label, .suggested-step-actions button { align-items: center; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 10px; color: inherit; cursor: pointer; display: inline-flex; gap: .4rem; padding: .55rem .75rem; }
+.playtest-dialog { background: #15161d; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; box-shadow: 0 24px 80px rgba(0,0,0,.5); color: #f8f3e8; max-height: calc(100vh - 2rem); max-width: 620px; overflow: auto; padding: 1.25rem; width: calc(100% - 2rem); }
+.playtest-dialog > header { align-items: flex-start; display: flex; justify-content: space-between; }
+.playtest-dialog > header button { background: transparent; border: 0; color: inherit; cursor: pointer; }
+.playtest-note { display: grid; gap: .45rem; margin: 1rem 0; width: 100%; }
+.playtest-note textarea { background: #0d0e13; border: 1px solid rgba(255,255,255,.16); border-radius: 10px; color: inherit; min-height: 96px; padding: .75rem; resize: vertical; width: 100%; }
+.playtest-results button { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 10px; color: inherit; cursor: pointer; padding: .65rem .85rem; }
+.assets-screen { overflow: auto; }
+.asset-image-actions { justify-content: flex-end; }
+.asset-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); margin-top: 1rem; }
+.asset-card { background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; display: grid; gap: .65rem; min-width: 0; overflow: hidden; padding: .8rem; }
+.asset-card > img { aspect-ratio: 16/9; border-radius: 9px; object-fit: cover; width: 100%; }
+.asset-card > div { display: grid; gap: .3rem; min-width: 0; }
+.asset-card code { color: #aaa8a1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asset-card button { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; color: inherit; cursor: pointer; padding: .5rem; }
+.step-history, .tuning-section { margin-top: 1rem; }
+.step-history article { border-top: 1px solid rgba(255,255,255,.1); padding: .7rem 0; }
+.step-history article p { margin: .3rem 0; }
+.step-history time { color: #97958f; font-size: .78rem; }
+.tuning-section > header { align-items: center; display: flex; justify-content: space-between; }
+.tuning-row { align-items: center; border-top: 1px solid rgba(255,255,255,.1); display: grid; gap: .65rem; grid-template-columns: minmax(130px,1fr) minmax(120px,2fr) 80px auto; padding: .75rem 0; }
+.tuning-row > span { display: grid; }
+.tuning-row small { color: #97958f; }
+.tuning-row input[type="number"] { max-width: 80px; }
+.tuning-add { display: grid; gap: .65rem; grid-template-columns: repeat(2,minmax(0,1fr)); margin: .8rem 0; }
+.tuning-add label { display: grid; gap: .3rem; }
+.tuning-add input { background: #0d0e13; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; color: inherit; padding: .55rem; }
+.add-experience-flow { max-width: 760px; }
+.repair-intake label { display: grid; gap: .35rem; width: 100%; }
+
+@media (max-width: 760px) {
+  .asset-image-actions { justify-content: flex-start; }
+  .asset-grid { grid-template-columns: 1fr; }
+  .tuning-row, .tuning-add { grid-template-columns: 1fr; }
+  .playtest-results { display: grid; grid-template-columns: 1fr 1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .forge-v3-app *, .forge-v3-app *::before, .forge-v3-app *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }

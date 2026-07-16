@@ -53,9 +53,15 @@ export const kindLabels: Record<EntityKind, string> = {
   world: "World",
   region: "Region",
   town: "Town",
-  building: "Building",
-  part: "Part",
+  building: "Experience",
+  part: "Step",
 };
+
+export const backendPresentationLabels = {
+  Project: "World",
+  System: "Experience",
+  Quest: "Step",
+} as const;
 
 export function isEntityKind(value: string): value is EntityKind {
   return ["world", "region", "town", "building", "part"].includes(value);

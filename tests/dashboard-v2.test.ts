@@ -40,8 +40,8 @@ test("live planning schema failures use friendly retry words", () => {
   const raw = '{"type":"error","error":{"type":"invalid_request_error","code":"invalid_json_schema","message":"Invalid schema for response_format codex_output_schema: oneOf is not permitted.","param":"text.format.schema"},"status":400}';
   const systemMessage = friendlySystemPlanningError(raw);
   const questMessage = friendlyQuestPlanningError(raw);
-  assert.equal(systemMessage, "Forge could not suggest systems this time. Your idea is still here, so you can try again safely.");
-  assert.equal(questMessage, "Forge could not suggest quests this time. Your description is still here, so you can try again safely.");
+  assert.equal(systemMessage, "Forge could not suggest Experiences this time. Your idea is still here, so you can try again safely.");
+  assert.equal(questMessage, "Forge could not suggest Steps this time. Your description is still here, so you can try again safely.");
   assert.doesNotMatch(`${systemMessage} ${questMessage}`, /invalid_json_schema|response_format|oneOf|text\.format\.schema/iu);
 });
 
@@ -210,7 +210,7 @@ test("v0.2 source connects the protected sample API and real blueprint planning"
   assert.match(systemPlanning, /What should this game become\?/);
   assert.match(systemPlanning, /A few answers will help/);
   assert.match(systemPlanning, /Revise roadmap/);
-  assert.match(systemPlanning, /Accept systems/);
+  assert.match(systemPlanning, /Accept Experiences/);
   assert.match(systemPlanning, /No game file is changing/);
   assert.doesNotMatch(systemPlanning, /capability|supported game type|verification profile/i);
   assert.doesNotMatch(generatedWorld, /Blender|GIMP|Unity|capability/i);
