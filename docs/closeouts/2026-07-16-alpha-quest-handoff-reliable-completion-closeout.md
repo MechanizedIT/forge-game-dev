@@ -28,3 +28,5 @@ The owner proved the full open-idea loop with an endlessly running robot, jumpin
 ### Boundaries preserved
 
 No extra Codex call, broader scan, automatic file authority, game-type gate, capability, profile permission, runner replacement, dependency, registered-project mutation, remote, deployment, tag, or release action was added.
+
+Milestone implementation commit: `3c8c1903887040f51833b06c8bf16550bdd35e9d`.

@@ -8,6 +8,8 @@
 
 **Owner confirmation:** The complete open-idea journey is proven in the real robot project. After the repair, all six final checks passed across full Forge shutdown, restart, project reopen, obstacle completion state, system/History/next-quest persistence, and real game launch.
 
+**Milestone implementation commit:** `3c8c1903887040f51833b06c8bf16550bdd35e9d`
+
 ## What works now
 
 - After accepting quests, Forge shows the complete saved quest list and marks the next available quest as **Recommended next** instead of jumping directly into an unnamed file chooser.

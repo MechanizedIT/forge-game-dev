@@ -21,3 +21,4 @@ A creator can name a project, open it, describe any simple Godot idea, shape sys
 - Automated evidence: full suite 166/166; focused 78/78; protected v0.1 38/38 plus production build; context and diff checks pass.
 - Scope kept out: arbitrary project import, broad scanning, other engines, automatic file selection, autonomous quest runs, art/assets, export, deployment, and marketplaces.
 - The owner completed the live open-idea path and confirmed restart persistence on 2026-07-16. No push, pull request, deployment, tag, or release action was performed.
+- Milestone implementation commit: `3c8c1903887040f51833b06c8bf16550bdd35e9d`.

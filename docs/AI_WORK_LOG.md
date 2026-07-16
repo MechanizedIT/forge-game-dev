@@ -466,14 +466,14 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 
 - **Actor/model surface:** Codex desktop planning and implementation; Agent-Native Plan `plan-ce4fe0f08cbb495d`; local TypeScript/Node tests; pinned Godot 4.7; local Git
 - **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
-- **Human decisions:** Requested the shortest end-to-end path for any simple Godot idea, explicitly approved full implementation, and prioritized low Codex usage and no over-engineering. No commit, push, PR, deployment, release, remote, or tag action was requested.
+- **Human decisions:** Requested the shortest end-to-end path for any simple Godot idea, explicitly approved full implementation, and prioritized low Codex usage and no over-engineering. After live proof and milestone closeout, the owner requested the completed tree be committed; no push, PR, deployment, release, remote, or tag action was requested.
 - **AI contribution:** Added one neutral runnable Godot foundation; changed the active new-game flow to name → deterministic creation → Project World with zero Codex planning turns; made empty roadmaps reopen honestly; generalized saved work orders from the first native quest to any available native quest; and reused the existing planner, runner, proof, play, completion, reload, and undo boundaries.
 - **Files changed:** Neutral fixture; project creation contracts/service/artifacts/verifier; Project World and native-runner compatibility; host/API and connected UI; focused tests; milestone plan, roadmap, status, closeout, and this log.
 - **Verification and result:** Temporary real creation passed Godot `4.7.stable.official.5b4e0cb0f` and a clean local Git baseline with zero quests. Focused safety/compatibility checks passed 78/78; full suite passed 166/166; protected v0.1 passed 38/38 with production build; typecheck, context validation, and `git diff --check` passed.
 - **Protected boundaries:** No registered user project, sample project, Gravity Tap, or Signal Sweep was changed. Existing-project import, broad scanning, extra engines, automatic file choice, autonomous multi-quest work, art generation, export, deployment, and marketplace work remain out of scope.
-- **Commit:** Not created; the implementation remains in the owner's working tree.
+- **Commit:** `3c8c1903887040f51833b06c8bf16550bdd35e9d` (`feat: complete open idea game loop`).
 - **Session ID:** Current Codex task. No runtime Codex SDK quest was started; project creation used zero model turns.
-- **Next step:** Run the new-game path once in the UI, then choose a separate bounded milestone only if a real creator problem remains.
+- **Next step:** Completed by the owner through the multi-quest robot project and final restart proof.
 
 ---
 
@@ -481,13 +481,13 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 
 - **Actor/model surface:** Codex desktop planning and implementation; Agent-Native Plan `plan-5f18e508d9ff455d`; local TypeScript/Node tests; temporary Microsoft Edge project copies; local Git
 - **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
-- **Human decisions:** After successfully building an endless-running robot, jumping, and obstacles through live quests, the owner approved the recommended quest-handoff changes and requested repair of the completion failure shown after selecting **Worked**. No commit, push, PR, deployment, release, remote, or tag action was requested.
+- **Human decisions:** After successfully building an endless-running robot, jumping, and obstacles through live quests, the owner approved the recommended quest-handoff changes and requested repair of the completion failure shown after selecting **Worked**. After the repair and all six restart checks passed, the owner requested closeout, documentation sync, commit, and a clean tree; no push, PR, deployment, release, remote, or tag action was requested.
 - **AI contribution:** Added a saved-quest selection state with one recommended next quest; carried exact quest context into file preparation; added deterministic editable file suggestions without another Codex turn; released transient planner ownership on leave and reconstructed persisted state later; and changed native completion artifact expectations from working-preimage comparison to exact Git-index blob comparison so finalized project state stages truthfully.
 - **Files changed:** Quest planning service and host conflict boundary; Project World and quest refinement UI; native completion transaction; focused service/UI/completion tests; existing visual harness; dated browser evidence; milestone plan, roadmap, status, closeout, and this log.
 - **Verification and result:** Focused planner/UI tests pass 17/17 and the native creator rehearsal passes 7/7. Full tests pass 167/167. Protected v0.1 passes 38/38 with type checks and production build. After documenting the native runner as a first-class repository owner, context validation reports 12 subsystems, 11 routes, 281 path references, and 79 test references. The nine-state Edge review passes with zero issues and includes leaving one chooser, opening another system, returning, and reloading. Final `git diff --check` passes.
 - **Creator confirmation:** The repaired obstacle quest completed. The owner then passed all six final checks: full Forge shutdown, restart, robot project reopen, completed obstacle status, correct system progress/History/next quest, and successful real-game launch.
 - **Protected boundaries:** Suggestions inspect only the existing bounded Godot candidate list, remain editable, and do not grant file authority. Exact work-plan review, four-file maximum, proof, creator play confirmation, rollback, commit, receipt, neutral project creation, sample behavior, and older projects remain protected.
-- **Commit:** Not created; the implementation remains in the owner's working tree.
+- **Commit:** `3c8c1903887040f51833b06c8bf16550bdd35e9d` (`feat: complete open idea game loop`).
 - **Session ID:** Current Codex task. No live runtime Codex SDK quest was started for this repair.
 - **Next step:** None for this milestone; the end-to-end open-idea alpha path is complete.
 
