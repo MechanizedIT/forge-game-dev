@@ -43,7 +43,7 @@ export interface ForgeWorldState {
 }
 
 export const childKind: Record<Exclude<EntityKind, "part">, EntityKind> = {
-  world: "region",
+  world: "building",
   region: "town",
   town: "building",
   building: "part",
@@ -60,4 +60,3 @@ export const kindLabels: Record<EntityKind, string> = {
 export function isEntityKind(value: string): value is EntityKind {
   return ["world", "region", "town", "building", "part"].includes(value);
 }
-

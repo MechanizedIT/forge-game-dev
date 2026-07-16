@@ -685,3 +685,18 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Not created.
 - **Session ID:** Current Codex task.
 - **Next step:** Owner reviews the dashboard visually, then separately approves or revises the smallest real-project mapping milestone.
+
+---
+
+## 2026-07-16 — Connect real Worlds to the redesigned shell
+
+- **Actor/model surface:** Codex desktop; React/TypeScript; supplied FORGIE image; local Forge host; in-app browser
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Explicitly requested a recovery checkpoint, approved immediate implementation after a plan under ten bullets, required World → Building → Part, reuse of existing backend and runner boundaries, one normal confirmation, targeted tests during development, and one full-suite run near completion.
+- **AI contribution:** Created checkpoint `d373b16`; added the typed Project/System/Quest presentation adapter; routed real saved projects into the redesigned shell; made Region/Town dormant; connected real planning actions, recommended file review, one-click work preparation and start, plain progress, Playtest and creator results; integrated the supplied FORGIE image; and added responsive workflow presentation and focused tests.
+- **Files changed:** Dashboard shell and workspace model/components/screens/styles/fixture/repository; new real-project adapter, real Part screens, FORGIE asset, focused tests, bounded plan, roadmap/status/closeout, and this work-log entry.
+- **Verification:** Focused workspace/presentation 10/10; focused World/planning/runner/completion 45/45; full repository suite 171/171; protected v0.1 compatibility 38/38; typecheck, production build, and repository context validation passed. Desktop browser opened real Signal Sweep as World → First Playable as Building → Activate the Signal Relay as Part, with real recommended files and no console warnings/errors. Back/Forward and 390×844 mobile overflow checks passed.
+- **Protected boundaries:** Browser review opened a registered project, which updates only allowed registry recency. It did not press **Start Building**, approve agent work, launch Godot, choose a creator result, complete a Quest, or mutate game files. No backend schema, runner, security boundary, dependency, push, PR, release, or deployment changed.
+- **Commit:** Requested redesign checkpoint `d373b16`; integration work remains uncommitted.
+- **Session ID:** Current Codex task.
+- **Next step:** Owner runs one real Part through Start Building, Playtest, and Worked, then reports any wording or layout friction.

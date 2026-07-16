@@ -2,21 +2,23 @@
 
 **Last updated:** 2026-07-16
 
-**Current milestone:** `React dashboard World Map prototype redesign`
+**Current milestone:** `Real World → Building → Part shell integration`
 
-**Overall state:** `IMPLEMENTED` — The new route-driven Forge dashboard is runnable, responsive, and connected to the existing New World and generated-project work paths. Owner visual review is the remaining product check.
+**Overall state:** `IMPLEMENTED` — Real registered projects now open inside the redesigned shell as Worlds with their real Systems shown as Buildings and Quests shown as Parts. The existing protected work runner remains underneath the simpler presentation.
 
-**Owner confirmation:** Pending review of the new dashboard look and flow. The earlier complete open-idea and **Worked** journey remains preserved behind Existing Worlds.
+**Owner confirmation:** Pending one owner-run **Start Building → Playtest → Worked** pass in the joined shell. Browser review stopped before starting real Codex work.
 
-**Milestone implementation commit:** Not created; this dashboard redesign remains in the working tree.
+**Milestone implementation commit:** Not created. The redesign checkpoint is `d373b16`; this integration remains in the working tree.
 
 ## What works now
 
-- `npm run forge` now opens a polished World Forge launch screen and a three-column World Map workspace based on the supplied mockup.
-- The Rust Runner visual prototype drills through **World → Region → Town → Building → Part** with changing generated scene art, URL-backed breadcrumbs, Back/Forward behavior, carousels, a dynamic Inspector, and mobile drawers.
-- Add/Edit, Part Detail, Atlas search and filters, Build, Repair, Publish, and Forgie interactions work through a normalized local repository instead of dead buttons.
-- **Forge a New World** still opens the real project-creation flow. **Existing Worlds** still loads registered projects and opens the existing backend-connected quest, Codex, verification, Godot, completion, and undo workspace.
-- Region/Town organization, Atlas indexing, repair intake, and release readiness remain prototype-local until matching backend contracts are approved.
+- `npm run forge` opens the supplied FORGIE / GAME DEV WORKSHOP logo, World Forge, and the responsive World Map shell.
+- Existing registered projects open as **World → Building → Part**. Project/System/Quest remain the authoritative backend names and schema.
+- Real completion counts, activity, Inspector details, Atlas entries, recommended files, acceptance checks, and status flow into the redesigned screens.
+- **Add Building** and **Add Part** reuse existing open system and quest planning. Region/Town are dormant and are no longer navigation gates.
+- Part Detail shows **What Forgie will do**, editable recommended files, one normal **Start Building** action, plain progress, **Playtest**, **Worked**, **Needs Fixing**, **Not Sure**, and optional advanced details.
+- The existing exact work order, Codex runner, file boundary, verification, Godot launch, completion, reload, recovery, and undo remain unchanged underneath the new presentation.
+- Full tests pass 171/171. Typecheck, production build, protected compatibility, desktop/mobile navigation, Back/Forward, overflow, and browser console checks pass.
 
 - After accepting quests, Forge shows the complete saved quest list and marks the next available quest as **Recommended next** instead of jumping directly into an unnamed file chooser.
 - Preparing work now names the exact quest, repeats its visible outcome and done-when checks, and suggests editable existing/new Godot files from the already bounded candidate list. This adds no Codex turn and grants no authority before confirmation.

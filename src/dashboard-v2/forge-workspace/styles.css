@@ -30,12 +30,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:fo
   padding: 0 18px; position: sticky; z-index: 70; top: 0; border-bottom: 1px solid var(--forge-line);
   background: rgba(6, 10, 16, .96); backdrop-filter: blur(18px);
 }
-.forge-v3-brand { display: flex; align-items: center; gap: 10px; }
-.forge-v3-brand .forge-mark { width: 38px; height: 32px; display: grid; place-items: center; color: #17100a; background: var(--forge-gold-soft); clip-path: polygon(0 10%, 100% 10%, 76% 42%, 67% 100%, 33% 100%, 24% 42%); }
-.forge-v3-brand .forge-icon { width: 24px; height: 24px; }
-.forge-v3-brand > span:last-child { display: grid; letter-spacing: .18em; line-height: 1; }
-.forge-v3-brand strong { font-size: .78rem; }
-.forge-v3-brand small { margin-top: 5px; color: #aab3bf; font-size: .48rem; letter-spacing: .22em; }
+.forge-v3-brand { width: 220px; height: 54px; overflow: hidden; display: flex; align-items: center; border-radius: 8px; }
+.forge-v3-brand img { width: 100%; height: 118px; object-fit: cover; object-position: center 48%; display: block; }
 .forge-v3-topbar nav { height: 100%; display: flex; justify-content: center; gap: 24px; overflow-x: auto; }
 .forge-v3-topbar nav button { min-width: 72px; display: grid; place-items: center; align-content: center; gap: 4px; position: relative; border: 0; color: #8997aa; background: transparent; cursor: pointer; text-transform: uppercase; font-size: .63rem; letter-spacing: .05em; }
 .forge-v3-topbar nav button::after { content: ""; height: 2px; position: absolute; right: 0; bottom: 0; left: 0; background: transparent; }
@@ -200,6 +196,41 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:fo
 .detail-header .status-badge { margin: 4px 0 10px; }
 .part-detail-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 12px; }
 .part-detail-grid aside { display: grid; align-content: start; gap: 12px; }
+.real-part-detail .primary-detail { min-height: 430px; }
+.related-building { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--forge-line); }
+.what-forgie-will-do { gap: 12px; }
+.recommended-files { display: grid; gap: 7px; padding: 12px; border: 1px solid var(--forge-line); border-radius: 9px; background: rgba(4, 10, 18, .42); }
+.recommended-files code, .file-review code { overflow-wrap: anywhere; color: #d6e2ef; font-size: .7rem; }
+.forge-secondary-button.wide { width: 100%; }
+.file-review { display: grid; gap: 12px; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--forge-line); }
+.file-review fieldset { display: grid; gap: 7px; min-width: 0; margin: 0; padding: 10px; border: 1px solid var(--forge-line); border-radius: 8px; }
+.file-review label { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.file-review textarea { width: 100%; min-height: 74px; margin-top: 6px; padding: 8px; border: 1px solid var(--forge-line); border-radius: 7px; color: var(--forge-text); background: rgba(4,10,18,.7); resize: vertical; }
+.advanced-details { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--forge-line); color: var(--forge-muted); }
+.advanced-details summary { color: #d6e2ef; cursor: pointer; }
+.advanced-details code { overflow-wrap: anywhere; color: var(--forge-gold-soft); }
+.real-workflow-screen { display: grid; gap: 18px; }
+.real-workflow-screen > header { display: grid; justify-items: start; gap: 8px; }
+.real-workflow-screen > header h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.8rem); }
+.real-workflow-screen > header > p:not(.screen-kicker) { max-width: 760px; color: var(--forge-muted); }
+.real-workflow-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(250px, .6fr); gap: 12px; }
+.plain-progress { display: grid; gap: 9px; margin: 10px 0; padding: 0; list-style: none; }
+.plain-progress li { display: grid; grid-template-columns: 25px 1fr; gap: 9px; align-items: center; color: #768494; }
+.plain-progress li span { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--forge-line); border-radius: 50%; }
+.plain-progress li.done, .plain-progress li.current { color: var(--forge-text); }
+.plain-progress li.done span { color: #112018; border-color: #61d49a; background: #61d49a; }
+.plain-progress li.current span { border-color: var(--forge-gold); box-shadow: 0 0 0 4px rgba(240,173,71,.12); }
+.latest-progress { padding: 10px 12px; border-left: 3px solid var(--forge-gold); background: rgba(240,173,71,.08); }
+.workflow-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.playtest-button { min-width: 180px; }
+.workflow-proof { align-content: start; }
+.workflow-proof article { display: flex; gap: 9px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--forge-line); }
+.workflow-proof article div { display: grid; }
+.workflow-proof article small { color: var(--forge-muted); text-transform: capitalize; }
+.proof-dot { width: 10px; height: 10px; border-radius: 50%; background: #718094; }
+.proof-dot.passed { background: #61d49a; }
+.proof-dot.failed { background: #ff7272; }
+.proof-dot.pending { background: var(--forge-gold); }
 .detail-card { padding: 18px; border: 1px solid var(--forge-line); border-radius: 9px; background: #101a26; }
 .primary-detail > img { width: calc(100% + 36px); height: 270px; display: block; margin: -18px -18px 18px; border-radius: 9px 9px 0 0; object-fit: cover; }
 .detail-card h2 { margin: 8px 0; font-size: 1.2rem; }
@@ -353,16 +384,18 @@ button.atlas-card:hover { border-color: var(--forge-gold); }
   .world-forge-screen { min-height: calc(100vh - 86px); }
   .world-forge-actions { grid-template-columns: 1fr; }
   .world-card-grid { grid-template-columns: 1fr 1fr; }
-  .part-detail-grid, .entity-form { grid-template-columns: 1fr; }
+  .part-detail-grid, .entity-form, .real-workflow-grid { grid-template-columns: 1fr; }
   .build-columns { grid-template-columns: 1fr; }
   .publish-grid { grid-template-columns: 1fr 1fr; }
   .release-checklist { grid-column: 1 / -1; grid-row: 1; }
 }
 
 @media (max-width: 620px) {
-  .forge-v3-topbar { height: 62px; grid-template-columns: 72px minmax(0,1fr) 40px; padding: 0 6px; }
-  .forge-v3-brand > span:last-child { display: none; }
-  .forge-v3-topbar nav button { min-width: 55px; }
+  .forge-v3-topbar { height: 62px; grid-template-columns: 42px minmax(0,1fr) 38px; padding: 0 6px; }
+  .forge-v3-brand { width: 42px; height: 50px; }
+  .forge-v3-brand img { width: 126px; max-width: none; height: 71px; object-position: left center; }
+  .forge-v3-topbar nav { gap: 0; }
+  .forge-v3-topbar nav button { min-width: 50px; }
   .forge-v3-topbar nav button span { display: none; }
   .profile-button { width: 36px; }
   .profile-button .forge-icon { display: none; }

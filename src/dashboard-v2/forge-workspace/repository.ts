@@ -16,6 +16,18 @@ export class LocalForgePrototypeRepository implements ForgePrototypeRepository {
       if (!raw) return createRustRunnerFixture();
       const parsed = JSON.parse(raw) as ForgeWorldState;
       if (parsed.version !== 1 || !parsed.entities?.[parsed.worldId]) return createRustRunnerFixture();
+      const world = parsed.entities[parsed.worldId]!;
+      const buildings = Object.values(parsed.entities).filter((entity) => entity.kind === "building");
+      if (world.childIds.some((id) => parsed.entities[id]?.kind !== "building")) {
+        return {
+          ...parsed,
+          entities: {
+            ...parsed.entities,
+            [world.id]: { ...world, childIds: buildings.map((building) => building.id) },
+            ...Object.fromEntries(buildings.map((building) => [building.id, { ...building, parentId: world.id }])),
+          },
+        };
+      }
       return parsed;
     } catch {
       return createRustRunnerFixture();
@@ -65,4 +77,3 @@ export function updateEntity(state: ForgeWorldState, id: string, input: Pick<For
   if (!current) return state;
   return { ...state, entities: { ...state.entities, [id]: { ...current, ...input } } };
 }
-

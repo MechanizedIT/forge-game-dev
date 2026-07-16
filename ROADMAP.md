@@ -315,6 +315,23 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** The owner can run Forge, open Rust Runner, understand the five-level hierarchy within seconds, reach every major screen without a dead primary action, and still enter the protected real project workflow.
 
+#### Real World → Building → Part integration
+
+- [x] Map authoritative Project/System/Quest state to World/Building/Part without a backend migration.
+- [x] Open registered projects directly in the redesigned shell and remove Region/Town from normal navigation.
+- [x] Use real completion, progress, recent activity, Inspector, Atlas, and recommended-file data where available.
+- [x] Reuse existing system and quest planning for Add Building and Add Part.
+- [x] Start the existing exact work-order and Codex path from Part Detail with one normal **Start Building** confirmation.
+- [x] Present plain progress, Playtest, Worked, Needs Fixing, Not Sure, completion, and undo without replacing runner safety.
+- [x] Replace the text wordmark with the supplied FORGIE / GAME DEV WORKSHOP image.
+- [x] Verify focused backend boundaries, type/build, real saved-project navigation, Back/Forward, desktop, mobile, and console output.
+
+**Status:** `IMPLEMENTED`. Signal Sweep opens as a World, First Playable opens as a Building, and its real quests open as Parts inside the new shell. The backend remains Project/System/Quest.
+
+**Truth boundary:** The browser review did not press **Start Building** because that would start real Codex work in a registered project. Protected runner tests cover that boundary. Atlas, Repair, Assets, and Publish remain intentionally shallow.
+
+**Exit:** Real World → Building → Part navigation and work preparation are visible and responsive; focused safety checks pass 45/45; full-suite evidence is recorded in the closeout.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.
@@ -349,8 +366,7 @@ Workflow state: `COMPLETE`. Evidence is recorded in the [review result](docs/rev
 
 ## Next bounded task
 
-The dashboard prototype is implemented. The next bounded product milestone should
-map real open Project Model systems and quests into the new hierarchy shell, then
-decide whether Region/Town organization needs an authoritative persisted contract.
-Do not build that backend migration until the owner has reviewed the new visual flow.
-Submission actions remain owner-controlled.
+The redesigned shell now uses the real Project Model. The next bounded step is one
+owner-run Part from **Start Building** through **Playtest** and **Worked**, followed by
+small wording or layout fixes from that real use. Region/Town does not need a backend
+contract for the current three-level path. Submission actions remain owner-controlled.

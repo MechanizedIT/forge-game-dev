@@ -7,7 +7,7 @@ function entity(input: ForgeEntity): ForgeEntity {
 const entities = [
   entity({
     id: "rust-runner", kind: "world", parentId: null,
-    childIds: ["crash-landing", "scrap-plains", "crystal-canyons", "neon-ruins"],
+    childIds: ["run-and-jump", "dodge-obstacles", "collect-scrap", "upgrade-thrusters"],
     name: "Rust Runner",
     description: "A casual endless side-scroller where a small robot runs across an alien planet, gathers upgrade parts, and reaches new themed biomes.",
     outcome: "Make a welcoming run, jump, salvage, and upgrade loop that grows into a colorful alien journey.",
@@ -70,7 +70,7 @@ const entities = [
     status: "planned", progress: 25, relatedFiles: [], acceptanceCriteria: ["The next region is clear."],
   }),
   entity({
-    id: "run-and-jump", kind: "building", parentId: "wreck-site",
+    id: "run-and-jump", kind: "building", parentId: "rust-runner",
     childIds: ["add-run-input", "tune-jump-arc", "add-coyote-time", "place-obstacle-lanes"],
     name: "Run & Jump", description: "The first concrete playable slice. The robot can run, jump, and land with a satisfying feel.",
     outcome: "The robot moves with confidence and forgives small timing mistakes.",
@@ -79,19 +79,19 @@ const entities = [
     acceptanceCriteria: ["Run input responds immediately.", "Short and long jumps feel predictable.", "Restart preserves the behavior."],
   }),
   entity({
-    id: "dodge-obstacles", kind: "building", parentId: "wreck-site", childIds: [],
+    id: "dodge-obstacles", kind: "building", parentId: "rust-runner", childIds: [],
     name: "Dodge Obstacles", description: "Readable hazards and fair spacing turn movement into a game.",
     outcome: "The player can read and avoid the first obstacle pattern.", imageRef: "building-dodge",
     status: "ready", progress: 50, relatedFiles: [], acceptanceCriteria: ["Hazards feel fair."],
   }),
   entity({
-    id: "collect-scrap", kind: "building", parentId: "wreck-site", childIds: [],
+    id: "collect-scrap", kind: "building", parentId: "rust-runner", childIds: [],
     name: "Collect Scrap", description: "A visible pickup loop that rewards exploration and distance.",
     outcome: "Scrap is easy to spot, collect, and count.", imageRef: "building-collect",
     status: "ready", progress: 25, relatedFiles: [], acceptanceCriteria: ["Pickups are readable."],
   }),
   entity({
-    id: "upgrade-thrusters", kind: "building", parentId: "wreck-site", childIds: [],
+    id: "upgrade-thrusters", kind: "building", parentId: "rust-runner", childIds: [],
     name: "Upgrade Thrusters", description: "The first upgrade spends salvage on a movement improvement.",
     outcome: "The player feels a clear before-and-after change.", imageRef: "building-upgrade",
     status: "planned", progress: 0, relatedFiles: [], acceptanceCriteria: ["The upgrade has a visible effect."],
@@ -154,4 +154,3 @@ export function createRustRunnerFixture(): ForgeWorldState {
     updatedAt: new Date().toISOString(),
   };
 }
-

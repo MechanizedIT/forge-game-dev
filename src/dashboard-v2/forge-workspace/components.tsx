@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode, type WheelEvent } from "react";
 
 import { imageFor } from "./art.js";
+import forgieLogo from "./assets/forgie-game-dev-workshop.png";
 import { childKind, kindLabels, type EntityKind, type ForgeEntity, type ForgeWorldState } from "./model.js";
 
 export type ForgeDestination = "forge" | "map" | "atlas" | "build" | "publish";
@@ -33,7 +34,7 @@ export function Icon({ name }: { name: IconName }) {
 }
 
 export function ForgeBrand() {
-  return <div className="forge-v3-brand" aria-label="Forge Game Dev"><span className="forge-mark"><Icon name="anvil" /></span><span><strong>FORGE</strong><small>GAME DEV</small></span></div>;
+  return <div className="forge-v3-brand" aria-label="Forgie Game Dev Workshop"><img alt="Forgie Game Dev Workshop" src={forgieLogo} /></div>;
 }
 
 function navLabel(destination: ForgeDestination): string {
@@ -52,11 +53,11 @@ function ProgressBar({ value }: { value: number }) {
 
 export function ProjectRail({ state }: { state: ForgeWorldState }) {
   const world = state.entities[state.worldId]!;
-  const regions = world.childIds.map((id) => state.entities[id]).filter(Boolean) as ForgeEntity[];
+  const worldBuildings = world.childIds.map((id) => state.entities[id]).filter((item) => item?.kind === "building") as ForgeEntity[];
   const buildings = Object.values(state.entities).filter((item) => item.kind === "building");
-  const completedRegions = regions.filter((item) => item.status === "complete").length;
+  const completedWorldBuildings = worldBuildings.filter((item) => item.status === "complete").length;
   const completedBuildings = buildings.filter((item) => item.status === "complete").length;
-  return <aside className="forge-project-rail" aria-label="Project overview"><section className="forge-panel world-summary"><p className="panel-kicker">Current world</p><img alt="" src={imageFor(world.imageRef)} /><h2>{world.name}</h2><p>{world.description.split(".")[0]}</p><strong>{completedRegions} / {regions.length}<small> Regions complete</small></strong><ProgressBar value={world.progress} /><div className="summary-stats"><span><b>{completedBuildings} / {buildings.length}</b><small>Buildings</small></span><span><b>{state.repairs.length}</b><small>Open repairs</small></span></div></section><section className="forge-panel recent-panel"><p className="panel-kicker">Recently updated</p>{state.activity.map((activity) => <article key={activity.id}><span className={"activity-dot tone-" + activity.tone} /><div><strong>{activity.title}</strong><small>{activity.detail}</small></div><time>{activity.when}</time></article>)}</section></aside>;
+  return <aside className="forge-project-rail" aria-label="Project overview"><section className="forge-panel world-summary"><p className="panel-kicker">Current world</p><img alt="" src={imageFor(world.imageRef)} /><h2>{world.name}</h2><p>{world.description.split(".")[0]}</p><strong>{completedWorldBuildings} / {worldBuildings.length}<small> Buildings complete</small></strong><ProgressBar value={world.progress} /><div className="summary-stats"><span><b>{completedBuildings} / {buildings.length}</b><small>Buildings</small></span><span><b>{state.repairs.length}</b><small>Open repairs</small></span></div></section><section className="forge-panel recent-panel"><p className="panel-kicker">Recently updated</p>{state.activity.map((activity) => <article key={activity.id}><span className={"activity-dot tone-" + activity.tone} /><div><strong>{activity.title}</strong><small>{activity.detail}</small></div><time>{activity.when}</time></article>)}</section></aside>;
 }
 
 export function InspectorRail({ current, onAction, onEdit, state }: { current: ForgeEntity; onAction: (action: string) => void; onEdit: () => void; state: ForgeWorldState }) {
@@ -85,7 +86,7 @@ export function WorkspaceShell({ active, children, current, hideRails = false, o
 }
 
 export function HierarchyHero({ entity, onEdit, onPrimary }: { entity: ForgeEntity; onEdit: () => void; onPrimary: () => void }) {
-  return <section className={"hierarchy-hero hero-" + entity.kind}><img alt={entity.name + " concept art"} src={imageFor(entity.imageRef)} /><div className="hero-shade" /><div className="hero-identity"><span>{kindLabels[entity.kind]}</span><h1>{entity.name}</h1></div><div className="hero-actions"><button onClick={onPrimary} type="button">{entity.kind === "building" ? "Open in Editor" : "Open in Atlas"}</button><button aria-label={"Edit " + entity.name} onClick={onEdit} type="button"><Icon name="edit" /> Edit</button></div></section>;
+  return <section className={"hierarchy-hero hero-" + entity.kind}><img alt={entity.name + " concept art"} src={imageFor(entity.imageRef)} /><div className="hero-shade" /><div className="hero-identity"><span>{kindLabels[entity.kind]}</span><h1>{entity.name}</h1></div><div className="hero-actions"><button onClick={onPrimary} type="button">{entity.kind === "building" ? "Open first Part" : "Open in Atlas"}</button><button aria-label={"Edit " + entity.name} onClick={onEdit} type="button"><Icon name="edit" /> Edit</button></div></section>;
 }
 
 export function Breadcrumbs({ entities, onOpen }: { entities: ForgeEntity[]; onOpen: (entity: ForgeEntity) => void }) {
