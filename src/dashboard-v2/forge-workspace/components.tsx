@@ -71,6 +71,10 @@ export function ForgiePanel({ onOpen }: { onOpen: () => void }) {
   return <button className="forge-panel forgie-panel" onClick={onOpen} type="button"><span className="forgie-orb"><i /><b /></span><span><small>Ask Forgie</small><strong>What Step should we work on?</strong><em>Build, find, fix, or test something.</em></span><Icon name="chevron" /></button>;
 }
 
+export function ActiveWorkBanner({ canStop, name, onOpen, onStop, status }: { canStop: boolean; name: string; onOpen: () => void; onStop: () => void; status: string }) {
+  return <aside className="active-work-banner" role="status"><span className="active-work-pulse" /><div><strong>Work is already open: {name}</strong><p>{status} {canStop ? "Forge pauses new Experiences until you continue or stop this Step." : "Forge pauses new Experiences while this Step needs your attention."}</p></div><button className="forge-primary-button" onClick={onOpen} type="button">Open active Step</button>{canStop && <button className="forge-secondary-button" onClick={onStop} type="button">Stop safely</button>}</aside>;
+}
+
 export function WorkspaceShell({ active, children, current, hideRails = false, onAction, onEdit, onNavigate, state }: {
   active: ForgeDestination;
   children: ReactNode;

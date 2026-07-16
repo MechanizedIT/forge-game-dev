@@ -111,6 +111,20 @@ test("free-form planning proposes three systems and accepts one exact planning r
   assert.equal(service.getSnapshot().effects.gameFilesWritten, 0);
 });
 
+test("Experience planning keeps combined field text beyond the old 1500-character limit", async () => {
+  const executor = new QueueExecutor([proposal()]);
+  const service = new SystemRoadmapPlanningService(executor);
+  const source = model();
+  const idea = `Add one new Experience. Player intent: ${"feel capable and curious ".repeat(70)}Playable outcome: ${"activate the relay and see a clear response ".repeat(35)}`;
+  assert.ok(idea.length > 1_500 && idea.length < 9_000);
+  service.begin(source, idea);
+  await service.waitForIdle();
+  const review = service.getSnapshot();
+  let savedIdea = "";
+  await service.accept("ACCEPT SYSTEM ROADMAP", review.proposalFingerprint!, source, async (roadmap) => { savedIdea = roadmap.creatorIdea; });
+  assert.equal(savedIdea, idea.trim());
+});
+
 test("one clarification round is followed by a complete proposal", async () => {
   const executor = new QueueExecutor([
     JSON.stringify({ resultType: "clarification", clarificationQuestions: [{ questionId: "night-length", question: "How long should one night feel?", whyItMatters: "This changes the rhythm of the broad systems." }] }),

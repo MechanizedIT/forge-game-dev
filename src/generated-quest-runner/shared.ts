@@ -25,6 +25,13 @@ export interface GeneratedQuestRunSnapshot {
   progress: string[];
   proofs: GeneratedQuestProof;
   changedFiles: string[];
+  contextSummary?: {
+    primaryArea: string | null;
+    secondaryAreas: string[];
+    relatedPreviousSteps: string[];
+    selectedFiles: string[];
+    regressionChecks: string[];
+  } | null;
   creatorResult: GeneratedCreatorResult | null;
   error: string | null;
   scopeRequest: { paths: string[]; reason: string } | null;

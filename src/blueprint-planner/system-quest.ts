@@ -15,6 +15,7 @@ import {
 import { hasActiveSystemRoadmapWork } from "./system-roadmap.js";
 import type { BlueprintProvenance, BlueprintUsage } from "./shared.js";
 import type { BlueprintModelExecutor, BlueprintModelSession } from "./types.js";
+import type { ArchitectureContextPackage, ArchitectureWarning } from "../project-architecture/service.js";
 
 export type SystemQuestPlanningPhase =
   | "idle" | "planning" | "clarification" | "review" | "revising" | "accepting_quests"
@@ -26,6 +27,8 @@ export interface SystemQuestWorkOrderDraft {
   existingFiles: string[];
   newFiles: string[];
   fingerprint: string;
+  architectureContext?: ArchitectureContextPackage;
+  architectureWarnings?: ArchitectureWarning[];
 }
 
 export interface SystemQuestPlanningSnapshot {
@@ -214,11 +217,10 @@ export class SystemQuestPlanningService {
     const system = model.systems.find((candidate) => candidate.systemId === systemId);
     if (!system) throw new SystemQuestPlanningConflictError("Choose a system from the current project roadmap.");
     if (hasActiveSystemRoadmapWork(model)) throw new SystemQuestPlanningConflictError("Finish or safely close the active work session before refining quests.");
-    if (system.questIds.length >= 5) throw new SystemQuestPlanningConflictError("This system already has five quests, which is the alpha limit.");
     const description = descriptionValue.trim();
     if (description.length < 12 || description.length > 1_500) throw new Error("Describe the system in 12 to 1,500 characters.");
     this.sourceModel = structuredClone(model);
-    this.remaining = 5 - system.questIds.length;
+    this.remaining = 4;
     this.clarificationSpent = false;
     this.pendingRevision = null;
     this.session = this.executor.start();
@@ -282,7 +284,7 @@ export class SystemQuestPlanningService {
     if (currentModel.project.projectId !== this.snapshot.projectId || fingerprintSystemQuestStructure(currentModel, this.snapshot.systemId) !== this.snapshot.sourceFingerprint) throw new SystemQuestPlanningConflictError("The project plan changed while these quests were open. Start again from the latest workspace.");
     if (hasActiveSystemRoadmapWork(currentModel)) throw new SystemQuestPlanningConflictError("Finish or safely close the active work session before accepting quests.");
     const currentSystem = currentModel.systems.find((system) => system.systemId === this.snapshot.systemId)!;
-    const problems = proposalProblems({ resultType: "proposal", quests: this.snapshot.proposal }, 5 - currentSystem.questIds.length, true);
+    const problems = proposalProblems({ resultType: "proposal", quests: this.snapshot.proposal }, 4, true);
     if (problems.length) throw new SystemQuestPlanningConflictError(problems[0]!);
     const existingNative = new Set(persisted?.systems.flatMap((system) => system.quests.map((quest) => quest.questId)) ?? []);
     const used = new Set(currentModel.quests.map((quest) => quest.questId));
@@ -311,8 +313,8 @@ export class SystemQuestPlanningService {
     this.snapshot = { ...this.snapshot, phase: "accepting_quests", error: null };
     this.emit();
     try {
-      const saved = await persist(batch);
-      const firstQuestId = saved.systems.find((system) => system.systemId === batch.systemId)!.quests[0]!.questId;
+      await persist(batch);
+      const firstQuestId = batch.quests[0]!.questId;
       this.snapshot = { ...this.snapshot, phase: "quests_accepted", firstQuestId, effects: { ...this.snapshot.effects, planningRecordsWritten: 1 } };
       this.emit();
     } catch (error) {

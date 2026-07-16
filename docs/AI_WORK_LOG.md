@@ -715,3 +715,93 @@ Do not include secrets, credentials, hidden reasoning, or full private transcrip
 - **Commit:** Prior tested integration checkpoint `7795305`; this refinement remains uncommitted.
 - **Session ID:** Current Codex task.
 - **Next step:** Owner runs the complete Add Experience → follow-up Step → Worked journey once in a real World.
+
+---
+
+## 2026-07-16 — Add internal Game Areas and focused Codex context
+
+- **Actor/model surface:** Codex desktop repository implementation; GPT-5.6-class high-reasoning session; TypeScript/React; local Forge services; in-app browser
+- **Workflow stage:** Plan / Approve / Implement / Review / Document / Complete
+- **Human decisions:** Requested a checkpoint before work, preserved World → Experiences → Steps and backend Project/System/Quest, required the smallest typed internal architecture layer, deterministic context limits, advisory warnings, incremental sync, minimal Atlas access, immediate implementation, and no final commit.
+- **AI contribution:** Created checkpoint `8f4bb82`; added strict ProjectArchitecture/GameArea contracts; deterministic initialization and linking; ignored project-local persistence; bounded context selection; work-order summaries and warnings; runner context manifests; post-run and feedback sync; Atlas Game Areas editing; Step summaries; API boundaries; focused tests; and browser QA.
+- **Files changed:** New architecture contract/service/tests; generated World and runner context/service types; dashboard host/API and Atlas/Step/work-order UI; package test list; roadmap, status, plan, closeout, and this log.
+- **Verification:** Typecheck and production build passed. Protected v0.1 passed 38/38. Full suite passed 175/175. Focused architecture/world/runner/planning checks passed 33/33; the final feedback-sync regression run passed 22/22. Repository context validation passed with 13 subsystems and 12 change routes. Desktop and 760px browser checks showed Atlas Game Areas and Step related-area context with no horizontal overflow and no console warnings/errors. `git diff --check` passed.
+- **Protected boundaries:** Browser QA opened Signal Sweep, which may update allowed registry recency, but did not start Codex, launch Godot, confirm play, complete or undo a Step, or change registered game files. The architecture record never grants Codex file authority and is not a creator workflow gate.
+- **Known limitation:** Initial classification is deterministic and metadata/keyword based; it is not semantic code indexing or full automatic architecture comprehension.
+- **Commit:** Creator workflow checkpoint `8f4bb82`; architecture work intentionally remains uncommitted.
+- **Session ID:** Current Codex task; no live runtime Codex thread was started for a registered project.
+- **Next step:** Run one creator-owned Step end to end and evaluate whether the saved Game Area links improve real context before adding smarter classification.
+
+---
+
+## 2026-07-16 — Recover paused Step work clearly
+
+- **Actor/model surface:** Codex desktop; TypeScript/React; local Forge services; in-app browser; read-only live Signal Sweep audit
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Reported that Add Experience was blocked by an unexplained active work session and that Continue Building showed raw stale-contract language. Asked for a creator-understandable path through the existing World → Experiences → Steps experience.
+- **AI contribution:** Identified the saved approved **Activate the Signal Relay** run; added a World-wide active-work banner with open and safe-stop actions; routed attempts to start other work back to the active Step; replaced internal stale-contract wording; and excluded Forge-owned presentation and Game Area metadata from the controlled game inventory.
+- **Files changed:** Generated-runner inventory boundary and regression test; dashboard routing, banner, copy, styles, and focused tests; roadmap, project status, bounded plan/closeout, and this work log.
+- **Verification:** Focused checks passed 15/15; full suite passed 177/177; protected v0.1 passed 38/38; typecheck, production build, and repository context validation passed. Live browser review showed the named active Step and both recovery actions on Signal Sweep World Map and Add Experience, then opened the paused work screen with Continue Building and Stop safely. Console warnings/errors were empty.
+- **Protected boundaries:** The audit did not start Codex, cancel the saved run, launch Godot, change registered game files, confirm play, complete or undo a Step, commit, push, or open a PR. Read-only comparison confirmed the approved Signal Sweep run still matches Git HEAD and the controlled game inventory.
+- **Commit:** Not created; the current implementation remains uncommitted.
+- **Session ID:** Current Codex task; no live runtime Codex thread was started.
+- **Next step:** Restart Forge, stop the old Signal Sweep Step safely, then retry Add Experience.
+
+---
+
+## 2026-07-16 — Repair the real creator workflow loops
+
+- **Actor/model surface:** Codex desktop; TypeScript/React; existing Forge planner, generated-project service, quest runner, and in-app browser
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Supplied the Signal Sweep failure path; required a focused repair without redesigning terminology or replacing the backend, runner, recovery, Repair, or architecture layers; required one full suite near completion and no commit.
+- **AI contribution:** Localized active-work status; repaired center scrolling; added state-derived failed/playtest actions; replaced the legacy combined Experience limit; shortened the visible recommendation flow; made Test wait for Godot close; stored structured playtest records; linked change/repair follow-ups; corrected new-Step routing and Edit Step return behavior; and added regression coverage.
+- **Files changed:** Existing roadmap/quest planner bounds and UI; dashboard host/API/shell/workflow/tools/styles; generated-world presentation history and launch service; existing runner launch timing; focused tests; bounded plan/closeout; roadmap/status; this log. Earlier uncommitted architecture and recovery work remains preserved in the same working tree.
+- **Verification:** Focused workflow tests pass; full suite 181/181; protected v0.1 38/38; typecheck, production build, context validation, and `git diff --check` pass. Browser QA at 1024px and 390×844 verified banner placement, inline active state, Add Experience counters, exact mobile scroll bottom, Advanced Details, Back/Forward, and zero console warnings/errors.
+- **Protected boundaries:** Browser QA did not submit planning, start/stop work, launch Godot, choose feedback, complete, undo, or modify registered Signal Sweep game files. Fresh-host recovery refreshed only the active journal timestamp; the active pointer, phase, game hashes, and Git status stayed unchanged. Existing work-order authority, Git recovery, verification, architecture, Assets, and Tuning remain intact.
+- **Known limitation:** Safe follow-up creation restores unaccepted reviewed game-file changes before preparing the next work order, so Codex rebuilds using the saved note, run link, and likely files rather than inheriting a dirty worktree.
+- **Commit:** Not created, as requested.
+- **Session ID:** Current Codex task; no live runtime Codex thread was started.
+- **Next step:** The owner runs the short supplied Signal Sweep journey once and reports the visible result.
+
+---
+
+## 2026-07-16 — Fix follow-up Step reuse after playtest feedback
+
+- **Actor/model surface:** Codex desktop; TypeScript/React; read-only live Signal Sweep diagnosis
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Asked for the smallest implementation fix, low usage, and focused verification instead of unrelated regression suites.
+- **AI contribution:** Made follow-up planning start a fresh one-Step proposal instead of reopening the Experience's previous saved planning session; prevented the loaded Experience description from overwriting the exact playtest note; reconstructed pending follow-up context from persisted feedback after refresh; recovered already self-linked feedback into the corrected flow; carried the requested change onto Step preparation, detail, and work screens; made canceled runs with reviewed changes remain visibly active until safely restored; and made follow-up preparation perform that existing safe rollback before saving a new Step.
+- **Files changed:** `SystemQuestRefinement.tsx`, `ForgeDashboard.tsx`, `real-project-screens.tsx`, focused dashboard tests, and this log.
+- **Verification:** Focused dashboard tests passed 10/10 after the consistency and prompt-precedence repairs; TypeScript checks passed; production dashboard build passed; targeted diff checks passed. Read-only live audits confirmed the hidden session state and that the exact note `The beacon should pulse when activated` remains persisted; the incorrect live proposal had instead received the broader Experience description. No new planner or Codex run was started by this repair.
+- **Commit:** Not created.
+- **Session ID:** Current Codex task.
+- **Next step:** Refresh Forge, use the restored banner's **Stop safely** action once, then return to the Step and press **Build This Change**.
+
+---
+
+## 2026-07-16 — Make Repair submit reliably
+
+- **Actor/model surface:** Codex desktop; TypeScript/React; live Signal Sweep browser diagnosis
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Reported the broken Repair layout and inert **Repair This** button; requested the focused implementation and low usage instead of unrelated regression suites.
+- **AI contribution:** Confirmed Repair was saving duplicate history records before a Game Area text-limit failure; bounded architecture summaries at their contract boundary; reused the already-saved repair record; added submit progress and a visible safe error; repaired the form layout; restored the newest unlinked repair's original Step after reload; and split combined saved Expected/Actual text back into the correct fields.
+- **Files changed:** Project architecture service and test; Repair screen, dashboard routing, styles, focused dashboard test, and this log.
+- **Verification:** Focused dashboard and architecture checks passed 13/13, including combined-note restoration; dashboard TypeScript check passed; production dashboard build passed. Read-only inspection confirmed the saved repair points to `quest-pulse-the-activated-relay-beacon` and contains the Godot parse failure. No Codex run, Godot launch, game-file mutation, commit, push, or PR was performed.
+- **Commit:** Not created.
+- **Session ID:** Current Codex task.
+- **Next step:** Reload the open Forge page, confirm it still says **Repair Pulse the Activated Relay Beacon**, then press **Repair This** once.
+
+---
+
+## 2026-07-16 — Repair the failed Step in place and remove the five-Step ceiling
+
+- **Actor/model surface:** Codex desktop; TypeScript/React; existing Forge planner, generated-project service, Step runner, and focused local tests
+- **Workflow stage:** Plan / Implement / Review / Document / Complete
+- **Human decisions:** Asked Forge to diagnose, plan, and fix the repair failure; preferred no Experience Step limit; and questioned whether a failed Step should be repaired through the new-Step planning page.
+- **AI contribution:** Confirmed the saved project was not corrupt; removed the five-Step ceiling from Experience planning and persistence; added a fingerprinted same-Step repair work order; safely restores a failed run before preparing its repair; routes **Repair This** directly back to the failed Step; recovers the correct Repair form from the stale add-Step URL after restart; and makes the work screen prominently say that it is repairing the same Step.
+- **Files changed:** Planner and generated-project bounds; generated-run contracts, context, service, and host/API route; dashboard repair routing and copy; focused planner, persistence, runner, host, contract, and dashboard tests; bounded plan; and this log.
+- **Verification:** Open-ended planning and persistence tests passed 13/13; contract, host, and dashboard tests passed 29/29; the focused failed-build same-Step repair test passed 1/1; TypeScript checks and the production dashboard build passed; `git diff --check` passed. No live Codex run, Godot launch, registered game-file mutation, commit, push, or PR was performed.
+- **Known boundary:** Each recommendation request still returns at most four Steps for a readable review, but an Experience may now accumulate more Steps across requests. General World repair without a Step still uses new-Step planning.
+- **Commit:** Not created.
+- **Session ID:** Current Codex task.
+- **Next step:** Restart Forge, hard-reload the current Signal Sweep page, and press **Repair This** once; Forge should prepare a new work session for **Pulse the Activated Relay Beacon**, not create a sixth Step.

@@ -23,10 +23,11 @@ button { color: inherit; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--forge-gold-soft); outline-offset: 2px; }
 .sr-only { width: 1px; height: 1px; padding: 0; position: absolute; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .forge-icon { width: 20px; height: 20px; flex: 0 0 auto; }
-.forge-v3-app { min-height: 100vh; }
+.forge-v3-app { height: 100vh; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 
 .forge-v3-topbar {
   height: 68px; display: grid; grid-template-columns: 220px minmax(500px, 1fr) 220px; align-items: center;
+  flex: 0 0 auto;
   padding: 0 18px; position: sticky; z-index: 70; top: 0; border-bottom: 1px solid var(--forge-line);
   background: rgba(6, 10, 16, .96); backdrop-filter: blur(18px);
 }
@@ -46,13 +47,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:fo
 .profile-menu strong { font-size: .7rem; }
 .profile-menu span, .profile-menu small { color: var(--forge-muted); font-size: .56rem; line-height: 1.4; }
 
-.forge-workspace { width: min(1600px, calc(100% - 24px)); min-height: calc(100vh - 92px); display: grid; grid-template-columns: 218px minmax(0, 1fr) 282px; grid-template-areas: "project main inspector"; gap: 12px; margin: 12px auto; }
-.project-drawer { grid-area: project; }
-.inspector-drawer { grid-area: inspector; }
-.forge-main-viewport { min-width: 0; grid-area: main; overflow: hidden; border: 1px solid var(--forge-line); border-radius: 10px; background: linear-gradient(160deg, rgba(16, 25, 36, .98), rgba(8, 14, 21, .98)); box-shadow: 0 24px 70px rgba(0,0,0,.25); }
+.forge-workspace { width: min(1600px, calc(100% - 24px)); min-height: 0; flex: 1 1 auto; display: grid; grid-template-columns: 218px minmax(0, 1fr) 282px; grid-template-areas: "project main inspector"; gap: 12px; margin: 12px auto; overflow: hidden; }
+.project-drawer { min-height: 0; grid-area: project; overflow-y: auto; }
+.inspector-drawer { min-height: 0; grid-area: inspector; overflow-y: auto; }
+.forge-main-viewport { min-width: 0; min-height: 0; grid-area: main; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; border: 1px solid var(--forge-line); border-radius: 10px; background: linear-gradient(160deg, rgba(16, 25, 36, .98), rgba(8, 14, 21, .98)); box-shadow: 0 24px 70px rgba(0,0,0,.25); }
 .rails-hidden { width: min(1300px, calc(100% - 24px)); grid-template-columns: 1fr; grid-template-areas: "main"; }
 .rails-hidden .mobile-drawer { display: none; }
-.rails-hidden .forge-main-viewport { min-height: calc(100vh - 94px); }
+.rails-hidden .forge-main-viewport { min-height: 0; }
 .forge-project-rail, .forge-inspector-rail { display: grid; align-content: start; gap: 10px; }
 .forge-panel { min-width: 0; border: 1px solid var(--forge-line); border-radius: 9px; background: linear-gradient(155deg, rgba(17, 27, 39, .98), rgba(10, 17, 25, .98)); box-shadow: inset 0 1px rgba(255,255,255,.02); }
 .panel-kicker, .screen-kicker { margin: 0; color: var(--forge-gold-soft); font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
@@ -220,8 +221,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, [tabindex]:fo
 .plain-progress li.done, .plain-progress li.current { color: var(--forge-text); }
 .plain-progress li.done span { color: #112018; border-color: #61d49a; background: #61d49a; }
 .plain-progress li.current span { border-color: var(--forge-gold); box-shadow: 0 0 0 4px rgba(240,173,71,.12); }
+.plain-progress li.failed { color: #ffaaaa; }
+.plain-progress li.failed span { border-color: #ff7272; color: #ffaaaa; background: rgba(255,114,114,.12); }
 .latest-progress { padding: 10px 12px; border-left: 3px solid var(--forge-gold); background: rgba(240,173,71,.08); }
 .workflow-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.verification-failure, .failure-review, .uncertain-actions, .inline-work-status, .follow-up-preparation { margin-top: 12px; padding: 12px; border: 1px solid rgba(255,114,114,.28); border-radius: 9px; background: rgba(255,114,114,.07); }
+.verification-failure p, .inline-work-status p, .follow-up-preparation p { margin: 5px 0 0; color: var(--forge-muted); }
+.failure-review pre { max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: #d7dde6; }
+.inline-work-status { border-color: rgba(240,173,71,.35); background: rgba(240,173,71,.08); }
+.follow-up-preparation { border-color: rgba(86,168,255,.32); background: rgba(86,168,255,.07); }
 .playtest-button { min-width: 180px; }
 .workflow-proof { align-content: start; }
 .workflow-proof article { display: flex; gap: 9px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--forge-line); }
@@ -298,6 +306,11 @@ button.atlas-card:hover { border-color: var(--forge-gold); }
 .repair-intake { display: grid; grid-template-columns: 54px minmax(0,1fr) auto; gap: 14px; align-items: end; padding: 16px; border: 1px solid #544373; border-radius: 9px; background: linear-gradient(135deg, rgba(157,124,234,.1), #0d1621); }
 .repair-intake label { display: grid; gap: 6px; font-size: .65rem; font-weight: 800; }
 .repair-intake textarea { min-height: 66px; padding: 10px; border: 1px solid var(--forge-line-strong); border-radius: 6px; color: var(--forge-text); background: #09111a; resize: vertical; }
+.repair-intake.real-repair-intake { align-items: start; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.real-repair-intake label:nth-of-type(3), .real-repair-intake .forge-primary-button, .real-repair-intake .repair-submit-error { grid-column: 1 / -1; }
+.real-repair-intake textarea { box-sizing: border-box; line-height: 1.45; width: 100%; }
+.real-repair-intake .forge-primary-button { justify-self: start; }
+.repair-submit-error { color: #ffaaaa; font-size: .72rem; margin: 0; }
 .repair-list { display: grid; gap: 8px; margin-top: 14px; }
 .repair-list article { display: grid; grid-template-columns: 54px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 14px; border: 1px solid var(--forge-line); border-radius: 8px; background: #101a26; }
 .repair-icon { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 8px; color: var(--forge-gold-soft); background: #1c2735; }
@@ -422,6 +435,8 @@ button.atlas-card:hover { border-color: var(--forge-gold); }
   .forgie-search { display: none; }
   .repair-intake { grid-template-columns: 42px 1fr; }
   .repair-intake .forge-primary-button { grid-column: 1 / -1; }
+  .repair-intake.real-repair-intake { grid-template-columns: 1fr; }
+  .real-repair-intake label, .real-repair-intake label:nth-of-type(3) { grid-column: 1; }
   .repair-list article { grid-template-columns: 42px 1fr; }
   .repair-list article > button { grid-column: 1 / -1; justify-self: end; }
   .publish-hero { grid-template-columns: 1fr; padding: 24px; }
@@ -434,6 +449,10 @@ button.atlas-card:hover { border-color: var(--forge-gold); }
 }
 
 .detail-inline-actions, .playtest-results, .asset-image-actions, .suggested-step-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+.active-work-banner { align-items: center; background: linear-gradient(100deg, rgba(68,50,21,.96), rgba(32,27,22,.96)); border: 1px solid rgba(245,185,76,.45); border-radius: 14px; box-shadow: 0 12px 34px rgba(0,0,0,.28); display: grid; gap: .7rem; grid-template-columns: auto minmax(0,1fr) auto auto; margin: 0 0 1rem; padding: .85rem 1rem; }
+.active-work-banner p { color: #d8d0c1; margin: .2rem 0 0; }
+.active-work-pulse { animation: active-work-pulse 1.8s ease-in-out infinite; background: #f4b84c; border-radius: 999px; box-shadow: 0 0 0 5px rgba(244,184,76,.14); height: .7rem; width: .7rem; }
+@keyframes active-work-pulse { 50% { box-shadow: 0 0 0 9px rgba(244,184,76,.05); opacity: .72; } }
 .detail-inline-actions { margin-top: .8rem; }
 .detail-inline-actions button, .asset-image-actions button, .asset-image-actions label, .suggested-step-actions button { align-items: center; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 10px; color: inherit; cursor: pointer; display: inline-flex; gap: .4rem; padding: .55rem .75rem; }
 .playtest-dialog { background: #15161d; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; box-shadow: 0 24px 80px rgba(0,0,0,.5); color: #f8f3e8; max-height: calc(100vh - 2rem); max-width: 620px; overflow: auto; padding: 1.25rem; width: calc(100% - 2rem); }
@@ -463,9 +482,23 @@ button.atlas-card:hover { border-color: var(--forge-gold); }
 .tuning-add label { display: grid; gap: .3rem; }
 .tuning-add input { background: #0d0e13; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; color: inherit; padding: .55rem; }
 .add-experience-flow { max-width: 760px; }
+.add-experience-flow .system-planning-field small { justify-self: end; color: #8f9daf; }
+.add-experience-flow .system-planning-field em { color: #ffaaaa; font-style: normal; }
+.add-experience-flow [aria-invalid="true"] { border-color: #ff7272; }
 .repair-intake label { display: grid; gap: .35rem; width: 100%; }
+.architecture-summary { margin: 14px 0; padding: 14px; border: 1px solid rgba(119,184,255,.28); border-radius: 14px; background: rgba(77,134,196,.1); }
+.architecture-summary p, .architecture-warning { margin: 6px 0 0; }
+.architecture-warning { padding: 10px 12px; border-left: 3px solid #e7b65f; background: rgba(231,182,95,.09); border-radius: 8px; }
+.game-area-result { align-items: flex-start; padding: 0 12px 0 0; }
+.game-area-result > span:nth-child(2) { display: grid; gap: 8px; min-width: 0; width: 100%; padding: 12px 0; }
+.game-area-result code { display: block; overflow-wrap: anywhere; }
+.game-area-result .advanced-details { width: 100%; }
+.game-area-result .advanced-details label, .game-area-result .advanced-details fieldset { display: grid; gap: 6px; margin: 10px 0; }
+.game-area-result .advanced-details input, .game-area-result .advanced-details textarea, .game-area-result .advanced-details select { width: 100%; }
 
 @media (max-width: 760px) {
+  .active-work-banner { align-items: stretch; grid-template-columns: auto minmax(0,1fr); }
+  .active-work-banner button { grid-column: 1 / -1; width: 100%; }
   .asset-image-actions { justify-content: flex-start; }
   .asset-grid { grid-template-columns: 1fr; }
   .tuning-row, .tuning-add { grid-template-columns: 1fr; }

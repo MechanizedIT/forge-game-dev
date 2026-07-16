@@ -47,7 +47,7 @@ export const acceptedSystemRoadmapSystemSchema = z.object({
 export const acceptedSystemRoadmapSchema = z.object({
   schemaVersion: z.literal(1),
   projectId: slugSchema,
-  creatorIdea: z.string().trim().min(12).max(1_500),
+  creatorIdea: z.string().trim().min(12).max(9_000),
   sourceFingerprint: sha256DigestSchema,
   proposalFingerprint: sha256DigestSchema,
   acceptedAt: timestampSchema,

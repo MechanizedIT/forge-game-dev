@@ -9,7 +9,47 @@ import type { SystemRoadmapPlanningSnapshot } from "../blueprint-planner/system-
 
 // Protected v0.2 source-audit marker for the former label: Revise roadmap.
 
+export const experienceFieldLimits = {
+  name: { minimum: 3, maximum: 100 },
+  playerFeeling: { minimum: 12, maximum: 2_500 },
+  playableOutcome: { minimum: 12, maximum: 3_000 },
+  notes: { minimum: 0, maximum: 2_500 },
+} as const;
+
+export interface ExperienceFieldValues {
+  name: string;
+  playerFeeling: string;
+  playableOutcome: string;
+  notes: string;
+}
+
+export function validateExperienceFields(values: ExperienceFieldValues): Partial<Record<keyof ExperienceFieldValues, string>> {
+  const errors: Partial<Record<keyof ExperienceFieldValues, string>> = {};
+  const check = (key: keyof ExperienceFieldValues, label: string, required: boolean) => {
+    const value = values[key].trim();
+    const limits = experienceFieldLimits[key];
+    if (required && value.length < limits.minimum) errors[key] = `${label} needs at least ${limits.minimum} characters.`;
+    else if (value.length > limits.maximum) errors[key] = `${label} must stay under ${limits.maximum.toLocaleString()} characters.`;
+  };
+  check("name", "Experience name", true);
+  check("playerFeeling", "Player intent", true);
+  check("playableOutcome", "Playable outcome", true);
+  check("notes", "Notes and constraints", false);
+  return errors;
+}
+
+export function composeExperiencePlannerIdea(values: ExperienceFieldValues): string {
+  return [
+    `Add one new Experience named ${values.name.trim()}.`,
+    `Player intent: ${values.playerFeeling.trim()}`,
+    `Playable outcome: ${values.playableOutcome.trim()}`,
+    values.notes.trim() ? `Notes and constraints: ${values.notes.trim()}` : "",
+    "Preserve every existing Experience and Step exactly. Recommend only this one new Experience.",
+  ].filter(Boolean).join("\n\n");
+}
+
 export function friendlySystemPlanningError(message: string | null): string {
+  if (/active work session/iu.test(message ?? "")) return "Another Step is already open. Use the work banner above to continue it or stop it safely, then try this Experience again.";
   if (!message || /invalid_json_schema|response_format|text\.format\.schema|invalid_request_error|\{\s*"type"\s*:/iu.test(message)) return "Forge could not suggest Experiences this time. Your idea is still here, so you can try again safely.";
   return message.replaceAll("system", "Experience").replaceAll("System", "Experience");
 }
@@ -29,8 +69,10 @@ export function SystemRoadmapPlanning({ initialIdea, mode = "roadmap", onAccepte
   const [playerFeeling, setPlayerFeeling] = useState("");
   const [playableOutcome, setPlayableOutcome] = useState("");
   const [notes, setNotes] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ExperienceFieldValues, string>>>({});
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
+  const automaticAcceptance = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const refresh = async () => setSnapshot(await loadSystemRoadmapPlanning(projectId));
   useEffect(() => {
@@ -44,14 +86,21 @@ export function SystemRoadmapPlanning({ initialIdea, mode = "roadmap", onAccepte
     catch (next) { setError(friendlySystemPlanningError(next instanceof Error ? next.message : String(next))); }
     finally { busyRef.current = false; setBusy(false); void refresh().catch(() => {}); }
   };
+  useEffect(() => {
+    if (mode !== "experience" || snapshot?.phase !== "review" || !snapshot.proposalFingerprint || automaticAcceptance.current === snapshot.proposalFingerprint) return;
+    const proposed = snapshot.proposal?.filter((experience) => !experience.existingSystemId) ?? [];
+    if (proposed.length !== 1) return;
+    automaticAcceptance.current = snapshot.proposalFingerprint;
+    void act(() => acceptSystemRoadmapPlanning(projectId, snapshot.proposalFingerprint!), true);
+  }, [mode, projectId, snapshot?.phase, snapshot?.proposalFingerprint]);
   if (!snapshot) return <main className="system-planning-view"><p className="v2-eyebrow">Experience roadmap</p><h1>Opening your planning space…</h1>{error && <p className="workflow-error" role="alert">{error}</p>}</main>;
   const phase = snapshot.phase;
   const cancel = () => void act(() => cancelSystemRoadmapPlanning(projectId));
   if (phase === "accepted") return <main className="system-planning-view"><p className="v2-eyebrow">Roadmap saved</p><h1>Your World has clear Experiences.</h1><p>Every saved Step stayed where it was.</p><button className="v2-button button-ember" onClick={onClose} type="button">See World map</button></main>;
   if (phase === "idle" || phase === "cancelled") return mode === "experience"
-    ? <main className="system-planning-view add-experience-flow"><button className="back-button" onClick={onClose} type="button">← World map</button><p className="v2-eyebrow">Add Experience</p><h1>What should the player be able to do or feel?</h1><p>Forgie will recommend a small set of Steps before anything reaches Codex.</p><label className="system-planning-field"><span>Experience name</span><input maxLength={80} onChange={(event) => setExperienceName(event.target.value)} placeholder="Run and Jump" value={experienceName} /></label><label className="system-planning-field"><span>What the player should be able to do or feel</span><textarea maxLength={500} onChange={(event) => setPlayerFeeling(event.target.value)} value={playerFeeling} /></label><label className="system-planning-field"><span>Playable outcome</span><textarea maxLength={500} onChange={(event) => setPlayableOutcome(event.target.value)} placeholder="The robot can run, jump over a small obstacle, and land with a satisfying feel." value={playableOutcome} /></label><label className="system-planning-field"><span>Optional notes or constraints</span><textarea maxLength={500} onChange={(event) => setNotes(event.target.value)} value={notes} /></label>{error && <p className="workflow-error" role="alert">{error}</p>}<button className="v2-button button-ember" disabled={busy || experienceName.trim().length < 2 || playableOutcome.trim().length < 10} onClick={() => { const description = `Add one new Experience named ${experienceName.trim()}. Player feeling: ${playerFeeling.trim() || playableOutcome.trim()}. Playable outcome: ${playableOutcome.trim()}. ${notes.trim() ? `Notes: ${notes.trim()}.` : ""} Preserve every existing Experience and Step exactly. Recommend only this one new Experience.`; setIdea(description); void act(() => startSystemRoadmapPlanning(projectId, description)); }} type="button">Recommend Steps</button></main>
+    ? <main className="system-planning-view add-experience-flow"><button className="back-button" onClick={onClose} type="button">← World map</button><p className="v2-eyebrow">Add Experience</p><h1>What should the player be able to do or feel?</h1><p>Forgie will recommend a small set of Steps before anything reaches Codex.</p><label className="system-planning-field"><span>Experience name</span><input aria-invalid={Boolean(fieldErrors.name)} maxLength={experienceFieldLimits.name.maximum} onChange={(event) => { setExperienceName(event.target.value); setFieldErrors((current) => ({ ...current, name: undefined })); }} placeholder="Run and Jump" value={experienceName} /><small>{experienceName.length} / {experienceFieldLimits.name.maximum}</small>{fieldErrors.name && <em role="alert">{fieldErrors.name}</em>}</label><label className="system-planning-field"><span>What the player should be able to do or feel</span><textarea aria-invalid={Boolean(fieldErrors.playerFeeling)} maxLength={experienceFieldLimits.playerFeeling.maximum} onChange={(event) => { setPlayerFeeling(event.target.value); setFieldErrors((current) => ({ ...current, playerFeeling: undefined })); }} value={playerFeeling} /><small>{playerFeeling.length.toLocaleString()} / {experienceFieldLimits.playerFeeling.maximum.toLocaleString()}</small>{fieldErrors.playerFeeling && <em role="alert">{fieldErrors.playerFeeling}</em>}</label><label className="system-planning-field"><span>Playable outcome</span><textarea aria-invalid={Boolean(fieldErrors.playableOutcome)} maxLength={experienceFieldLimits.playableOutcome.maximum} onChange={(event) => { setPlayableOutcome(event.target.value); setFieldErrors((current) => ({ ...current, playableOutcome: undefined })); }} placeholder="The robot can run, jump over a small obstacle, and land with a satisfying feel." value={playableOutcome} /><small>{playableOutcome.length.toLocaleString()} / {experienceFieldLimits.playableOutcome.maximum.toLocaleString()}</small>{fieldErrors.playableOutcome && <em role="alert">{fieldErrors.playableOutcome}</em>}</label><label className="system-planning-field"><span>Optional notes or constraints</span><textarea aria-invalid={Boolean(fieldErrors.notes)} maxLength={experienceFieldLimits.notes.maximum} onChange={(event) => { setNotes(event.target.value); setFieldErrors((current) => ({ ...current, notes: undefined })); }} value={notes} /><small>{notes.length.toLocaleString()} / {experienceFieldLimits.notes.maximum.toLocaleString()}</small>{fieldErrors.notes && <em role="alert">{fieldErrors.notes}</em>}</label>{error && <p className="workflow-error" role="alert">{error}</p>}<button className="v2-button button-ember" disabled={busy} onClick={() => { const values = { name: experienceName, playerFeeling, playableOutcome, notes }; const errors = validateExperienceFields(values); setFieldErrors(errors); if (Object.keys(errors).length > 0) return; const description = composeExperiencePlannerIdea(values); setIdea(description); void act(() => startSystemRoadmapPlanning(projectId, description)); }} type="button">Recommend Steps</button></main>
     : <main className="system-planning-view"><button className="back-button" onClick={onClose} type="button">← World map</button><p className="v2-eyebrow">Shape Experiences</p><h1>What should this game become?</h1><p>Describe the feeling or player Experience. You do not need special words.</p><label className="system-planning-field"><span>Game idea</span><textarea maxLength={1500} minLength={12} onChange={(event) => setIdea(event.target.value)} value={idea} /></label>{error && <p className="workflow-error" role="alert">{error}</p>}<button className="v2-button button-ember" disabled={busy || idea.trim().length < 12} onClick={() => void act(() => startSystemRoadmapPlanning(projectId, idea))} type="button">Suggest Experiences</button></main>;
-  if (phase === "planning" || phase === "revising" || phase === "accepting") return <main aria-live="polite" className="system-planning-view"><p className="v2-eyebrow">Experience roadmap</p><h1>{phase === "accepting" ? "Preparing your Experience…" : phase === "revising" ? "Updating the suggestion…" : "Understanding the playable outcome…"}</h1><ol className="system-planning-progress"><li className="done">Understanding the playable outcome</li><li className="current">Breaking it into focused Steps</li><li>Checking the current project</li><li>Preparing your Experience</li></ol><p>No game file is changing.</p>{phase !== "accepting" && <button className="v2-button button-quiet" disabled={busy} onClick={cancel} type="button">Cancel</button>}</main>;
+  if (phase === "planning" || phase === "revising" || phase === "accepting" || (mode === "experience" && phase === "review")) return <main aria-live="polite" className="system-planning-view"><p className="v2-eyebrow">Add Experience</p><h1>{phase === "accepting" || phase === "review" ? "Preparing recommendations…" : phase === "revising" ? "Updating the suggestion…" : "Understanding the playable outcome…"}</h1><ol className="system-planning-progress"><li className="done">Understanding the playable outcome</li><li className={phase === "planning" ? "current" : "done"}>Checking the current game</li><li className={phase === "revising" ? "current" : phase === "accepting" || phase === "review" ? "done" : ""}>Breaking the Experience into focused Steps</li><li className={phase === "accepting" || phase === "review" ? "current" : ""}>Preparing recommendations</li></ol><p>No game file is changing.</p>{phase !== "accepting" && phase !== "review" && <button className="v2-button button-quiet" disabled={busy} onClick={cancel} type="button">Cancel</button>}</main>;
   if (phase === "failed") return <main className="system-planning-view"><p className="v2-eyebrow">Planning stopped safely</p><h1>Your idea is still here.</h1><p>{friendlySystemPlanningError(snapshot.error)}</p>{error && <p className="workflow-error" role="alert">{error}</p>}<div className="system-planning-actions"><button className="v2-button button-ember" disabled={busy} onClick={() => void act(() => retrySystemRoadmapPlanning(projectId))} type="button">Try again</button><button className="v2-button button-quiet" disabled={busy} onClick={cancel} type="button">Cancel</button></div></main>;
   if (phase === "clarification") return <main className="system-planning-view"><p className="v2-eyebrow">One short check</p><h1>A few answers will help.</h1><p>Forge asks only what changes the roadmap.</p><div className="system-question-list">{snapshot.clarificationQuestions.map((question) => <label className="system-planning-field" key={question.questionId}><span>{question.question}</span><small>{question.whyItMatters}</small><input maxLength={240} onChange={(event) => setAnswers((current) => ({ ...current, [question.questionId]: event.target.value }))} value={answers[question.questionId] ?? ""} /></label>)}</div>{error && <p className="workflow-error" role="alert">{error}</p>}<div className="system-planning-actions"><button className="v2-button button-ember" disabled={busy || snapshot.clarificationQuestions.some((question) => !(answers[question.questionId] ?? "").trim())} onClick={() => void act(() => answerSystemRoadmapPlanning(projectId, snapshot.clarificationQuestions.map((question) => ({ questionId: question.questionId, answer: answers[question.questionId] ?? "" }))))} type="button">Use these answers</button><button className="v2-button button-quiet" disabled={busy} onClick={cancel} type="button">Cancel</button></div></main>;
   const proposal = mode === "experience" ? snapshot.proposal?.filter((experience) => !experience.existingSystemId) : snapshot.proposal;

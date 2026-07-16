@@ -30,6 +30,7 @@ import type {
   GeneratedWorldStateInput,
   SystemQuestFileCandidate,
   ForgePresentationMutation,
+  GameAreaMutation,
 } from "../generated-project-world/shared.js";
 import type {
   GeneratedQuestAdjustmentInput,
@@ -264,6 +265,20 @@ export function openCreatedProjectFolder(projectId: string): Promise<{ opened: t
   });
 }
 
+export function playtestGeneratedProject(projectId: string): Promise<GeneratedLaunchResponse> {
+  return request<GeneratedLaunchResponse>(`/api/projects/${encodeURIComponent(projectId)}/playtest`, {
+    method: "POST",
+  });
+}
+
+export function mutateProjectArchitecture(projectId: string, mutation: GameAreaMutation): Promise<GeneratedProjectWorldSnapshot> {
+  return request(`/api/projects/${encodeURIComponent(projectId)}/architecture`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(mutation),
+  });
+}
+
 export function mutateForgePresentation(projectId: string, mutation: ForgePresentationMutation): Promise<GeneratedProjectWorldSnapshot> {
   return request<GeneratedProjectWorldSnapshot>(`/api/projects/${encodeURIComponent(projectId)}/presentation`, {
     method: "POST",
@@ -406,6 +421,14 @@ export function deferGeneratedQuest(
 
 export function prepareGeneratedQuest(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
   return request(generatedQuestUrl(projectId, questId, "prepare"), { method: "POST" });
+}
+
+export function prepareRepairGeneratedQuest(projectId: string, questId: string, repairRequest: string): Promise<GeneratedQuestRunSnapshot> {
+  return request(generatedQuestUrl(projectId, questId, "repair"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ repairRequest }),
+  });
 }
 
 export function approveGeneratedQuest(

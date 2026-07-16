@@ -213,7 +213,7 @@ export class SystemRoadmapPlanningService {
     if (hasActiveSystemRoadmapWork(model)) throw new SystemRoadmapPlanningConflictError("Finish or cancel the active work session before reshaping systems.");
     if (model.systems.length > 6) throw new SystemRoadmapPlanningConflictError("This alpha planner can reshape up to six systems.");
     const idea = ideaValue.trim();
-    if (idea.length < 12 || idea.length > 1_500) throw new Error("Describe the game idea in 12 to 1,500 characters.");
+    if (idea.length < 12 || idea.length > 9_000) throw new Error("Describe the Experience in 12 to 9,000 characters.");
     this.sourceModel = structuredClone(model);
     this.clarificationSpent = false;
     this.pendingRevision = null;

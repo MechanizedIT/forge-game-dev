@@ -103,6 +103,7 @@ export async function buildGeneratedQuestContract(options: {
   starterVersion: string;
   quest: GeneratedQuestArtifactV2;
   dependencyStates: Map<string, GeneratedQuestPlanState>;
+  repairRequest?: string;
 }): Promise<GeneratedQuestImplementationContract> {
   const { quest } = options;
   if (quest.state !== "available") throw new Error("Only an available generated quest can be prepared.");
@@ -129,8 +130,9 @@ export async function buildGeneratedQuestContract(options: {
       questRevision: quest.revision,
       visibleOutcome: quest.visibleOutcome,
       whyItMatters: quest.whyItMatters,
+      ...(options.repairRequest ? { repairRequest: options.repairRequest } : {}),
       currentPlayableFacts: quest.currentPlayableFacts,
-      steps: [{ id: "STEP-1", summary: "Make the approved player-visible change inside the reviewed files.", filePaths: allowedFiles.map((file) => file.relativePath) }],
+      steps: [{ id: "STEP-1", summary: options.repairRequest ? "Repair the failed result for this Step inside the reviewed files." : "Make the approved player-visible change inside the reviewed files.", filePaths: allowedFiles.map((file) => file.relativePath) }],
       allowedFiles,
       excludedScope: quest.scope.excluded,
       acceptanceCriteria: quest.acceptanceCriteria.map((criterion) => ({
@@ -146,6 +148,7 @@ export async function buildGeneratedQuestContract(options: {
       risksAndAssumptions: [
         "Forge will stop if Codex writes outside the approved files.",
         "Extra mechanic proof may be unavailable; creator play confirmation remains required.",
+        ...(options.repairRequest ? ["This repair keeps the same Step outcome and starts a new work session."] : []),
       ],
       fingerprint: "0".repeat(64),
     });
@@ -172,6 +175,7 @@ export async function buildGeneratedQuestContract(options: {
     questRevision: quest.revision,
     visibleOutcome: quest.visibleOutcome,
     whyItMatters: quest.whyItMatters,
+    ...(options.repairRequest ? { repairRequest: options.repairRequest } : {}),
     currentPlayableFacts: quest.currentPlayableFacts,
     steps: profile.steps.map((step) => ({ ...step, fileRoles: quest.editableFileRoles })),
     allowedFiles,

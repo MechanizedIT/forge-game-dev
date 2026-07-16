@@ -9,7 +9,8 @@ import {
   type GeneratedAllowedFile,
 } from "../contracts/index.js";
 
-const excludedDirectoryPaths = new Set([".git", ".godot", ".forge/local", "node_modules"]);
+const excludedDirectoryPaths = new Set([".git", ".godot", ".forge/local", ".forge/presentation-assets", "node_modules"]);
+const excludedFilePaths = new Set([".forge/architecture.json", ".forge/presentation.json"]);
 const allowedUntrackedPaths = new Set([".forge/idea-seeds.json"]);
 const fixedPlanningPaths = new Set([".forge/system-roadmap.json", ".forge/system-quests.json"]);
 const allowedWorkExtensions = new Set([".gd", ".tscn", ".tres", ".gdshader", ".gdshaderinc"]);
@@ -37,6 +38,7 @@ function isContained(root: string, target: string): boolean {
 }
 
 function excluded(relativePath: string): boolean {
+  if (excludedFilePaths.has(relativePath)) return true;
   for (const directory of excludedDirectoryPaths) {
     if (relativePath === directory || relativePath.startsWith(`${directory}/`)) return true;
   }

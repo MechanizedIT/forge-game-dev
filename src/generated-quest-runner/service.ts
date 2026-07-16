@@ -73,6 +73,7 @@ import {
 } from "./verification.js";
 import { generatedProfileCatalog } from "./profiles.js";
 import { loadNativeQuest, type NativePlanningRecord } from "./native-quest.js";
+import { ArchitectureService } from "../project-architecture/service.js";
 
 const successfulPlayLaunchProgress = "The real game launched successfully; creator confirmation is still required.";
 
@@ -139,6 +140,7 @@ export interface GeneratedQuestRunnerServiceOptions {
   proofDependencies?: GeneratedProofDependencies;
   launchGame?: GeneratedGameLauncher;
   completionFault?: () => GeneratedCompletionFault | undefined;
+  architectureService?: ArchitectureService;
 }
 
 function activeLockPath(projectPath: string): string {
@@ -196,14 +198,16 @@ async function defaultLaunchGame(input: {
   forgeHome: string;
 }): Promise<GeneratedGameLaunchResult> {
   const godot = await ensurePinnedGodot({ forgeHome: input.forgeHome });
-  const child = spawn(godot.executable, ["--path", input.projectPath], {
-    cwd: input.projectPath,
-    detached: true,
-    stdio: "ignore",
-    windowsHide: false,
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(godot.executable, ["--path", input.projectPath], {
+      cwd: input.projectPath,
+      stdio: "ignore",
+      windowsHide: false,
+    });
+    child.once("error", reject);
+    child.once("exit", () => resolve());
   });
-  child.unref();
-  return { launched: true, version: godot.version, message: `Launched ${input.projectId} with pinned Godot ${godot.version}.` };
+  return { launched: true, version: godot.version, message: `Godot closed after the ${input.projectId} playtest.` };
 }
 
 function sameInventory(
@@ -222,6 +226,7 @@ export class GeneratedQuestRunnerService {
   private readonly proofDependencies: GeneratedProofDependencies | undefined;
   private readonly launchGame: GeneratedGameLauncher;
   private readonly completionFault: (() => GeneratedCompletionFault | undefined) | undefined;
+  private readonly architectureService: ArchitectureService;
   private readonly listeners = new Set<(event: GeneratedQuestRunEvent) => void>();
   private readonly executions = new Map<string, Promise<void>>();
   private readonly cancellationRequests = new Set<string>();
@@ -235,6 +240,26 @@ export class GeneratedQuestRunnerService {
     this.proofDependencies = options.proofDependencies;
     this.launchGame = options.launchGame ?? defaultLaunchGame;
     this.completionFault = options.completionFault;
+    this.architectureService = options.architectureService ?? new ArchitectureService({ now: this.now });
+  }
+
+  private async syncArchitecture(journal: GeneratedQuestRunJournal, verificationOutcome: "pending" | "passed" | "failed", playtestOutcome: "worked" | "did_not_work" | "not_ready" | "retry" | "cancel" | "not_run"): Promise<string | null> {
+    const architecture = await this.architectureService.load(journal.canonicalProjectPath, journal.projectId).catch(() => null);
+    if (!architecture) return null;
+    const linkedIds = new Set(architecture.gameAreas.filter((area) => area.relatedStepIds.includes(journal.questId)).map((area) => area.id));
+    const crossAreaNames = architecture.gameAreas
+      .filter((area) => !linkedIds.has(area.id) && journal.changedFiles.some((file) => area.relatedFilePaths.includes(file)))
+      .map((area) => area.name);
+    await this.architectureService.recordResult(journal.canonicalProjectPath, journal.projectId, {
+      stepId: journal.questId,
+      workSessionId: journal.runId,
+      summary: journal.error ?? journal.progress.at(-1) ?? `Step ${journal.questId} ${journal.phase}.`,
+      changedFiles: journal.changedFiles,
+      verificationOutcome,
+      playtestOutcome,
+      creatorFeedback: journal.creatorResult ? `Creator chose ${journal.creatorResult}.` : "",
+    });
+    return crossAreaNames.length ? `This Step also changed a file associated with ${crossAreaNames.join(" and ")}.` : "Forge updated the related Game Areas with this result.";
   }
 
   subscribe(listener: (event: GeneratedQuestRunEvent) => void): () => void {
@@ -354,6 +379,7 @@ export class GeneratedQuestRunnerService {
       progress: journal.progress,
       proofs: journal.proofs,
       changedFiles: journal.changedFiles,
+      contextSummary: journal.contextSummary ?? null,
       creatorResult: journal.creatorResult,
       error: journal.error,
       scopeRequest: journal.schemaVersion === 2 ? journal.scopeRequest : null,
@@ -535,7 +561,7 @@ export class GeneratedQuestRunnerService {
     return { projectId, questId, revision: deferredQuest.revision, state: deferredQuest.state, visibleOutcome: deferredQuest.visibleOutcome, commitSha };
   }
 
-  async prepare(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
+  async prepare(projectId: string, questId: string, options: { repairRequest?: string } = {}): Promise<GeneratedQuestRunSnapshot> {
     const project = await this.loadProject(projectId, questId);
     if (await this.readLock(project.projectPath)) throw new GeneratedQuestRunConflictError("This project already has an active generated quest run.");
     const git = inspectCleanGitStart(project.projectPath, project.baselineHead, project.planningRecords);
@@ -547,6 +573,7 @@ export class GeneratedQuestRunnerService {
       starterVersion: project.starter.version,
       quest: project.quest,
       dependencyStates: project.dependencyStates,
+      ...(options.repairRequest ? { repairRequest: options.repairRequest } : {}),
     });
     const context = await buildGeneratedQuestContext(project.projectPath, contract);
     const suffix = this.randomId().toLowerCase().replace(/[^a-f0-9]/gu, "").slice(0, 12);
@@ -570,6 +597,7 @@ export class GeneratedQuestRunnerService {
       observedPostHashes: {},
       changedFiles: [],
       progress: [contract.schemaVersion === 2 ? "Prepared the creator-confirmed work plan for review." : "Prepared the bounded quest contract for creator review."],
+      contextSummary: context.contextSummary,
       proofs: createPendingGeneratedProof(contract.verificationProfile),
       creatorResult: null,
       codexThreadId: null,
@@ -591,6 +619,8 @@ export class GeneratedQuestRunnerService {
         characterCount: context.characterCount,
         files: context.files,
         sceneNodes: context.sceneNodes,
+        architectureContext: context.architectureContext,
+        contextSummary: context.contextSummary,
         network: "disabled",
         sandbox: "workspace-write",
       });
@@ -637,6 +667,7 @@ export class GeneratedQuestRunnerService {
       starterVersion: project.starter.version,
       quest: project.quest,
       dependencyStates: project.dependencyStates,
+      ...(run.contract.repairRequest ? { repairRequest: run.contract.repairRequest } : {}),
     });
     if (git.startHead !== run.journal.startHead || !sameInventory(inventory, run.journal.startInventory) || project.quest.revision !== run.journal.questRevision || currentContract.fingerprint !== run.contract.fingerprint) {
       throw new GeneratedQuestRunConflictError("Project HEAD, inventory, or quest revision changed after contract approval.");
@@ -759,7 +790,7 @@ export class GeneratedQuestRunnerService {
       : verifiedBoundary.problems.some((problem) => /(?:New file|deleted|Unapproved|Git reported|HEAD changed)/u.test(problem))
         ? { action: "manual" as const, message: "Verification found changes outside the safe rollback boundary.", concurrentPaths: [] }
         : await assessGeneratedRecovery(generatedQuestRunJournalSchema.parse({ ...journal, proofs, phase: "failed", changedFiles: verifiedBoundary.changedFiles, observedPostHashes: verifiedBoundary.observedPostHashes }));
-    await this.writeJournal(this.progress({
+    let finished = await this.writeJournal(this.progress({
       ...journal,
       proofs,
       changedFiles: verifiedBoundary.changedFiles,
@@ -768,6 +799,10 @@ export class GeneratedQuestRunnerService {
       error: passed ? null : "One or more independent automated proof layers failed.",
       recovery,
     }, passed ? "Automated proof passed. The creator must play the real game next." : "Automated proof failed; the quest remains incomplete."));
+    if (!passed) {
+      const architectureNote = await this.syncArchitecture(finished, "failed", "not_run").catch(() => null);
+      if (architectureNote) finished = await this.writeJournal(this.progress(finished, architectureNote));
+    }
   }
 
   async waitForRun(projectId: string, questId: string): Promise<GeneratedQuestRunSnapshot> {
@@ -808,7 +843,7 @@ export class GeneratedQuestRunnerService {
       const recovery = phase === "waiting_for_playtest"
         ? { action: "resume" as const, message: "The quest remains ready for another real playtest; it is not complete.", concurrentPaths: [] }
         : await assessGeneratedRecovery(generatedQuestRunJournalSchema.parse({ ...run.journal, phase, creatorResult: result }));
-      const journal = await this.writeJournal(this.progress({
+      let journal = await this.writeJournal(this.progress({
         ...run.journal,
         phase,
         creatorResult: result,
@@ -824,6 +859,10 @@ export class GeneratedQuestRunnerService {
         error: result === "did_not_work" ? "The creator reported that the visible result did not work." : null,
         recovery,
       }, phase === "waiting_for_playtest" ? "The quest remains incomplete and ready for another playtest." : "Creator confirmation did not authorize completion."));
+      if (phase !== "waiting_for_playtest") {
+        const architectureNote = await this.syncArchitecture(journal, "passed", result).catch(() => null);
+        if (architectureNote) journal = await this.writeJournal(this.progress(journal, architectureNote));
+      }
       return this.snapshot(run.contract, journal, run.receipt);
     }
 
@@ -860,6 +899,8 @@ export class GeneratedQuestRunnerService {
         error: "Final automated proof failed after creator confirmation; no completion commit was created.",
         recovery: await assessGeneratedRecovery(generatedQuestRunJournalSchema.parse({ ...journal, phase: "failed", proofs: rerun })),
       });
+      const architectureNote = await this.syncArchitecture(journal, "failed", "worked").catch(() => null);
+      if (architectureNote) journal = await this.writeJournal(this.progress(journal, architectureNote));
       return this.snapshot(run.contract, journal, null);
     }
     journal = await this.writeJournal({ ...journal, proofs: rerun });
@@ -879,6 +920,8 @@ export class GeneratedQuestRunnerService {
       if (freshProject.quest.implementation === "not_enabled" || freshProject.quest.implementation.runId !== journal.runId || runGit(project.projectPath, ["rev-parse", "HEAD"]) !== receipt.commitSha) {
         throw new GeneratedQuestRunConflictError("Fresh reload did not validate generated quest completion linkage.");
       }
+      const architectureNote = await this.syncArchitecture(journal, "passed", "worked").catch(() => null);
+      if (architectureNote) journal = await this.writeJournal(this.progress(journal, architectureNote));
       return this.snapshot(run.contract, journal, receipt);
     } catch (error) {
       if (error instanceof GeneratedReceiptPendingError) {
@@ -915,6 +958,24 @@ export class GeneratedQuestRunnerService {
     const journal = await this.writeJournal({ ...run.journal, phase: "cancelled", creatorResult: "cancel", recovery });
     if (journal.changedFiles.length === 0) await unlink(activeLockPath(project.projectPath));
     return this.snapshot(run.contract, journal, run.receipt);
+  }
+
+  async prepareRepair(projectId: string, questId: string, repairRequestValue: string): Promise<GeneratedQuestRunSnapshot> {
+    const repairRequest = z.string().trim().min(3).max(2_000).parse(repairRequestValue);
+    const project = await this.loadProject(projectId, questId);
+    const lock = await this.readLock(project.projectPath);
+    if (lock && lock.questId !== questId) throw new GeneratedQuestRunConflictError("Another Step is still using this project. Finish or stop it safely first.");
+    if (lock) {
+      const run = await this.loadRun(project.projectPath, lock.runId);
+      if (run.journal.recovery.action === "rollback") {
+        await this.rollback(projectId, questId, "ROLL BACK REVIEWED CHANGES");
+      } else if (run.journal.phase === "failed" && run.journal.changedFiles.length === 0) {
+        await this.cancel(projectId, questId, "CANCEL");
+      } else {
+        throw new GeneratedQuestRunConflictError("This failed work cannot be repaired automatically until its current changes are stopped safely.");
+      }
+    }
+    return this.prepare(projectId, questId, { repairRequest });
   }
 
   async rollback(projectId: string, questId: string, confirmation: "ROLL BACK REVIEWED CHANGES"): Promise<GeneratedQuestRunSnapshot> {
@@ -964,6 +1025,8 @@ export class GeneratedQuestRunnerService {
             error: null,
             recovery: { action: "none", message: `Repaired ignored receipt for ${receipt.commitSha.slice(0, 8)} without another commit.`, concurrentPaths: [] },
           });
+          const architectureNote = await this.syncArchitecture(journal, "passed", "worked").catch(() => null);
+          if (architectureNote) journal = await this.writeJournal(this.progress(journal, architectureNote));
           await unlink(activeLockPath(projectPath));
           continue;
         }

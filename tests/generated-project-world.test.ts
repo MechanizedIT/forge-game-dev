@@ -313,13 +313,21 @@ test("creator presentation metadata persists edits, feedback, tuning, and upload
     }
     const service = new GeneratedProjectWorldService({ forgeHome, now: () => new Date(openedAt), randomId: ids("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "33333333-3333-3333-3333-333333333333") });
     let snapshot = await service.mutatePresentation(projectId, { action: "edit_entity", entityId: projectId, name: "Pulse World", description: "A tuned pulse playground.", outcome: "The pulse feels clear.", acceptanceCriteria: ["The pulse is readable."] });
-    snapshot = await service.mutatePresentation(projectId, { action: "record_feedback", entityId: projectId, result: "needs_change", note: "Make the pulse ring linger.", relatedFiles: ["scripts/main.gd"] });
+    const experience = snapshot.projectModel.systems[0]!;
+    const step = snapshot.projectModel.quests[0]!;
+    snapshot = await service.mutatePresentation(projectId, { action: "record_feedback", entityId: step.questId, result: "needs_change", note: "Make the pulse ring linger.", relatedFiles: ["scripts/main.gd"] });
+    const feedback = snapshot.presentation.history.find((entry) => entry.result === "needs_change")!;
+    snapshot = await service.mutatePresentation(projectId, { action: "link_feedback", entryId: feedback.entryId, followUpId: step.questId });
     snapshot = await service.mutatePresentation(projectId, { action: "save_tunable", tunable: { tunableId: "pulse-strength", entityId: projectId, label: "Pulse strength", filePath: "scripts/main.gd", propertyName: "pulse_strength", valueType: "number", value: 4, defaultValue: 3, minimum: 1, maximum: 8 } });
     const png = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Buffer.alloc(16)]);
     snapshot = await service.uploadPresentationImage(projectId, projectId, png, "png");
     assert.equal(snapshot.presentation.entities[projectId]?.name, "Pulse World");
     assert.equal(snapshot.presentation.tunables[0]?.value, 4);
-    assert.equal(snapshot.presentation.history.some((entry) => entry.result === "needs_change"), true);
+    assert.equal(feedback.worldId, projectId);
+    assert.equal(feedback.experienceId, experience.systemId);
+    assert.equal(feedback.stepId, step.questId);
+    assert.equal(feedback.note, "Make the pulse ring linger.");
+    assert.equal(snapshot.presentation.history.find((entry) => entry.entryId === feedback.entryId)?.linkedFollowUpId, step.questId);
     assert.match(snapshot.presentation.entities[projectId]?.imageRef ?? "", /^project:\.forge\/presentation-assets\//u);
     const restored = await new GeneratedProjectWorldService({ forgeHome }).loadWorld(projectId);
     assert.equal(restored.presentation.entities[projectId]?.name, "Pulse World");
@@ -383,6 +391,26 @@ test("Godot launch uses only pinned executable and canonical registered project 
   });
 });
 
+test("playtest launch waits for Godot to close before asking for feedback", async () => {
+  await withFixture(async ({ forgeHome, projectId }) => {
+    const launches: GeneratedWorldLaunchRequest[] = [];
+    let signalLaunch!: () => void;
+    const launched = new Promise<void>((resolve) => { signalLaunch = resolve; });
+    const service = new GeneratedProjectWorldService({
+      forgeHome,
+      resolveGodot: async () => ({ executable: "C:\\Pinned\\Godot.exe", version: "4.7.stable.test", source: "cache" }),
+      launchGodot: (request) => { launches.push(request); signalLaunch(); },
+    });
+    let finished = false;
+    const result = service.launchAndWait(projectId).then((value) => { finished = true; return value; });
+    await launched;
+    assert.equal(finished, false);
+    assert.equal(launches.length, 1);
+    launches[0]!.onExit();
+    assert.match((await result).message, /Godot closed/u);
+  });
+});
+
 test("the default generated-project launcher keeps the Godot game window visible", async () => {
   const source = await readFile(path.join(process.cwd(), "src", "generated-project-world", "service.ts"), "utf8");
   assert.match(
@@ -400,6 +428,7 @@ test("host keeps GET read-only and requires same origin plus exact bodies for ge
     saveState: async (projectId: string) => { calls.push(`state:${projectId}`); return { projectId }; },
     saveIdea: async (projectId: string) => { calls.push(`idea:${projectId}`); return { projectId }; },
     launch: async (projectId: string) => { calls.push(`launch:${projectId}`); return { launched: true }; },
+    launchAndWait: async (projectId: string) => { calls.push(`playtest:${projectId}`); return { launched: true }; },
   } as unknown as GeneratedProjectWorldService;
   const server = createForgeDashboardServer({} as ForgeDashboardService, root, undefined, undefined, worldStub);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -414,7 +443,8 @@ test("host keeps GET read-only and requires same origin plus exact bodies for ge
     assert.equal((await fetch(`${base}/api/projects/pulse-arena-12345678/state`, { method: "POST", body: JSON.stringify({ currentView: "quest_brief", selectedQuestId: "q1-build" }), headers: { "content-type": "application/json", origin: base } })).status, 200);
     assert.equal((await fetch(`${base}/api/projects/pulse-arena-12345678/ideas`, { method: "POST", body: JSON.stringify({ idea: "Keep a ring" }), headers: { "content-type": "application/json", origin: base } })).status, 201);
     assert.equal((await fetch(`${base}/api/projects/pulse-arena-12345678/launch`, { method: "POST", body: "{}", headers: { "content-type": "application/json", origin: base } })).status, 202);
-    assert.deepEqual(calls, ["get:pulse-arena-12345678", "open:pulse-arena-12345678", "state:pulse-arena-12345678", "idea:pulse-arena-12345678", "launch:pulse-arena-12345678"]);
+    assert.equal((await fetch(`${base}/api/projects/pulse-arena-12345678/playtest`, { method: "POST", body: "{}", headers: { "content-type": "application/json", origin: base } })).status, 200);
+    assert.deepEqual(calls, ["get:pulse-arena-12345678", "open:pulse-arena-12345678", "state:pulse-arena-12345678", "idea:pulse-arena-12345678", "launch:pulse-arena-12345678", "playtest:pulse-arena-12345678"]);
   } finally {
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     await rm(root, { recursive: true, force: true });

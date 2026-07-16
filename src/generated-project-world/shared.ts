@@ -6,8 +6,11 @@ import type {
   IdeaSeed,
   ProjectModel,
   AcceptedSystemQuestPlan,
+  ProjectArchitecture,
+  GameAreaMutation,
 } from "../contracts/index.js";
 import type { GeneratedQuestEligibility, GeneratedQuestRunSnapshot } from "../generated-quest-runner/shared.js";
+import type { ArchitectureContextPackage, ArchitectureWarning } from "../project-architecture/service.js";
 
 export type GeneratedWorldView = Exclude<GeneratedProjectStateAny["currentView"], "project_created">;
 
@@ -65,6 +68,7 @@ export type GeneratedActivity = {
 export interface GeneratedProjectWorldSnapshot {
   project: GeneratedProjectIdentity;
   projectModel: ProjectModel;
+  architecture: ProjectArchitecture;
   systemQuestPlan: AcceptedSystemQuestPlan | null;
   vision: {
     vision: string;
@@ -151,9 +155,15 @@ export interface ForgePresentationHistoryEntry {
   entryId: string;
   occurredAt: string;
   entityId: string;
+  worldId?: string | undefined;
+  experienceId?: string | undefined;
+  stepId?: string | undefined;
+  workAttemptId?: string | undefined;
   type: "playtest" | "change_request" | "repair" | "tuning" | "image" | "edit";
   summary: string;
+  note?: string | undefined;
   result?: ForgePlaytestResult | undefined;
+  linkedFollowUpId?: string | undefined;
   relatedFiles: string[];
 }
 
@@ -170,6 +180,7 @@ export type ForgePresentationMutation =
   | { action: "choose_image"; entityId: string; relativePath: string }
   | { action: "restore_image"; entityId: string }
   | { action: "record_feedback"; entityId: string; result: ForgePlaytestResult; note: string; relatedFiles: string[] }
+  | { action: "link_feedback"; entryId: string; followUpId: string }
   | { action: "save_tunable"; tunable: ForgeTunable }
   | { action: "reset_tunable"; tunableId: string };
 
@@ -198,4 +209,8 @@ export interface SystemQuestWorkOrderReview {
   existingFiles: string[];
   newFiles: string[];
   fingerprint: string;
+  architectureContext: ArchitectureContextPackage;
+  architectureWarnings: ArchitectureWarning[];
 }
+
+export type { GameAreaMutation };

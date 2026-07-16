@@ -347,6 +347,51 @@ Architecture, sequencing, exact first-task acceptance criteria, and approval dec
 
 **Exit:** Full tests pass 173/173, protected v0.1 checks pass 38/38 with typecheck and production build, presentation state reloads without dirtying game Git, and fresh-host browser checks pass at desktop and 390×844.
 
+#### Internal Game Areas and focused Codex context
+
+- [x] Persist a typed `ProjectArchitecture` with flat `GameArea` records separate from backend Systems.
+- [x] Initialize Game Areas from saved Experiences, Steps, approved files, bounded project-file data, and previous results without extra planning calls.
+- [x] Link Experiences and Steps many-to-many and show optional related-area summaries plus advisory preflight warnings.
+- [x] Limit Codex context to one primary area, three secondary areas, five recent related Steps, selected files, constraints, and targeted checks.
+- [x] Incrementally record changed files, verification, playtest feedback, and unexpected cross-area touches.
+- [x] Add a minimal editable **Game Areas** view inside Atlas without changing World → Experiences → Steps.
+
+**Status:** `IMPLEMENTED`. Forge stores `.forge/architecture.json` as ignored project metadata and quietly uses it to narrow work context and preserve architectural memory. Project/System/Quest and the existing runner remain unchanged.
+
+**Truth boundary:** Initialization is deterministic and intentionally shallow. Game Areas organize context; they do not grant file authority, block creator ideas, replace work-order approval, or claim full codebase comprehension.
+
+**Exit:** Full tests pass 175/175, protected v0.1 checks pass 38/38 with typecheck and production build, focused architecture/world/runner/planning checks pass 33/33, and desktop/760px browser QA reports no console warnings or errors.
+
+#### Active Step recovery and safe resume
+
+- [x] Show unresolved Step work across the World, including on the Add Experience screen.
+- [x] Name the active Step and offer clear **Open active Step** and **Stop safely** actions.
+- [x] Replace raw stale-contract wording with a plain explanation and safe next action.
+- [x] Keep Forge-owned presentation and Game Area metadata outside the approved game-file inventory.
+- [x] Prove the saved Signal Sweep run still matches its approved Git HEAD and game inventory without starting or cancelling it.
+
+**Status:** `IMPLEMENTED`. A creator can now identify and recover paused work instead of being trapped by an unexplained active-session or stale-contract popup.
+
+**Truth boundary:** The inventory exclusion covers only Forge-owned presentation metadata. Project/System/Quest planning records, approved files, Git HEAD, dirty files, remotes, and scope checks remain protected.
+
+**Exit:** Full tests pass 177/177, protected v0.1 checks pass 38/38, focused checks pass 15/15, and the real Signal Sweep Add Experience and paused-Step screens pass browser review with no console issues or project mutation.
+
+#### Creator workflow repair and simplification
+
+- [x] Keep active work visible everywhere without duplicating the banner on the active Step's own pages.
+- [x] Make long Step Work and failure content scroll fully at desktop and 390×844.
+- [x] Replace the legacy combined Experience limit with field-specific validation, counters, and full planner input.
+- [x] Shorten Add Experience to form, progress, suggested-Step review, and Create Experience.
+- [x] Launch Test directly, wait for Godot to close, and store contextual notes as linked Step history.
+- [x] Route Needs a Change and Broken into linked follow-up or Repair preparation with the prior note and files.
+- [x] Show truthful failed verification, safe recovery, Not Sure exits, and real Edit Step behavior.
+
+**Status:** `IMPLEMENTED`. The tested loops now resolve through existing planner, runner, recovery, and Repair boundaries instead of returning to stale work.
+
+**Truth boundary:** Follow-up work safely rolls back unaccepted reviewed changes before the next clean work order. The saved run, creator note, original Step link, and likely files remain available as context.
+
+**Exit:** Full tests pass 181/181, protected v0.1 passes 38/38, typecheck/build/context/diff checks pass, and 1024px plus 390×844 browser QA reaches the bottom of the active Work page with no console issues.
+
 ## Prepared quests
 
 1. **Enemy Targeting** — required golden path; the CLI and dashboard can implement, verify, launch, collect explicit creator confirmation, and persist completion in the per-user workspace.

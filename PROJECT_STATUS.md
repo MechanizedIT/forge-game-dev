@@ -2,25 +2,30 @@
 
 **Last updated:** 2026-07-16
 
-**Current milestone:** `World → Experiences → Steps creator refinement`
+**Current milestone:** `Creator workflow repair and simplification`
 
-**Overall state:** `IMPLEMENTED` — Real registered projects now open as **World → Experiences → Steps**. Creators can add one playable Experience, review suggested Steps, test at any level, turn feedback or a repair into a follow-up Step, browse Assets, and save presentation and tuning metadata without weakening the protected runner.
+**Overall state:** `IMPLEMENTED` — The real creator path now has clear active-work actions, field-specific Experience validation, a shorter recommendation flow, direct Godot playtesting, saved notes, and actionable change/repair follow-ups. World → Experiences → Steps and the existing safe backend remain intact.
 
-**Owner confirmation:** Pending one owner-run **Add Experience → Review Suggested Steps → Start Building → Playtest → Needs a Change → Submit Change → Playtest Again → Worked** pass. Browser review stopped before starting real Codex work or launching Godot.
+**Owner confirmation:** Pending one owner-run completion of the supplied Signal Sweep journey. Browser review verified all safe read-only states without starting Codex, stopping the current run, launching Godot, or changing game files.
 
-**Milestone checkpoint:** `7795305` records the tested real-project integration and simplified hierarchy. This terminology and creator-loop refinement remains in the working tree.
+**Milestone checkpoint:** `8f4bb82` records the completed creator workflow refinement. The internal architecture layer remains uncommitted as requested.
 
 ## What works now
 
 - `npm run forge` opens the supplied FORGIE / GAME DEV WORKSHOP logo, World Forge, and the responsive World Map shell.
 - Existing registered projects open as **World → Experiences → Steps**. Project/System/Quest remain the authoritative backend names and schema under Advanced Details and service contracts.
+- Any unresolved Step appears in a global banner everywhere except its own Detail and Work pages. Those pages show inline status, the correct primary action, and safe recovery without duplicate messaging.
+- Forge-owned `.forge/presentation.json`, `.forge/architecture.json`, and presentation images no longer invalidate an already-approved game build. Real game files, planning records, Git HEAD, and exact approved scope remain protected.
 - Real completion counts, activity, Inspector details, Atlas entries, recommended files, acceptance checks, and status flow into the redesigned screens.
-- **Add Experience** asks for one playable outcome, recommends focused Steps, and lets the creator edit, remove, or add suggestions before saving.
-- Step Detail shows **What Forgie will do**, editable recommended files, one normal **Start Building** action, plain progress, contextual testing, four clear playtest results, follow-up Steps, repair, tuning, history, and optional Advanced Details.
+- **Add Experience** validates name, player intent, playable outcome, and optional constraints separately with visible counters. It preserves all field text and moves from one brief progress view to **Review Suggested Steps** and **Create Experience**.
+- Step Detail and Work show the real approved, running, failed, ready, feedback, complete, or stopped state. Test launches Godot directly; feedback appears after it closes; Worked, Needs a Change, Broken, and Not Sure store structured notes and expose the right next action.
 - Assets is a real project-file screen with safe image upload, image selection for Worlds and Experiences, default-image restore, filters, and local-folder access.
 - Presentation edits, playtest history, selected images, and tuning values persist in ignored `.forge` presentation metadata so they do not dirty game Git state.
+- A validated `.forge/architecture.json` record stores flat Game Areas, related files, dependencies, Experience/System links, Step/Quest links, constraints, and recent outcomes.
+- Deterministic selection sends Codex at most one primary Game Area, three secondary areas, five related previous Steps, the approved files, and targeted checks. Unrelated history stays out.
+- Atlas now includes an optional editable **Game Areas** filter, and Step Detail shows concise related-area context plus advisory warnings before Build.
 - The existing exact work order, Codex runner, file boundary, verification, Godot launch, completion, reload, recovery, and undo remain unchanged underneath the new presentation.
-- Full tests pass 173/173. Typecheck, production build, protected compatibility 38/38, desktop/mobile navigation, Back/Forward, overflow, real Assets data, and fresh-host browser console checks pass.
+- Full tests pass 181/181. Typecheck, production build, protected compatibility 38/38, repository context validation, diff checks, 1024px desktop QA, and 390×844 mobile QA pass with no console warnings or errors.
 
 - After accepting quests, Forge shows the complete saved quest list and marks the next available quest as **Recommended next** instead of jumping directly into an unnamed file chooser.
 - Preparing work now names the exact quest, repeats its visible outcome and done-when checks, and suggests editable existing/new Godot files from the already bounded candidate list. This adds no Codex turn and grants no authority before confirmation.

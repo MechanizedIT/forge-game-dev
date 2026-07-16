@@ -135,6 +135,19 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 - **Decisions:** [Task 6 closeout](closeouts/2026-07-14-v0.2-task-6-generated-project-world-closeout.md), [open-project closeout](closeouts/2026-07-15-alpha-open-project-repeatable-quests-closeout.md), and [quest-handoff closeout](closeouts/2026-07-16-alpha-quest-handoff-reliable-completion-closeout.md).
 - **Protect:** GET remains byte-for-byte read-only; idea saves do not rewrite Chronicle/roadmap; only dependency-safe quests are available; legacy starter previews remain labelled; presentation cannot bypass planning, file authority, runner, play, or completion gates.
 
+<!-- forge-subsystem:project-architecture -->
+### project-architecture — Internal Game Areas and focused context
+
+- **Purpose:** Relate creator intent to technical game areas, files, dependencies, and recent work without adding a required creator hierarchy or workflow gate.
+- **Owns:** The typed `ProjectArchitecture`/`GameArea` record, deterministic initialization and linking, bounded context selection, advisory architecture warnings, incremental result/feedback updates, and narrow edit/merge mutations.
+- **Does not own:** The creator-facing World → Experiences → Steps hierarchy, existing Project/System/Quest records, file-scope approval, Codex execution, verification truth, or broad codebase classification.
+- **Start:** [architecture contract](../src/contracts/project-architecture.ts) and [architecture service](../src/project-architecture/service.ts).
+- **Contracts and artifacts:** Project-local `.forge/architecture.json`, ignored by project Git; links use existing Experience/System and Step/Quest identifiers without renaming them.
+- **Consumers:** Generated Project World planning and work-order review, focused generated-runner context, post-run synchronization, Step details, and the Atlas Game Areas filter.
+- **Tests:** [architecture service tests](../tests/project-architecture.test.ts), [generated Project World tests](../tests/generated-project-world.test.ts), and [generated runner tests](../tests/generated-quest-runner.test.ts).
+- **Decisions:** [internal architecture plan](plans/2026-07-16-internal-game-architecture.md) and [closeout](closeouts/2026-07-16-internal-game-architecture-closeout.md).
+- **Protect:** Context limits remain deterministic; warnings stay advisory unless an existing safety rule blocks work; unexpected files are recorded rather than automatically restructuring Game Areas; initialization never requires per-file AI calls.
+
 <!-- forge-subsystem:generated-quest-runner -->
 ### generated-quest-runner — Native planned-quest work and completion
 
@@ -200,6 +213,7 @@ Generated repository maps, packed files, screenshots, and rehearsal reports are 
 | Generated selection | Generated-world service and state schema | `.forge/project-state.json` | Generated World UI | Explicit same-origin state save only; stale repair is in memory | [world](../tests/generated-project-world.test.ts) |
 | Generated Chronicle | Project creation's Chronicle artifact | `.forge/chronicle.json` | Chronicle view | Current v0.2 has no post-creation Chronicle mutation | [creation](../tests/project-creation.test.ts), [world](../tests/generated-project-world.test.ts) |
 | Saved idea and derived activity | Idea-seeds artifact | `.forge/idea-seeds.json` | Idea dock and merged activity view | Atomic idea save; never rewrites roadmap/Chronicle | [world](../tests/generated-project-world.test.ts) |
+| Internal game architecture | Architecture service and contract | `.forge/architecture.json` | Step planning, work-order context, Atlas Game Areas, runner sync | Deterministic bounded links and incremental updates; never replaces Project/System/Quest | [architecture](../tests/project-architecture.test.ts), [world](../tests/generated-project-world.test.ts), [runner](../tests/generated-quest-runner.test.ts) |
 | Godot installation and automated result | Pinned build plus owning verifier | Verified tool cache; project-local verification result for generated projects | Creation, launch, Proof labels | Fixed version/hash/args/markers; creator observation remains separate | [bootstrap](../tests/godot-bootstrap.test.ts), [creation](../tests/project-creation.test.ts) |
 | Current milestone truth | Project status, reconciled at closeout | [PROJECT_STATUS.md](../PROJECT_STATUS.md) | README/roadmap/task prompts | Milestone closeout only; historical evidence is not rewritten | [context validator](../scripts/validate-repository-context.mjs) |
 

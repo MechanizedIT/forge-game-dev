@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   acceptSystemQuestPlanning,
@@ -60,9 +60,25 @@ export function friendlyQuestPlanningError(message: string | null): string {
   return message.replaceAll("quest", "Step").replaceAll("Quest", "Step").replaceAll("system", "Experience").replaceAll("System", "Experience");
 }
 
-export function SystemQuestRefinement({ creationMode = false, initialDescription = "", preferredFiles = [], projectId, singleStep = false, systemId, systemTitle, systemOutcome, systemQuests, targetQuestId, onClose, onChanged, onReady }: {
+export function shouldAutomaticallyStartQuestPlanning(
+  creationMode: boolean,
+  singleStep: boolean,
+  phase: SystemQuestPlanningSnapshot["phase"],
+): boolean {
+  if (singleStep) return true;
+  return creationMode && ["idle", "cancelled"].includes(phase);
+}
+
+export function questPlanningDescription(singleStep: boolean, initialDescription: string, savedDescription: string): string {
+  return singleStep ? initialDescription : savedDescription || initialDescription;
+}
+
+export function SystemQuestRefinement({ creationMode = false, followUpKind, followUpOriginalStepName, initialDescription = "", onEditExperience, preferredFiles = [], projectId, singleStep = false, systemId, systemTitle, systemOutcome, systemQuests, targetQuestId, onClose, onChanged, onReady }: {
   creationMode?: boolean;
+  followUpKind?: "change" | "repair" | undefined;
+  followUpOriginalStepName?: string | undefined;
   initialDescription?: string;
+  onEditExperience?: (() => void) | undefined;
   preferredFiles?: string[];
   projectId: string;
   systemId: string;
@@ -88,18 +104,19 @@ export function SystemQuestRefinement({ creationMode = false, initialDescription
   const [recommendationAppliedQuestId, setRecommendationAppliedQuestId] = useState<string | null>(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const automaticStart = useRef(false);
 
   const refresh = async () => setSnapshot(await loadSystemQuestPlanning(projectId, systemId, targetQuestId));
   useEffect(() => {
     let active = true;
     void loadSystemQuestPlanning(projectId, systemId, targetQuestId).then((value) => {
-      if (active) { setSnapshot(value); setDescription(value.description || initialDescription); setBusy(false); }
+      if (active) { setSnapshot(value); setDescription(questPlanningDescription(singleStep, initialDescription, value.description)); setBusy(false); }
     }).catch((next) => {
       if (active) { setError(friendlyQuestPlanningError(next instanceof Error ? next.message : String(next))); setBusy(false); }
     });
     const unsubscribe = subscribeToSystemQuestPlanning(projectId, systemId, () => void refresh().catch(() => {}), () => {});
     return () => { active = false; unsubscribe(); };
-  }, [projectId, systemId, targetQuestId]);
+  }, [initialDescription, projectId, singleStep, systemId, targetQuestId]);
 
   useEffect(() => {
     if (!snapshot || !["quests_accepted", "choosing_files", "work_order_review", "ready"].includes(snapshot.phase)) return;
@@ -138,6 +155,25 @@ export function SystemQuestRefinement({ creationMode = false, initialDescription
       return false;
     } finally { setBusy(false); }
   };
+  useEffect(() => {
+    if (!snapshot || automaticStart.current || !shouldAutomaticallyStartQuestPlanning(creationMode, singleStep, snapshot.phase) || description.trim().length < 12) return;
+    automaticStart.current = true;
+    void run(() => startSystemQuestPlanning(projectId, systemId, singleStep ? `Recommend exactly one bounded follow-up Step. ${description}` : description));
+  }, [creationMode, description, projectId, singleStep, snapshot?.phase, systemId]);
+  const acceptSuggested = async (fingerprint: string) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const value = await acceptSystemQuestPlanning(projectId, systemId, fingerprint);
+      setSnapshot(value);
+      setError(null);
+      await onChanged();
+      if (creationMode) onClose();
+      else if (singleStep && value.firstQuestId) await onReady(value.firstQuestId);
+    } catch (next) {
+      setError(friendlyQuestPlanningError(next instanceof Error ? next.message : String(next)));
+    } finally { setBusy(false); }
+  };
   const cancel = () => void run(() => cancelSystemQuestPlanning(projectId, systemId));
   const leaveSavedQuests = () => void run(() => cancelSystemQuestPlanning(projectId, systemId)).then((success) => { if (success) onClose(); });
 
@@ -146,8 +182,8 @@ export function SystemQuestRefinement({ creationMode = false, initialDescription
 
   const preparingQuest = Boolean(chosenQuest && (fileChoiceOpen || ["work_order_review", "accepting_work_order", "ready"].includes(snapshot.phase)));
   const common = preparingQuest && chosenQuest
-    ? <header><p className="v2-eyebrow">Prepare one Step · {systemTitle}</p><h1>{chosenQuest.title}</h1><p>{chosenQuest.playerVisibleOutcome}</p><small>No Godot file changes. Codex has not started.</small></header>
-    : <header><p className="v2-eyebrow">{creationMode ? "Recommend Steps" : "Edit this Experience"}</p><h1>{systemTitle}</h1><p>{systemOutcome}</p><small>No Godot file changes. Codex has not started.</small></header>;
+    ? <header><p className="v2-eyebrow">{singleStep ? followUpKind === "repair" ? "Preparing Repair Step" : "Preparing Change Step" : `Prepare one Step · ${systemTitle}`}</p><h1>{chosenQuest.title}</h1><p>{singleStep ? <><strong>Requested change:</strong> {initialDescription}</> : chosenQuest.playerVisibleOutcome}</p>{singleStep && followUpOriginalStepName && <p><strong>Related original Step:</strong> {followUpOriginalStepName}</p>}<small>No Godot file changes. Codex has not started.</small></header>
+    : <header><p className="v2-eyebrow">{singleStep ? followUpKind === "repair" ? "Prepare Repair for Step" : "Prepare Change to Step" : creationMode ? "Recommend Steps" : "Edit this Experience"}</p><h1>{singleStep && followUpOriginalStepName ? followUpOriginalStepName : systemTitle}</h1><p>{singleStep ? <><strong>Requested change:</strong> {description}</> : systemOutcome}</p><small>No Godot file changes. Codex has not started.</small></header>;
 
   if (snapshot.phase === "idle" || (snapshot.phase === "cancelled" && !fileChoiceOpen)) return <main className="system-quest-refinement">{common}{error && <p className="workflow-error" role="alert">{error}</p>}<label><span>{singleStep ? "What needs to change?" : "What should the player experience here?"}</span><textarea maxLength={1500} minLength={12} onChange={(event) => setDescription(event.target.value)} placeholder="The beacon should feel useful before the storm becomes dangerous…" rows={5} value={description} /></label><div className="system-quest-actions"><button className="v2-button button-quiet" onClick={onClose} type="button">Back to World</button><button className="v2-button button-ember" disabled={busy || description.trim().length < 12} onClick={() => void run(() => startSystemQuestPlanning(projectId, systemId, singleStep ? `Recommend exactly one bounded Step. ${description}` : description))} type="button">{singleStep ? "Review Step" : "Suggest Steps"}</button></div></main>;
 
@@ -157,7 +193,7 @@ export function SystemQuestRefinement({ creationMode = false, initialDescription
 
   if (snapshot.phase === "failed") return <main className="system-quest-refinement">{common}<p className="workflow-error" role="alert">{friendlyQuestPlanningError(snapshot.error)}</p><div className="system-quest-actions"><button className="v2-button button-quiet" onClick={cancel} type="button">Cancel</button><button className="v2-button button-ember" onClick={() => void run(() => retrySystemQuestPlanning(projectId, systemId))} type="button">Retry the same step</button></div></main>;
 
-  if (snapshot.phase === "review" && snapshot.proposal && snapshot.proposalFingerprint) return <main className="system-quest-refinement">{common}<section><h2>Review suggested Steps</h2><p>Only new Steps for {systemTitle} are shown. Saved Steps stay unchanged.</p><div className="workspace-quest-grid system-quest-proposal">{snapshot.proposal.map((quest, index) => <article className="workspace-quest-card" key={`${index}-${quest.title}`}><small>Suggested Step {index + 1}</small><strong>{quest.title}</strong><p>{quest.playerVisibleOutcome}</p><details><summary>Success looks like</summary><ul>{quest.doneWhen.map((item) => <li key={item}>{item}</li>)}</ul><strong>Not included</strong><ul>{quest.excludedScope.map((item) => <li key={item}>{item}</li>)}</ul></details><div className="suggested-step-actions"><button onClick={() => setRevision(`Edit the Step named ${quest.title}: `)} type="button">Edit</button><button onClick={() => void run(() => reviseSystemQuestPlanning(projectId, systemId, `Remove the Step named ${quest.title}. Keep the other suggested Steps.`))} type="button">Remove</button></div></article>)}</div><button className="v2-button button-quiet" onClick={() => setRevision("Add another bounded Step that helps create this Experience: ")} type="button">Add another Step</button></section><label><span>Describe the change</span><input maxLength={500} onChange={(event) => setRevision(event.target.value)} placeholder="Make the first Step smaller…" value={revision} /></label>{(error || snapshot.error) && <p className="workflow-error" role="alert">{error ?? snapshot.error}</p>}<div className="system-quest-actions"><button className="v2-button button-quiet" onClick={cancel} type="button">Cancel</button><button aria-label="Apply Step edits" className="v2-button button-quiet" disabled={busy || revision.trim().length < 3} onClick={() => void run(() => reviseSystemQuestPlanning(projectId, systemId, revision))} title="Apply Step edits" type="button"><span aria-hidden="true">✎</span><span className="sr-only">Apply Step edits</span></button><button className="v2-button button-ember" disabled={busy} onClick={() => void run(() => acceptSystemQuestPlanning(projectId, systemId, snapshot.proposalFingerprint!), true).then((saved) => { if (saved && creationMode) onClose(); })} type="button">{creationMode ? "Create Experience" : singleStep ? "Add Step" : "Confirm Steps"}</button></div></main>;
+  if (snapshot.phase === "review" && snapshot.proposal && snapshot.proposalFingerprint) return <main className="system-quest-refinement">{common}<section><h2>{singleStep ? followUpKind === "repair" ? "Review the Repair" : "Review This Change" : "Review Suggested Steps"}</h2><p>Only new Steps for {systemTitle} are shown. Saved Steps stay unchanged.</p><div className="workspace-quest-grid system-quest-proposal">{snapshot.proposal.map((quest, index) => <article className="workspace-quest-card" key={`${index}-${quest.title}`}><small>Suggested Step {index + 1}</small><strong>{quest.title}</strong><p>{quest.playerVisibleOutcome}</p><details><summary>Success looks like</summary><ul>{quest.doneWhen.map((item) => <li key={item}>{item}</li>)}</ul><strong>Not included</strong><ul>{quest.excludedScope.map((item) => <li key={item}>{item}</li>)}</ul></details><div className="suggested-step-actions"><button onClick={() => setRevision(`Edit the Step named ${quest.title}: `)} type="button">Edit</button><button onClick={() => void run(() => reviseSystemQuestPlanning(projectId, systemId, `Remove the Step named ${quest.title}. Keep the other suggested Steps.`))} type="button">Remove</button></div></article>)}</div>{!singleStep && <button className="v2-button button-quiet" onClick={() => setRevision("Add another bounded Step that helps create this Experience: ")} type="button">Add another Step</button>}</section><label><span>Describe the change</span><input maxLength={500} onChange={(event) => setRevision(event.target.value)} placeholder="Make the first Step smaller…" value={revision} /></label>{(error || snapshot.error) && <p className="workflow-error" role="alert">{error ?? snapshot.error}</p>}<div className="system-quest-actions">{creationMode && onEditExperience ? <button className="v2-button button-quiet" onClick={onEditExperience} type="button">Edit Experience</button> : <button className="v2-button button-quiet" onClick={cancel} type="button">Cancel</button>}<button aria-label="Apply Step edits" className="v2-button button-quiet" disabled={busy || revision.trim().length < 3} onClick={() => void run(() => reviseSystemQuestPlanning(projectId, systemId, revision))} title="Apply Step edits" type="button"><span aria-hidden="true">✎</span><span className="sr-only">Apply Step edits</span></button><button className="v2-button button-ember" disabled={busy} onClick={() => void acceptSuggested(snapshot.proposalFingerprint!)} type="button">{creationMode ? "Create Experience" : followUpKind === "repair" ? "Repair This" : singleStep ? "Build This Change" : "Confirm Steps"}</button></div></main>;
 
   if (snapshot.phase === "quests_accepted" && !fileChoiceOpen) return <main className="system-quest-refinement">{common}<section><h2>Steps saved for {systemTitle}</h2><p>Choose one Step to prepare. Forge recommends the next available Step.</p><div className="workspace-quest-grid system-quest-proposal">{systemQuests.map((quest) => {
     const recommended = quest.questId === recommendedQuest?.questId;
@@ -165,7 +201,7 @@ export function SystemQuestRefinement({ creationMode = false, initialDescription
     return <article className={`workspace-quest-card state-${quest.status}`} key={quest.questId}><small>{recommended ? "Recommended next · " : ""}{quest.status}</small><strong>{quest.title}</strong><p>{quest.playerVisibleOutcome}</p><button className={recommended ? "v2-button button-ember" : "v2-button button-quiet"} disabled={!actionable} onClick={() => { if (quest.workOrder) void onReady(quest.questId); else { setChosenQuestId(quest.questId); setFileChoiceOpen(true); } }} type="button">{quest.implementation ? "Completed" : quest.status !== "available" ? "Waiting for an earlier Step" : quest.workOrder ? "Open Step" : "Prepare this Step"}</button></article>;
   })}</div></section>{error && <p className="workflow-error" role="alert">{error}</p>}<div className="system-quest-actions"><button className="v2-button button-quiet" onClick={leaveSavedQuests} type="button">Back to Experience</button></div></main>;
 
-  if (snapshot.phase === "work_order_review" && snapshot.workOrder) return <main className="system-quest-refinement">{common}<section className="generated-contract"><header><p className="v2-eyebrow">Check the work plan</p><h2>Files Codex may change</h2></header><div className="generated-contract-grid"><article><h3>Existing files</h3>{snapshot.workOrder.existingFiles.length ? snapshot.workOrder.existingFiles.map((file) => <code className="contract-file" key={file}>{file}</code>) : <p>None.</p>}</article><article><h3>New files</h3>{snapshot.workOrder.newFiles.length ? snapshot.workOrder.newFiles.map((file) => <code className="contract-file" key={file}>{file}</code>) : <p>None.</p>}</article></div><p>Confirming this plan does not start Codex or change the game.</p></section>{(error || snapshot.error) && <p className="workflow-error" role="alert">{error ?? snapshot.error}</p>}<div className="system-quest-actions"><button className="v2-button button-quiet" onClick={cancel} type="button">Change files</button><button className="v2-button button-ember" onClick={() => void run(() => acceptSystemQuestWorkOrder(projectId, systemId, snapshot.workOrder!.fingerprint), true)} type="button">Confirm this plan</button></div></main>;
+  if (snapshot.phase === "work_order_review" && snapshot.workOrder) return <main className="system-quest-refinement">{common}<section className="generated-contract"><header><p className="v2-eyebrow">Check the work plan</p><h2>Files Codex may change</h2></header>{snapshot.workOrder.architectureContext?.primaryArea && <section className="architecture-summary"><strong>Forgie found related parts of your game</strong><p>Primary area: {snapshot.workOrder.architectureContext.primaryArea.name}</p>{snapshot.workOrder.architectureContext.secondaryAreas.length > 0 && <p>Also affected: {snapshot.workOrder.architectureContext.secondaryAreas.map((area) => area.name).join(" and ")}</p>}{snapshot.workOrder.architectureContext.relatedPreviousSteps.length > 0 && <p>Related previous work: {snapshot.workOrder.architectureContext.relatedPreviousSteps.map((step) => step.summary).join(" · ")}</p>}</section>}{snapshot.workOrder.architectureWarnings?.map((warning) => <p className="architecture-warning" key={warning.warningId}>{warning.message}</p>)}<div className="generated-contract-grid"><article><h3>Existing files</h3>{snapshot.workOrder.existingFiles.length ? snapshot.workOrder.existingFiles.map((file) => <code className="contract-file" key={file}>{file}</code>) : <p>None.</p>}</article><article><h3>New files</h3>{snapshot.workOrder.newFiles.length ? snapshot.workOrder.newFiles.map((file) => <code className="contract-file" key={file}>{file}</code>) : <p>None.</p>}</article></div><details><summary>Advanced Details</summary><p>Architecture review is optional. Forge uses these links only to narrow context and suggest checks.</p>{snapshot.workOrder.architectureContext?.regressionChecks.map((check) => <p key={check}>{check}</p>)}</details><p>Confirming this plan does not start Codex or change the game.</p></section>{(error || snapshot.error) && <p className="workflow-error" role="alert">{error ?? snapshot.error}</p>}<div className="system-quest-actions"><button className="v2-button button-quiet" onClick={cancel} type="button">Change files</button><button className="v2-button button-ember" onClick={() => void run(() => acceptSystemQuestWorkOrder(projectId, systemId, snapshot.workOrder!.fingerprint), true)} type="button">Confirm this plan</button></div></main>;
 
   if (snapshot.phase === "ready") return <main className="system-quest-refinement">{common}<section className="workspace-empty"><strong>Work plan saved.</strong><p>This Step and its chosen files are saved. Codex has not started and no Godot file changed.</p>{snapshot.workOrder && <code>{[...snapshot.workOrder.existingFiles, ...snapshot.workOrder.newFiles].join(" · ")}</code>}</section><button className="v2-button button-ember" disabled={!snapshot.workOrder} onClick={() => { if (snapshot.workOrder) void onReady(snapshot.workOrder.questId); }} type="button">Open Step</button></main>;
 

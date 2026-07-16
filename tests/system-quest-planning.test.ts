@@ -131,7 +131,28 @@ test("ordinary-language refinement accepts an exact short proposal and stops bef
   });
   assert.equal(service.getSnapshot().phase, "quests_accepted");
   assert.equal(saved!.systems[0]!.quests[0]!.workOrder, undefined);
+  assert.equal(service.getSnapshot().firstQuestId, saved!.systems[0]!.quests[0]!.questId);
+  assert.notEqual(service.getSnapshot().firstQuestId, "light-the-beacon");
   assert.deepEqual(service.getSnapshot().effects, { planningRecordsWritten: 1, gameFilesWritten: 0, commandsRun: 0 });
+});
+
+test("an Experience with five saved Steps can plan more in another bounded batch", async () => {
+  const expanded = structuredClone(model());
+  for (let index = 2; index <= 5; index += 1) {
+    const questId = `existing-step-${index}`;
+    expanded.systems[0]!.questIds.push(questId);
+    expanded.quests.push({ questId, systemId: "system-first-playable", title: `Existing Step ${index}`, playerVisibleOutcome: `The beacon already shows visible result ${index}.`, doneWhen: [`Visible result ${index} remains clear.`], status: "available", dependsOn: [], workSessionIds: [], latestWorkSessionId: null, extraProof: null });
+  }
+  const source = projectModelSchema.parse(expanded);
+  const service = new SystemQuestPlanningService(new QueueExecutor([proposal()]));
+  service.begin(source, "system-first-playable", "Add another small response after the existing beacon Steps.");
+  await service.waitForIdle();
+  const review = service.getSnapshot();
+  assert.equal(review.phase, "review");
+  let saved!: AcceptedSystemQuestPlan;
+  await service.acceptQuests("ACCEPT SYSTEM QUESTS", review.proposalFingerprint!, source, null, async (batch) => (saved = persistedPlan(batch)));
+  assert.equal(saved.systems[0]!.baseQuestIds.length, 5);
+  assert.equal(saved.systems[0]!.quests.length, 2);
 });
 
 test("proposal acceptance rejects changed prompt-driving system or quest wording", async () => {
@@ -217,6 +238,50 @@ test("fixed native quest record overlays after the roadmap and later roadmap res
     assert.deepEqual(reloaded.projectModel.results, beforeResults);
     assert.deepEqual(reloaded.projectModel.history, beforeHistory);
     assert.deepEqual([await digest(roadmapPath), await digest(questPlanPath)], fixedHashes, "reads must not rewrite either owned record");
+  } finally { await fixture.cleanup(); }
+});
+
+test("generated World persistence keeps a sixth Step in the same Experience", async () => {
+  const fixture = await createSignalSweepFixture();
+  try {
+    const service = new GeneratedProjectWorldService({ forgeHome: fixture.forgeHome });
+    const before = await service.loadWorld(fixture.projectId);
+    const system = before.projectModel.systems[0]!;
+    const baseCount = system.questIds.length;
+    const quest = (index: number) => ({
+      questId: `quest-open-step-${index}`,
+      title: `Open Step ${index}`,
+      playerVisibleOutcome: `The relay shows another clear playable response number ${index}.`,
+      whyItMatters: `This response lets the creator continue expanding the relay Experience number ${index}.`,
+      doneWhen: [`The additional response number ${index} is visible.`],
+      excludedScope: ["No unrelated level changes."],
+      dependsOn: [] as string[],
+    });
+    await service.saveSystemQuestBatch(fixture.projectId, {
+      systemId: system.systemId,
+      baseQuestIds: system.questIds,
+      creatorDescription: "Add several small relay responses without imposing a total Step ceiling.",
+      sourceFingerprint: fingerprintSystemQuestStructure(before.projectModel, system.systemId),
+      proposalFingerprint: "6".repeat(64),
+      acceptedAt: "2026-07-15T20:00:00.000Z",
+      quests: [quest(1), quest(2), quest(3), quest(4)],
+    });
+    const five = await service.loadWorld(fixture.projectId);
+    assert.equal(five.projectModel.systems[0]!.questIds.length, baseCount + 4);
+    assert.ok(five.projectModel.systems[0]!.questIds.length > 5);
+    await service.saveSystemQuestBatch(fixture.projectId, {
+      systemId: system.systemId,
+      baseQuestIds: system.questIds,
+      creatorDescription: "Add one more small relay response after the first planning batch.",
+      sourceFingerprint: fingerprintSystemQuestStructure(five.projectModel, system.systemId),
+      proposalFingerprint: "7".repeat(64),
+      acceptedAt: "2026-07-15T20:05:00.000Z",
+      quests: [quest(5)],
+    });
+    const six = await service.loadWorld(fixture.projectId);
+    assert.equal(six.projectModel.systems[0]!.questIds.length, baseCount + 5);
+    assert.equal(six.projectModel.systems[0]!.questIds.at(-1), "quest-open-step-5");
+    assert.equal(six.systemQuestPlan?.systems[0]!.quests.length, 5);
   } finally { await fixture.cleanup(); }
 });
 

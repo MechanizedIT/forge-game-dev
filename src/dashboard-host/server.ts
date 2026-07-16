@@ -29,7 +29,7 @@ import {
   GeneratedProjectWorldNotFoundError,
   GeneratedProjectWorldService,
 } from "../generated-project-world/service.js";
-import type { ForgePresentationMutation, GeneratedWorldStateInput, GeneratedWorldView } from "../generated-project-world/shared.js";
+import type { ForgePresentationMutation, GameAreaMutation, GeneratedWorldStateInput, GeneratedWorldView } from "../generated-project-world/shared.js";
 import {
   GeneratedQuestRunConflictError,
   GeneratedQuestRunNotFoundError,
@@ -38,7 +38,7 @@ import type { GeneratedQuestRunnerService } from "../generated-quest-runner/serv
 import type { GeneratedQuestRunEvent } from "../generated-quest-runner/shared.js";
 
 type GeneratedQuestRunnerHost = Pick<GeneratedQuestRunnerService,
-  "getSummary" | "adjust" | "defer" | "prepare" | "approve" | "start" | "cancel" | "play" | "confirm" | "rollback" | "subscribe"
+  "getSummary" | "adjust" | "defer" | "prepare" | "prepareRepair" | "approve" | "start" | "cancel" | "play" | "confirm" | "rollback" | "subscribe"
 >;
 
 const contentTypes: Record<string, string> = {
@@ -333,7 +333,7 @@ export function createForgeDashboardServer(
         openProjectCreationEventStream(request, response, creationService);
         return;
       }
-      const generatedQuestRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/quests\/([^/]+)\/(adjust|defer|prepare|approve|start|run|events|cancel|play|confirm|rollback)$/u);
+      const generatedQuestRoute = url.pathname.match(/^\/api\/projects\/([^/]+)\/quests\/([^/]+)\/(adjust|defer|prepare|repair|approve|start|run|events|cancel|play|confirm|rollback)$/u);
       if (generatedQuestRoute && generatedRunner) {
         const projectId = safePathId(generatedQuestRoute[1], "project ID");
         const questId = safePathId(generatedQuestRoute[2], "quest ID");
@@ -373,6 +373,12 @@ export function createForgeDashboardServer(
         if (action === "prepare") {
           requireExactKeys(body, [], "Prepare accepts no browser-supplied authority values.");
           sendJson(response, 201, await withProjectMutation(projectId, () => generatedRunner.prepare(projectId, questId)));
+          return;
+        }
+        if (action === "repair") {
+          requireExactKeys(body, ["repairRequest"], "Repair accepts only the creator's repair request.");
+          if (typeof body.repairRequest !== "string") throw new Error("Repair requires the creator's plain-language request.");
+          sendJson(response, 201, await withProjectMutation(projectId, () => generatedRunner.prepareRepair(projectId, questId, body.repairRequest as string)));
           return;
         }
         if (action === "approve") {
@@ -431,12 +437,30 @@ export function createForgeDashboardServer(
           choose_image: ["action", "entityId", "relativePath"],
           restore_image: ["action", "entityId"],
           record_feedback: ["action", "entityId", "note", "relatedFiles", "result"],
+          link_feedback: ["action", "entryId", "followUpId"],
           save_tunable: ["action", "tunable"],
           reset_tunable: ["action", "tunableId"],
         };
         const expected = keysByAction[body.action];
         if (!expected || Object.keys(body).sort().join(",") !== [...expected].sort().join(",")) throw new Error("Forge presentation data contains unsupported fields.");
         sendJson(response, 200, await generatedWorldService.mutatePresentation(projectId, body as unknown as ForgePresentationMutation));
+        return;
+      }
+      const generatedArchitectureMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/architecture$/u);
+      if (request.method === "POST" && generatedArchitectureMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = safePathId(generatedArchitectureMatch[1], "project ID");
+        const body = await readJsonBody(request);
+        if (typeof body.action !== "string") throw new Error("Choose a Game Area action.");
+        const keysByAction: Record<string, string[]> = {
+          edit: ["action", "areaId", "description", "name"],
+          set_files: ["action", "areaId", "relatedFilePaths"],
+          set_dependencies: ["action", "areaId", "dependencyIds"],
+          merge: ["action", "areaId", "duplicateAreaId"],
+        };
+        const expected = keysByAction[body.action];
+        if (!expected || Object.keys(body).sort().join(",") !== [...expected].sort().join(",")) throw new Error("Game Area data contains unsupported fields.");
+        sendJson(response, 200, await generatedWorldService.mutateArchitecture(projectId, body as unknown as GameAreaMutation));
         return;
       }
       const generatedPresentationImageMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/presentation\/image$/u);
@@ -497,6 +521,16 @@ export function createForgeDashboardServer(
         const body = await readJsonBody(request);
         if (Object.keys(body).length !== 0) throw new Error("Godot launch accepts only the registered project ID from the request path.");
         sendJson(response, 202, await generatedWorldService.launch(projectId));
+        return;
+      }
+      const generatedPlaytestMatch = url.pathname.match(/^\/api\/projects\/([^/]+)\/playtest$/u);
+      if (request.method === "POST" && generatedPlaytestMatch && generatedWorldService) {
+        requireSameOrigin(request);
+        const projectId = decodeURIComponent(generatedPlaytestMatch[1]!);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(projectId)) throw new Error("A safe project ID is required.");
+        const body = await readJsonBody(request);
+        if (Object.keys(body).length !== 0) throw new Error("Godot playtest accepts only the registered project ID from the request path.");
+        sendJson(response, 200, await generatedWorldService.launchAndWait(projectId));
         return;
       }
       if (request.method === "POST" && url.pathname === "/api/projects/create" && creationService && planningService) {

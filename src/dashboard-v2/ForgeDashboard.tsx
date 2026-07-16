@@ -3,24 +3,30 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   acceptSystemQuestWorkOrder,
   approveGeneratedQuest,
+  cancelGeneratedQuest,
   loadGeneratedProjectWorld,
   loadProjectCreationState,
   mutateForgePresentation,
+  mutateProjectArchitecture,
   openGeneratedProjectWorld,
   prepareGeneratedQuest,
+  prepareRepairGeneratedQuest,
   reviewSystemQuestWorkOrder,
+  rollbackGeneratedQuest,
   startGeneratedQuest,
 } from "../dashboard/api.js";
 import type { GeneratedProjectWorldSnapshot } from "../generated-project-world/shared.js";
+import type { GeneratedQuestRunSnapshot } from "../generated-quest-runner/shared.js";
 import type { RecentProjectSummary } from "../project-creation/shared.js";
 import { GeneratedProjectWorldFailure } from "./GeneratedProjectWorld.js";
 import { NewGameFlow } from "./NewGameFlow.js";
 import { SystemQuestRefinement, type SystemQuestListItem } from "./SystemQuestRefinement.js";
 import { SystemRoadmapPlanning } from "./SystemRoadmapPlanning.js";
-import { ForgiePanel, Toast, TopNavigation, WorkspaceShell, type ForgeDestination } from "./forge-workspace/components.js";
+import { ActiveWorkBanner, ForgiePanel, Toast, TopNavigation, WorkspaceShell, type ForgeDestination } from "./forge-workspace/components.js";
 import { childKind, isEntityKind, type EntityKind, type ForgeEntity } from "./forge-workspace/model.js";
 import { adaptGeneratedProjectWorld } from "./forge-workspace/real-project-adapter.js";
-import { RealPartDetailScreen, RealPartWorkflowScreen, type PartFileChoice } from "./forge-workspace/real-project-screens.js";
+import { RealPartDetailScreen, RealPartWorkflowScreen, type FollowUpPreparation, type PartFileChoice } from "./forge-workspace/real-project-screens.js";
+import { friendlyRunError } from "./forge-workspace/friendly-errors.js";
 import { ContextualPlaytest, RealAssetsScreen, RealEntityEditScreen, RealRepairScreen } from "./forge-workspace/creator-tools.js";
 import { addEntity, LocalForgePrototypeRepository, updateEntity } from "./forge-workspace/repository.js";
 import { routeParts, useForgeRouter } from "./forge-workspace/router.js";
@@ -47,6 +53,12 @@ function screenFor(path: string): ForgeDestination {
   return "map";
 }
 
+function isUnresolvedGeneratedRun(run: GeneratedQuestRunSnapshot): boolean {
+  if (run.phase === "completed") return false;
+  if (run.phase !== "cancelled") return true;
+  return run.recovery.action === "rollback" || run.recovery.action === "manual";
+}
+
 export default function ForgeDashboard() {
   const repository = useRef(new LocalForgePrototypeRepository());
   const routeLoadRef = useRef<string | null>(null);
@@ -60,7 +72,8 @@ export default function ForgeDashboard() {
   const [playtestContext, setPlaytestContext] = useState<ForgeEntity | null>(null);
   const [repairContext, setRepairContext] = useState<ForgeEntity | null>(null);
   const [assetContext, setAssetContext] = useState<ForgeEntity | null>(null);
-  const [followUpDraft, setFollowUpDraft] = useState<{ experienceId: string; note: string; files: string[] } | null>(null);
+  const [followUpDraft, setFollowUpDraft] = useState<(FollowUpPreparation & { experienceId: string; feedbackEntryId?: string | undefined }) | null>(null);
+  const [followUpPreparation, setFollowUpPreparation] = useState<(FollowUpPreparation & { questId: string }) | null>(null);
   const [creatingExperienceId, setCreatingExperienceId] = useState<string | null>(null);
   const { navigate, path } = useForgeRouter();
   const parts = routeParts(path);
@@ -103,6 +116,12 @@ export default function ForgeDashboard() {
     }
     return world;
   }, [parts, workspaceState.entities, world]);
+  const activeBrief = realProjectOpen
+    ? generated!.quests.find((quest) => quest.run && isUnresolvedGeneratedRun(quest.run)) ?? null
+    : null;
+  const activeRun = activeBrief?.run ?? null;
+  const activeStep = activeBrief ? workspaceState.entities[activeBrief.questId] ?? null : null;
+  const onActiveStepPage = Boolean(activeStep && current.id === activeStep.id && parts[2] === "part" && (parts.length === 4 || parts[4] === "work"));
 
   const show = (message: string) => setToast(message);
   const navigateTop = (destination: ForgeDestination) => {
@@ -137,6 +156,11 @@ export default function ForgeDashboard() {
     try {
       const projectId = generated.project.projectId;
       const quest = generated.projectModel.quests.find((item) => item.questId === part.id)!;
+      const existingRun = generated.quests.find((item) => item.questId === quest.questId)?.run;
+      if (existingRun && existingRun.phase !== "completed" && existingRun.phase !== "cancelled") {
+        navigate(`/world/${projectId}/part/${quest.questId}/work`);
+        return;
+      }
       const native = generated.systemQuestPlan?.systems.flatMap((system) => system.quests).find((item) => item.questId === part.id);
       const sameSavedFiles = native?.workOrder
         && native.workOrder.existingFiles.join("\n") === choice.existingFiles.join("\n")
@@ -147,13 +171,27 @@ export default function ForgeDashboard() {
         await acceptSystemQuestWorkOrder(projectId, quest.systemId, review.workOrder.fingerprint);
       }
       const brief = generated.quests.find((item) => item.questId === quest.questId);
-      let run = brief?.run ?? await prepareGeneratedQuest(projectId, quest.questId);
+      let run = brief?.run && !["completed", "cancelled"].includes(brief.run.phase)
+        ? brief.run
+        : await prepareGeneratedQuest(projectId, quest.questId);
       if (run.phase === "contract_review") run = await approveGeneratedQuest(projectId, quest.questId, run.contract.fingerprint);
       if (run.phase === "approved") run = await startGeneratedQuest(projectId, quest.questId);
       await refreshGenerated();
       navigate("/world/" + projectId + "/part/" + quest.questId + "/work");
     } catch (error) {
-      show(error instanceof Error ? error.message : String(error));
+      show(friendlyRunError(error instanceof Error ? error.message : String(error)));
+    } finally { setBusy(false); }
+  };
+  const stopActiveWork = async () => {
+    if (!generated || !activeBrief || busy) return;
+    setBusy(true);
+    try {
+      if (activeRun?.actions.rollback) await rollbackGeneratedQuest(generated.project.projectId, activeBrief.questId);
+      else await cancelGeneratedQuest(generated.project.projectId, activeBrief.questId);
+      await refreshGenerated();
+      show(`Stopped ${activeStep?.name ?? "the active Step"} safely.${activeRun?.actions.rollback ? " Reviewed game-file changes were restored." : " No game files were changed."}`);
+    } catch (error) {
+      show(friendlyRunError(error instanceof Error ? error.message : String(error)));
     } finally { setBusy(false); }
   };
 
@@ -195,22 +233,78 @@ export default function ForgeDashboard() {
   };
 
   const editCurrent = () => {
+    if (activeRun && activeStep?.id === current.id) {
+      show("Finish or stop the current work before editing this Step.");
+      return;
+    }
     if (!realProjectOpen) { navigate(editRouteFor(workspaceState, current)); return; }
     navigate(editRouteFor(workspaceState, current));
   };
-  const openFollowUp = (context: ForgeEntity, result: "needs_change" | "broken", note: string, files: string[], recorded = false) => {
+  const openFollowUp = async (context: ForgeEntity, result: "needs_change" | "broken", note: string, files: string[], recorded = false, feedbackEntryId?: string) => {
+    try {
     if (!generated) return;
     const experienceId = context.kind === "building" ? context.id : context.kind === "part" ? context.parentId! : generated.projectModel.systems[0]?.systemId;
     if (!experienceId) { show("Add an Experience before creating a follow-up Step."); return; }
+    let next = recorded ? generated : await mutateForgePresentation(generated.project.projectId, { action: "record_feedback", entityId: context.id, result, note: note || result.replaceAll("_", " "), relatedFiles: files });
+    const entryId = feedbackEntryId ?? next.presentation?.history.at(-1)?.entryId;
+    const latestRun = next.quests.find((quest) => quest.questId === context.id)?.run;
+    if (latestRun && isUnresolvedGeneratedRun(latestRun)) {
+      if (latestRun.actions.rollback) await rollbackGeneratedQuest(next.project.projectId, context.id);
+      else if (latestRun.actions.cancel) await cancelGeneratedQuest(next.project.projectId, context.id);
+      else throw new Error("This Step still has reviewed changes that need manual recovery before Forge can create another Step.");
+      next = await loadGeneratedProjectWorld(next.project.projectId);
+    }
+    setGenerated(next);
+    const draft = { experienceId, kind: result === "broken" ? "repair" as const : "change" as const, note: note || (result === "broken" ? "Repair the failed behavior." : "Refine the latest result."), files, originalStepId: context.id, originalStepName: context.name, ...(entryId ? { feedbackEntryId: entryId } : {}) };
+    setFollowUpDraft(draft);
     const continueToFlow = () => {
-      if (result === "broken") { setRepairContext(context); navigate(`/world/${generated.project.projectId}/repair`); }
-      else { setFollowUpDraft({ experienceId, note: note || "Refine the result from the latest playtest.", files }); navigate(`/world/${generated.project.projectId}/building/${experienceId}/add/part`); }
+      if (result === "broken") { setRepairContext(context); navigate(`/world/${next.project.projectId}/repair`); }
+      else navigate(`/world/${next.project.projectId}/building/${experienceId}/add/part`);
       setPlaytestContext(null);
     };
-    if (recorded) { continueToFlow(); return; }
-    void mutateForgePresentation(generated.project.projectId, { action: "record_feedback", entityId: context.id, result, note: note || result.replaceAll("_", " "), relatedFiles: files }).then((next) => { setGenerated(next); continueToFlow(); }).catch((error) => show(error instanceof Error ? error.message : String(error)));
+    continueToFlow();
+    } catch (error) {
+      show(friendlyRunError(error instanceof Error ? error.message : String(error)));
+    }
   };
   const common = { active: screenFor(path), current, onAction: quickAction, onEdit: editCurrent, onNavigate: navigateTop, state: workspaceState };
+  const savedFollowUpEntry = generated?.presentation?.history.filter((entry) => entry.linkedFollowUpId === current.id).at(-1);
+  const savedOriginalStep = savedFollowUpEntry ? workspaceState.entities[savedFollowUpEntry.entityId] : undefined;
+  const latestRepairEntry = generated?.presentation?.history.filter((entry) => entry.type === "repair" && workspaceState.entities[entry.entityId]?.kind === "part").at(-1);
+  const pendingRepairEntry = latestRepairEntry && !latestRepairEntry.linkedFollowUpId ? latestRepairEntry : undefined;
+  const persistedRepairContext = pendingRepairEntry ? workspaceState.entities[pendingRepairEntry.entityId] : undefined;
+  const currentFollowUp = followUpPreparation?.questId === current.id
+    ? followUpPreparation
+    : savedFollowUpEntry
+      ? {
+          questId: current.id,
+          kind: savedFollowUpEntry.type === "repair" ? "repair" as const : "change" as const,
+          note: savedFollowUpEntry.note || savedFollowUpEntry.summary,
+          files: savedFollowUpEntry.relatedFiles,
+          feedbackEntryId: savedFollowUpEntry.entryId,
+          originalStepId: savedFollowUpEntry.entityId,
+          originalStepName: savedOriginalStep?.name ?? "Previous Step",
+        }
+      : null;
+  const continueRepair = async (context: ForgeEntity, note: string, files: string[], recordedFeedbackEntryId?: string) => {
+    if (!generated) return;
+    const feedbackEntryId = recordedFeedbackEntryId ?? followUpDraft?.feedbackEntryId ?? pendingRepairEntry?.entryId;
+    if (context.kind === "part" && pendingRepairEntry?.entityId === context.id) {
+      await prepareRepairGeneratedQuest(generated.project.projectId, context.id, note);
+      let next = await loadGeneratedProjectWorld(generated.project.projectId);
+      if (feedbackEntryId) next = await mutateForgePresentation(next.project.projectId, { action: "link_feedback", entryId: feedbackEntryId, followUpId: context.id });
+      setGenerated(next);
+      setFollowUpPreparation({ questId: context.id, kind: "repair", note, files, originalStepId: context.id, originalStepName: context.name, ...(feedbackEntryId ? { feedbackEntryId } : {}) });
+      setFollowUpDraft(null);
+      setRepairContext(null);
+      navigate(`/world/${next.project.projectId}/part/${context.id}/work`);
+      return;
+    }
+    const experienceId = context.kind === "building" ? context.id : context.kind === "part" ? context.parentId! : generated.projectModel.systems[0]?.systemId;
+    if (!experienceId) return;
+    setFollowUpDraft({ experienceId, kind: "repair", note, files, originalStepId: context.id, originalStepName: context.name, ...(feedbackEntryId ? { feedbackEntryId } : {}) });
+    navigate(`/world/${generated.project.projectId}/building/${experienceId}/add/part`);
+  };
 
   let content;
   let hideRails = false;
@@ -221,12 +315,12 @@ export default function ForgeDashboard() {
     hideRails = true;
     content = <ExistingWorldsScreen busy={busy} onNew={() => navigate("/world/new")} onOpenPrototype={() => navigate("/world/" + prototypeState.worldId + "/map")} onOpenReal={(projectId) => void openReal(projectId)} recent={recent} />;
   } else if (realProjectOpen && parts[2] === "part" && parts[4] === "work" && current.kind === "part") {
-    content = <RealPartWorkflowScreen onBack={() => navigate(detailRouteFor(workspaceState, current))} onFollowUp={(result, note) => openFollowUp(current, result, note, current.relatedFiles)} onSnapshot={setGenerated} questId={current.id} snapshot={generated!} />;
+    content = <RealPartWorkflowScreen followUp={currentFollowUp} onBack={() => navigate(detailRouteFor(workspaceState, current))} onFollowUp={(result, note, feedbackEntryId) => openFollowUp(current, result, note, activeRun?.contract.allowedFiles.map((file) => file.relativePath) ?? current.relatedFiles, Boolean(feedbackEntryId), feedbackEntryId)} onSnapshot={setGenerated} questId={current.id} snapshot={generated!} />;
   } else if (parts[2] === "part") {
     const part = current.kind === "part" ? current : undefined;
     content = part
       ? realProjectOpen
-        ? <RealPartDetailScreen busy={busy} onBack={() => navigate(mapRouteFor(workspaceState, workspaceState.entities[part.parentId!]!))} onEdit={() => navigate(editRouteFor(workspaceState, part))} onSnapshot={setGenerated} onStart={(choice) => void startRealPart(part, choice)} onTest={() => setPlaytestContext(part)} part={part} snapshot={generated!} state={workspaceState} />
+        ? <RealPartDetailScreen activeRun={activeStep?.id === part.id ? activeRun : null} busy={busy} followUp={currentFollowUp} onBack={() => navigate(mapRouteFor(workspaceState, workspaceState.entities[part.parentId!]!))} onEdit={() => editCurrent()} onSnapshot={setGenerated} onStart={(choice) => { if (activeStep?.id === part.id) void startRealPart(part, choice); else if (currentFollowUp?.originalStepId === part.id) void openFollowUp(part, currentFollowUp.kind === "repair" ? "broken" : "needs_change", currentFollowUp.note, choice.existingFiles, true, currentFollowUp.feedbackEntryId); else void startRealPart(part, choice); }} onStopActive={() => void stopActiveWork()} onTest={() => setPlaytestContext(part)} part={part} snapshot={generated!} state={workspaceState} />
         : <PartDetailScreen onAction={quickAction} onBack={() => navigate(mapRouteFor(workspaceState, workspaceState.entities[part.parentId!]!))} part={part} state={workspaceState} />
       : <WorldMapScreen current={world} onAdd={(kind) => navigate(addRouteFor(workspaceState, world, kind))} onEdit={editCurrent} onOpen={(entity) => navigate(detailRouteFor(workspaceState, entity))} onPrimary={() => navigate("/world/" + workspaceState.worldId + "/assets")} state={workspaceState} />;
   } else if (realProjectOpen && (parts.includes("add") || parts.includes("edit"))) {
@@ -234,8 +328,8 @@ export default function ForgeDashboard() {
     const editing = parts.includes("edit");
     const requestedKind = addIndex >= 0 ? parts[addIndex + 1] : current.kind;
     if (editing) {
-      const cancelTarget = current.kind === "part" ? workspaceState.entities[current.parentId!]! : current;
-      content = <RealEntityEditScreen entity={current} onCancel={() => navigate(detailRouteFor(workspaceState, cancelTarget))} onSnapshot={setGenerated} snapshot={generated!} />;
+      const returnFromEdit = () => creatingExperienceId === current.id ? navigate(`/world/${generated!.project.projectId}/building/${current.id}/add/part`) : navigate(detailRouteFor(workspaceState, current));
+      content = <RealEntityEditScreen entity={current} onCancel={returnFromEdit} onSnapshot={(next) => { setGenerated(next); show(`Saved ${current.kind === "part" ? "Step" : current.kind === "building" ? "Experience" : "World"}.`); }} snapshot={generated!} />;
     } else if (requestedKind === "building" || current.kind === "world") {
       const priorIds = new Set(generated!.projectModel.systems.map((system) => system.systemId));
       content = <SystemRoadmapPlanning initialIdea={generated!.projectModel.project.vision} mode="experience" onAccepted={async () => { const next = await refreshGenerated(); const added = next?.projectModel.systems.find((system) => !priorIds.has(system.systemId)); if (next && added) { setCreatingExperienceId(added.systemId); navigate(`/world/${next.project.projectId}/building/${added.systemId}/add/part`); } else if (next) navigate(`/world/${next.project.projectId}/map`); }} onClose={() => navigate(mapRouteFor(workspaceState, world))} projectId={generated!.project.projectId} />;
@@ -244,7 +338,17 @@ export default function ForgeDashboard() {
       const saved = generated!.systemQuestPlan?.systems.find((system) => system.systemId === building.id)?.quests ?? [];
       const statuses = new Map(generated!.projectModel.quests.map((quest) => [quest.questId, quest.status]));
       const systemQuests: SystemQuestListItem[] = saved.map((quest) => ({ ...quest, status: statuses.get(quest.questId) ?? "blocked" }));
-      content = <SystemQuestRefinement creationMode={creatingExperienceId === building.id} initialDescription={followUpDraft?.experienceId === building.id ? followUpDraft.note : creatingExperienceId === building.id ? building.outcome : ""} onChanged={async () => { await refreshGenerated(); }} onClose={() => { setCreatingExperienceId(null); setFollowUpDraft(null); navigate(mapRouteFor(workspaceState, building)); }} onReady={async (questId) => { const next = await refreshGenerated(); setFollowUpDraft(null); if (next) navigate("/world/" + next.project.projectId + "/part/" + questId); }} preferredFiles={followUpDraft?.experienceId === building.id ? followUpDraft.files : []} projectId={generated!.project.projectId} singleStep={Boolean(followUpDraft)} systemId={building.id} systemOutcome={building.outcome} systemQuests={systemQuests} systemTitle={building.name} />;
+      const persistedFollowUpEntry = generated!.presentation?.history.filter((entry) => entry.entityId === entry.linkedFollowUpId && workspaceState.entities[entry.entityId]?.parentId === building.id).at(-1);
+      const persistedOriginalStep = persistedFollowUpEntry ? workspaceState.entities[persistedFollowUpEntry.entityId] : undefined;
+      const routeFollowUpDraft = followUpDraft?.experienceId === building.id
+        ? followUpDraft
+        : persistedFollowUpEntry && persistedOriginalStep
+          ? { experienceId: building.id, kind: persistedFollowUpEntry.type === "repair" ? "repair" as const : "change" as const, note: persistedFollowUpEntry.note || persistedFollowUpEntry.summary, files: persistedFollowUpEntry.relatedFiles, originalStepId: persistedOriginalStep.id, originalStepName: persistedOriginalStep.name, feedbackEntryId: persistedFollowUpEntry.entryId }
+          : null;
+      const pendingRepairContext = pendingRepairEntry && workspaceState.entities[pendingRepairEntry.entityId]?.parentId === building.id ? workspaceState.entities[pendingRepairEntry.entityId] : undefined;
+      content = pendingRepairContext
+        ? <RealRepairScreen context={pendingRepairContext} feedbackAlreadyRecorded initialNote={pendingRepairEntry?.note ?? ""} onContinue={(note, files, feedbackEntryId) => continueRepair(pendingRepairContext, note, files, feedbackEntryId)} onSnapshot={setGenerated} snapshot={generated!} />
+        : <SystemQuestRefinement creationMode={creatingExperienceId === building.id} followUpKind={routeFollowUpDraft?.kind} followUpOriginalStepName={routeFollowUpDraft?.originalStepName} initialDescription={routeFollowUpDraft?.note ?? (creatingExperienceId === building.id ? building.outcome : "")} onChanged={async () => { await refreshGenerated(); }} onClose={() => { setCreatingExperienceId(null); setFollowUpDraft(null); navigate(mapRouteFor(workspaceState, building)); }} onEditExperience={() => navigate(editRouteFor(workspaceState, building))} onReady={async (questId) => { let next = await refreshGenerated(); if (routeFollowUpDraft?.feedbackEntryId && next) { next = await mutateForgePresentation(next.project.projectId, { action: "link_feedback", entryId: routeFollowUpDraft.feedbackEntryId, followUpId: questId }); setGenerated(next); } if (routeFollowUpDraft) setFollowUpPreparation({ questId, kind: routeFollowUpDraft.kind, note: routeFollowUpDraft.note, files: routeFollowUpDraft.files, originalStepId: routeFollowUpDraft.originalStepId, originalStepName: routeFollowUpDraft.originalStepName, ...(routeFollowUpDraft.feedbackEntryId ? { feedbackEntryId: routeFollowUpDraft.feedbackEntryId } : {}) }); setFollowUpDraft(null); if (next) navigate("/world/" + next.project.projectId + "/part/" + questId); }} preferredFiles={routeFollowUpDraft?.files ?? []} projectId={generated!.project.projectId} singleStep={Boolean(routeFollowUpDraft)} systemId={building.id} systemOutcome={building.outcome} systemQuests={systemQuests} systemTitle={building.name} />;
     }
   } else if (parts.includes("add") || parts.includes("edit")) {
     const addIndex = parts.indexOf("add");
@@ -259,13 +363,21 @@ export default function ForgeDashboard() {
       navigate(detailRouteFor(workspaceState, cancelTarget));
     }} parent={parent} target={mode === "edit" ? current : undefined} />;
   } else if (parts.includes("atlas")) {
-    content = <AtlasScreen onOpen={(entity) => navigate(detailRouteFor(workspaceState, entity))} onRepair={(repair) => show("Opened repair: " + repair.title)} state={workspaceState} />;
+    content = <AtlasScreen architecture={realProjectOpen ? generated!.architecture : undefined} onArchitectureMutation={realProjectOpen ? async (mutation) => { const next = await mutateProjectArchitecture(generated!.project.projectId, mutation); setGenerated(next); show("Game Area updated."); } : undefined} onOpen={(entity) => navigate(detailRouteFor(workspaceState, entity))} onRepair={(repair) => show("Opened repair: " + repair.title)} state={workspaceState} />;
   } else if (parts.includes("assets") && realProjectOpen) {
     content = <RealAssetsScreen current={assetContext ?? current} onSnapshot={setGenerated} snapshot={generated!} />;
   } else if (parts.includes("build")) {
     content = <BuildScreen onOpen={(entity) => navigate(detailRouteFor(workspaceState, entity))} state={workspaceState} />;
   } else if (parts.includes("repair")) {
-    content = realProjectOpen ? <RealRepairScreen context={repairContext ?? current} onContinue={(note, files) => { const context = repairContext ?? current; const experienceId = context.kind === "building" ? context.id : context.kind === "part" ? context.parentId! : generated!.projectModel.systems[0]?.systemId; if (!experienceId) return; setFollowUpDraft({ experienceId, note, files }); navigate(`/world/${generated!.project.projectId}/building/${experienceId}/add/part`); }} onSnapshot={setGenerated} snapshot={generated!} /> : <RepairScreen onToast={show} state={workspaceState} />;
+    const resolvedRepairContext = repairContext ?? persistedRepairContext ?? current;
+    content = realProjectOpen ? <RealRepairScreen
+      context={resolvedRepairContext}
+      feedbackAlreadyRecorded={Boolean(followUpDraft?.feedbackEntryId ?? pendingRepairEntry?.entryId)}
+      initialNote={followUpDraft?.kind === "repair" ? followUpDraft.note : pendingRepairEntry?.note ?? ""}
+      onContinue={(note, files, feedbackEntryId) => continueRepair(resolvedRepairContext, note, files, feedbackEntryId)}
+      onSnapshot={setGenerated}
+      snapshot={generated!}
+    /> : <RepairScreen onToast={show} state={workspaceState} />;
   } else if (parts.includes("publish")) {
     content = <PublishScreen onCheck={() => show("Release check started. Forgie found the items shown below.")} state={workspaceState} />;
   } else {
@@ -273,5 +385,6 @@ export default function ForgeDashboard() {
     content = <WorldMapScreen current={current} onAdd={(kind) => navigate(addRouteFor(workspaceState, current, kind))} onEdit={editCurrent} onOpen={(entity) => navigate(detailRouteFor(workspaceState, entity))} onPrimary={() => { if (firstPart) navigate(detailRouteFor(workspaceState, firstPart)); else { setAssetContext(current); navigate("/world/" + workspaceState.worldId + "/assets"); } }} state={workspaceState} />;
   }
 
-  return <WorkspaceShell {...common} hideRails={hideRails}>{content}{hideRails && path === "/worlds" && <div className="worlds-forgie"><ForgiePanel onOpen={() => setForgieOpen(true)} /></div>}{playtestContext && generated && <ContextualPlaytest context={playtestContext} onClose={() => setPlaytestContext(null)} onFollowUp={(result, note, files) => openFollowUp(playtestContext, result, note, files, true)} onSnapshot={setGenerated} snapshot={generated} />}{forgieOpen && <ForgieDrawer context={current} onClose={() => setForgieOpen(false)} onSubmit={(value) => { setForgieOpen(false); show("Forgie saved this request locally: " + value); }} />}{toast && <Toast message={toast} onClose={() => setToast(null)} />}</WorkspaceShell>;
+  const activeStatus = activeRun?.phase === "approved" ? "A confirmed plan is waiting to start." : activeRun?.phase === "contract_review" ? "A work plan is waiting for review." : activeRun?.phase === "implementing" ? "Codex is updating the reviewed files." : activeRun?.phase === "verifying" ? "Forge is checking the result." : activeRun?.phase === "waiting_for_playtest" ? "The checked result is waiting for your playtest." : activeRun?.phase === "failed" ? "A check failed. Open this Step to review or prepare a repair." : activeRun?.phase === "cancelled" && activeRun.recovery.action === "rollback" ? "Building stopped, but its reviewed changes are still present. Stop safely to restore them before planning another Step." : "This Step needs your attention.";
+  return <WorkspaceShell {...common} hideRails={hideRails}>{activeRun && activeStep && !onActiveStepPage && <ActiveWorkBanner canStop={activeRun.actions.cancel || activeRun.actions.rollback} name={activeStep.name} onOpen={() => navigate(`/world/${generated!.project.projectId}/part/${activeStep.id}/work`)} onStop={() => void stopActiveWork()} status={activeStatus} />}{content}{hideRails && path === "/worlds" && <div className="worlds-forgie"><ForgiePanel onOpen={() => setForgieOpen(true)} /></div>}{playtestContext && generated && <ContextualPlaytest context={playtestContext} onClose={() => setPlaytestContext(null)} onFollowUp={(result, note, files, feedbackEntryId) => openFollowUp(playtestContext, result, note, files, true, feedbackEntryId)} onSnapshot={setGenerated} onStopActive={activeRun ? stopActiveWork : undefined} snapshot={generated} />}{forgieOpen && <ForgieDrawer context={current} onClose={() => setForgieOpen(false)} onSubmit={(value) => { setForgieOpen(false); show("Forgie saved this request locally: " + value); }} />}{toast && <Toast message={toast} onClose={() => setToast(null)} />}</WorkspaceShell>;
 }

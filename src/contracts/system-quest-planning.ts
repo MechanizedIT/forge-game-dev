@@ -71,7 +71,7 @@ export const acceptedSystemQuestBatchSchema = z.object({
   sourceFingerprint: sha256DigestSchema,
   proposalFingerprint: sha256DigestSchema,
   acceptedAt: timestampSchema,
-  quests: z.array(acceptedNativeQuestSchema).min(1).max(5),
+  quests: z.array(acceptedNativeQuestSchema).min(1),
 }).strict();
 
 export const acceptedSystemQuestPlanSchema = z.object({

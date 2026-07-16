@@ -67,6 +67,15 @@ Use this map when the task arrives as a symptom or requested behavior. The subsy
 - **Neighboring consumers:** Launchpad open, quest brief, Documents, Chronicle, idea dock, Godot/folder actions, and restart restoration.
 - **Do not change first:** Registry canonical paths, starter source, blueprint prompt, or roadmap bytes merely to fit a UI expectation.
 
+### Game Area links, focused context, or architecture warning failure
+
+- **Symptom or request:** A Step shows unrelated Game Areas, Codex receives broad history, Atlas architecture edits do not persist, advisory warnings are missing, or completed work does not update related files and outcomes.
+- **Owning subsystem:** `project-architecture`; use `generated-project-world` for work-order presentation and `generated-quest-runner` for execution or completion defects.
+- **Start:** [architecture service](../src/project-architecture/service.ts) and [architecture contract](../src/contracts/project-architecture.ts).
+- **Contracts and tests:** `ProjectArchitecture`, `GameArea`, and bounded context types in [architecture contracts](../src/contracts/project-architecture.ts); [architecture tests](../tests/project-architecture.test.ts), [world tests](../tests/generated-project-world.test.ts), and [runner tests](../tests/generated-quest-runner.test.ts).
+- **Neighboring consumers:** Experience/Step planning, work-order review, runner context construction, post-run synchronization, Step details, and Atlas Game Areas.
+- **Do not change first:** Project/System/Quest identifiers, creator navigation, approved file scope, full project history, or runner safety gates to compensate for an incorrect architecture link.
+
 ### Native planned-quest run, scope, Worked completion, or undo failure
 
 - **Symptom or request:** A confirmed quest cannot start, Codex asks for undeclared files, progress is misleading, Godot proof/play cannot advance, **Worked** stops, completion records disagree, restart loses the run, or undo touches the wrong change.

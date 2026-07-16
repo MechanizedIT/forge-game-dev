@@ -1,10 +1,12 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import {
   confirmGeneratedQuest,
   launchGeneratedProject,
   mutateForgePresentation,
   openCreatedProjectFolder,
+  playGeneratedQuest,
+  playtestGeneratedProject,
   uploadForgePresentationImage,
 } from "../../dashboard/api.js";
 import type {
@@ -13,6 +15,7 @@ import type {
   GeneratedProjectWorldSnapshot,
 } from "../../generated-project-world/shared.js";
 import { Icon } from "./components.js";
+import { repairActualNote } from "./friendly-errors.js";
 import type { ForgeEntity } from "./model.js";
 
 function relatedFiles(
@@ -33,6 +36,7 @@ export function ContextualPlaytest({
   onClose,
   onFollowUp,
   onSnapshot,
+  onStopActive,
   snapshot,
 }: {
   context: ForgeEntity;
@@ -41,14 +45,18 @@ export function ContextualPlaytest({
     result: "needs_change" | "broken",
     note: string,
     files: string[],
-  ) => void;
+    feedbackEntryId?: string,
+  ) => Promise<void> | void;
   onSnapshot: (snapshot: GeneratedProjectWorldSnapshot) => void;
+  onStopActive?: (() => Promise<void> | void) | undefined;
   snapshot: GeneratedProjectWorldSnapshot;
 }) {
   const [launched, setLaunched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
+  const launchStarted = useRef(false);
   const files = relatedFiles(snapshot, context);
   const run =
     context.kind === "part"
@@ -61,7 +69,8 @@ export function ContextualPlaytest({
   const launch = async () => {
     setBusy(true);
     try {
-      await launchGeneratedProject(snapshot.project.projectId);
+      if (run?.phase === "waiting_for_playtest") await playGeneratedQuest(snapshot.project.projectId, context.id);
+      else await playtestGeneratedProject(snapshot.project.projectId);
       setLaunched(true);
       setError(null);
     } catch (next) {
@@ -70,36 +79,43 @@ export function ContextualPlaytest({
       setBusy(false);
     }
   };
+  useEffect(() => {
+    if (launchStarted.current) return;
+    launchStarted.current = true;
+    void launch();
+  }, []);
   const record = async (result: ForgePlaytestResult) => {
     setBusy(true);
     try {
-      if (result === "worked" && canComplete) {
+      if (canComplete) {
         await confirmGeneratedQuest(
           snapshot.project.projectId,
           context.id,
-          "worked",
+          result === "worked" ? "worked" : result === "broken" ? "did_not_work" : "not_ready",
         );
       }
+      const savedNote = note.trim() || (result === "worked" ? "Confirmed this Step works in the game." : result === "not_sure" ? "Creator needs another playtest." : result.replaceAll("_", " "));
       const next = await mutateForgePresentation(snapshot.project.projectId, {
         action: "record_feedback",
         entityId: context.id,
         result,
-        note:
-          note ||
-          (result === "worked" ? "Confirmed this Step works in the game." : ""),
+        note: savedNote,
         relatedFiles: files,
       });
       onSnapshot(next);
+      const feedbackEntryId = next.presentation?.history.at(-1)?.entryId;
       if (result === "needs_change" || result === "broken")
-        onFollowUp(result, note, files);
+        await onFollowUp(result, savedNote, files, feedbackEntryId);
       else if (result === "worked") onClose();
-      else setLaunched(false);
+      else setUncertain(true);
     } catch (next) {
       setError(next instanceof Error ? next.message : String(next));
     } finally {
       setBusy(false);
     }
   };
+
+  if (!launched && !error) return null;
 
   return (
     <div className="forgie-backdrop" role="presentation">
@@ -120,26 +136,20 @@ export function ContextualPlaytest({
             <Icon name="close" />
           </button>
         </header>
-        {!launched ? (
+        {error && !launched ? (
           <>
-            <p>
-              Launch the current Godot World. You can test it even when this
-              Step has not been built yet.
-            </p>
-            {run?.phase === "waiting_for_playtest" && (
-              <p className="workflow-notice">
-                This Step has a checked result ready for your playtest.
-              </p>
-            )}
+            <p>Godot could not open for this playtest.</p>
             <button
               className="forge-primary-button wide"
               disabled={busy}
-              onClick={() => void launch()}
+              onClick={() => { setError(null); void launch(); }}
               type="button"
             >
-              <Icon name="play" /> {busy ? "Opening Godot…" : "Launch Game"}
+              <Icon name="play" /> Try Again
             </button>
           </>
+        ) : uncertain ? (
+          <section className="uncertain-actions"><p>Your note is saved. What would you like to do next?</p><div className="playtest-results"><button className="forge-primary-button" disabled={busy} onClick={() => { setUncertain(false); setLaunched(false); setError(null); void launch(); }} type="button">Playtest Again</button><button onClick={onClose} type="button">Review Step</button>{onStopActive && <button disabled={busy} onClick={() => void onStopActive()} type="button">Stop Safely</button>}</div></section>
         ) : (
           <>
             <p>Play for a moment, then tell Forgie what happened.</p>
@@ -190,7 +200,7 @@ export function ContextualPlaytest({
             )}
           </>
         )}
-        {error && (
+        {error && launched && (
           <p className="workflow-error" role="alert">
             {error}
           </p>
@@ -688,31 +698,49 @@ export function TuningSection({
 
 export function RealRepairScreen({
   context,
+  feedbackAlreadyRecorded = false,
+  initialNote = "",
   onContinue,
   onSnapshot,
   snapshot,
 }: {
   context: ForgeEntity;
-  onContinue: (note: string, files: string[]) => void;
+  feedbackAlreadyRecorded?: boolean;
+  initialNote?: string;
+  onContinue: (note: string, files: string[], feedbackEntryId?: string) => Promise<void> | void;
   onSnapshot: (snapshot: GeneratedProjectWorldSnapshot) => void;
   snapshot: GeneratedProjectWorldSnapshot;
 }) {
   const [expected, setExpected] = useState(context.outcome);
-  const [actual, setActual] = useState("");
+  const [actual, setActual] = useState(repairActualNote(initialNote));
   const [files, setFiles] = useState(relatedFiles(snapshot, context));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     const note = `Expected: ${expected.trim()}\nActual: ${actual.trim()}`;
-    onSnapshot(
-      await mutateForgePresentation(snapshot.project.projectId, {
-        action: "record_feedback",
-        entityId: context.id,
-        result: "broken",
-        note,
-        relatedFiles: files,
-      }),
-    );
-    onContinue(note, files);
+    setBusy(true);
+    setError("");
+    try {
+      let feedbackEntryId: string | undefined;
+      if (!feedbackAlreadyRecorded) {
+        const next = await mutateForgePresentation(snapshot.project.projectId, {
+          action: "record_feedback",
+          entityId: context.id,
+          result: "broken",
+          note,
+          relatedFiles: files,
+        });
+        onSnapshot(next);
+        feedbackEntryId = next.presentation?.history.at(-1)?.entryId;
+      }
+      await onContinue(note, files, feedbackEntryId);
+    } catch {
+      setError("Forge could not prepare this Repair. Your words are still here, so you can try again safely.");
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <section className="tool-screen repair-screen">
@@ -721,13 +749,13 @@ export function RealRepairScreen({
           <p className="screen-kicker">Repair with the existing Step runner</p>
           <h1>Repair {context.name}</h1>
           <p>
-            Forgie will turn this into a small follow-up Step, keep the likely
-            files, and use the same checkpoint, Codex, checks, playtest, and
-            undo path.
+            Forgie will start a new repair session for this same Step, reuse its
+            confirmed files, and keep the same checkpoint, Codex, checks,
+            playtest, and undo path.
           </p>
         </div>
       </header>
-      <form className="repair-intake" onSubmit={(event) => void submit(event)}>
+      <form className="repair-intake real-repair-intake" onSubmit={(event) => void submit(event)}>
         <label>
           <span>What should happen?</span>
           <textarea
@@ -743,7 +771,7 @@ export function RealRepairScreen({
           />
         </label>
         <label>
-          <span>Likely files</span>
+          <span>{context.kind === "part" ? "Confirmed files" : "Likely files"}</span>
           <textarea
             onChange={(event) =>
               setFiles(
@@ -754,16 +782,18 @@ export function RealRepairScreen({
                   .slice(0, 4),
               )
             }
+            readOnly={context.kind === "part"}
             value={files.join("\n")}
           />
         </label>
         <button
           className="forge-primary-button"
-          disabled={!expected.trim() || !actual.trim()}
+          disabled={busy || !expected.trim() || !actual.trim()}
           type="submit"
         >
-          <Icon name="repair" /> Prepare Repair Step
+          <Icon name="repair" /> {busy ? "Preparing Repair…" : "Repair This"}
         </button>
+        {error && <p className="repair-submit-error" role="alert">{error}</p>}
       </form>
     </section>
   );

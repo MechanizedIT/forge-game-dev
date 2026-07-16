@@ -81,6 +81,7 @@ const contractBase = {
   questRevision: z.number().int().positive(),
   visibleOutcome: z.string().trim().min(10).max(280),
   whyItMatters: z.string().trim().min(10).max(500),
+  repairRequest: z.string().trim().min(3).max(2_000).optional(),
   currentPlayableFacts: z.array(z.string().trim().min(1).max(240)).min(1).max(12),
   excludedScope: z.array(z.string().trim().min(1).max(240)).min(1).max(12),
   acceptanceCriteria: z.array(z.object({
@@ -197,6 +198,13 @@ const journalBase = {
   observedPostHashes: z.record(relativePathSchema, sha256DigestSchema),
   changedFiles: z.array(relativePathSchema).max(4),
   progress: z.array(z.string().trim().min(1).max(240)).max(24),
+  contextSummary: z.object({
+    primaryArea: z.string().trim().min(1).max(80).nullable(),
+    secondaryAreas: z.array(z.string().trim().min(1).max(80)).max(3),
+    relatedPreviousSteps: z.array(slugSchema).max(5),
+    selectedFiles: z.array(relativePathSchema).max(12),
+    regressionChecks: z.array(z.string().trim().min(1).max(500)).max(8),
+  }).strict().optional(),
   creatorResult: generatedCreatorResultSchema.nullable(),
   codexThreadId: z.string().trim().min(1).max(200).nullable(),
   error: z.string().trim().min(1).max(2_000).nullable(),

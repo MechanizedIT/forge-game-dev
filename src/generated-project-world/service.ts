@@ -34,6 +34,7 @@ import {
   type AcceptedSystemQuestBatch,
   type AcceptedSystemQuestPlan,
   type SystemQuestFileChoice,
+  type GameAreaMutation,
   systemQuestFileChoiceSchema,
   projectModelSchema,
 } from "../contracts/index.js";
@@ -60,6 +61,7 @@ import type {
   ForgePresentationState,
   ForgeProjectAsset,
 } from "./shared.js";
+import { ArchitectureService } from "../project-architecture/service.js";
 
 const creatorRunPhaseLabels: Record<string, string> = {
   contract_review: "work plan ready",
@@ -110,9 +112,15 @@ const historySchema = z.object({
   entryId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
   occurredAt: z.string().datetime(),
   entityId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u),
+  worldId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u).optional(),
+  experienceId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u).optional(),
+  stepId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u).optional(),
+  workAttemptId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u).optional(),
   type: z.enum(["playtest", "change_request", "repair", "tuning", "image", "edit"]),
   summary: z.string().trim().min(1).max(1_000),
+  note: z.string().max(1_000).optional(),
   result: z.enum(["worked", "needs_change", "broken", "not_sure"]).optional(),
+  linkedFollowUpId: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u).optional(),
   relatedFiles: z.array(z.string().trim().min(1).max(240)).max(8),
 }).strict();
 const presentationSchema = z.object({
@@ -160,6 +168,7 @@ export interface GeneratedProjectWorldServiceOptions {
   resolveGodot?: typeof ensurePinnedGodot;
   launchGodot?: GeneratedWorldLauncher;
   generatedRunner?: Pick<GeneratedQuestRunnerService, "getSummary" | "listProjectSessions">;
+  architectureService?: ArchitectureService;
 }
 
 function defaultLauncher(request: GeneratedWorldLaunchRequest): void {
@@ -225,6 +234,7 @@ export class GeneratedProjectWorldService {
   private readonly launchGodotProcess: GeneratedWorldLauncher;
   private readonly generatedRunner: Pick<GeneratedQuestRunnerService, "getSummary" | "listProjectSessions"> | undefined;
   private readonly sessionReader: Pick<GeneratedQuestRunnerService, "listProjectSessions">;
+  private readonly architectureService: ArchitectureService;
   private readonly launching = new Set<string>();
   private readonly ideaQueues = new Map<string, Promise<unknown>>();
 
@@ -237,6 +247,7 @@ export class GeneratedProjectWorldService {
     this.launchGodotProcess = options.launchGodot ?? defaultLauncher;
     this.generatedRunner = options.generatedRunner;
     this.sessionReader = options.generatedRunner ?? new GeneratedQuestRunnerService({ forgeHome: this.forgeHome, registry: this.registry });
+    this.architectureService = options.architectureService ?? new ArchitectureService({ now: this.now });
   }
 
   private async resolveProject(projectId: string): Promise<{ projectPath: string; entry: Awaited<ReturnType<ProjectRegistryStore["resolveRegisteredProject"]>> }> {
@@ -394,7 +405,7 @@ export class GeneratedProjectWorldService {
     const current = await this.loadWorld(projectId);
     const entityIds = new Set([projectId, ...current.projectModel.systems.map((item) => item.systemId), ...current.projectModel.quests.map((item) => item.questId)]);
     const mutation = mutationValue;
-    const entityId = mutation.action === "save_tunable" ? mutation.tunable.entityId : mutation.action === "reset_tunable" ? null : mutation.entityId;
+    const entityId = mutation.action === "save_tunable" ? mutation.tunable.entityId : mutation.action === "reset_tunable" || mutation.action === "link_feedback" ? null : mutation.entityId;
     if (entityId !== null && !entityIds.has(entityId)) throw new GeneratedProjectWorldConflictError("Choose a World, Experience, or Step from this project.");
     let next = structuredClone(current.presentation);
     const history = (type: ForgePresentationState["history"][number]["type"], targetId: string, summary: string, relatedFiles: string[] = [], result?: ForgePresentationState["history"][number]["result"]) => {
@@ -417,7 +428,30 @@ export class GeneratedProjectWorldService {
     } else if (mutation.action === "record_feedback") {
       const note = z.string().trim().max(1_000).parse(mutation.note);
       const files = z.array(z.string().trim().min(1).max(240)).max(8).parse(mutation.relatedFiles);
-      history(mutation.result === "needs_change" ? "change_request" : mutation.result === "broken" ? "repair" : "playtest", mutation.entityId, note || mutation.result.replaceAll("_", " "), files, mutation.result);
+      const step = current.projectModel.quests.find((quest) => quest.questId === mutation.entityId);
+      const experience = step?.systemId ?? (current.projectModel.systems.some((system) => system.systemId === mutation.entityId) ? mutation.entityId : undefined);
+      const workAttemptId = step ? current.quests.find((quest) => quest.questId === step.questId)?.run?.runId : undefined;
+      const type: ForgePresentationState["history"][number]["type"] = mutation.result === "needs_change" ? "change_request" : mutation.result === "broken" ? "repair" : "playtest";
+      const summary = note || mutation.result.replaceAll("_", " ");
+      next.history = [...next.history, {
+        entryId: `${type.replaceAll("_", "-")}-${this.randomId()}`.toLowerCase(),
+        occurredAt: this.now().toISOString(),
+        entityId: mutation.entityId,
+        worldId: projectId,
+        ...(experience ? { experienceId: experience } : {}),
+        ...(step ? { stepId: step.questId } : {}),
+        ...(workAttemptId ? { workAttemptId } : {}),
+        type,
+        summary,
+        note,
+        result: mutation.result,
+        relatedFiles: files,
+      }].slice(-200);
+    } else if (mutation.action === "link_feedback") {
+      const entry = next.history.find((item) => item.entryId === mutation.entryId);
+      if (!entry || !entry.result) throw new GeneratedProjectWorldConflictError("Choose a saved playtest note to link.");
+      if (!entityIds.has(mutation.followUpId)) throw new GeneratedProjectWorldConflictError("Choose a saved follow-up Step from this project.");
+      entry.linkedFollowUpId = mutation.followUpId;
     } else if (mutation.action === "save_tunable") {
       const tunable = tunableSchema.parse(mutation.tunable);
       if (!entityIds.has(tunable.entityId)) throw new GeneratedProjectWorldConflictError("Choose an Experience or Step for this tuning value.");
@@ -433,6 +467,13 @@ export class GeneratedProjectWorldService {
     }
     const { projectPath } = await this.resolveProject(projectId);
     await this.writePresentation(projectPath, next);
+    if (mutation.action === "record_feedback") {
+      const stepId = current.projectModel.quests.some((quest) => quest.questId === mutation.entityId) ? mutation.entityId : null;
+      if (stepId) {
+        const playtestOutcome = mutation.result === "worked" ? "worked" as const : mutation.result === "broken" ? "did_not_work" as const : "not_ready" as const;
+        await this.architectureService.recordCreatorFeedback(projectPath, projectId, { stepId, summary: mutation.note, relatedFiles: mutation.relatedFiles, playtestOutcome });
+      }
+    }
     return this.loadWorld(projectId);
   }
 
@@ -536,6 +577,13 @@ export class GeneratedProjectWorldService {
       const ideaSeeds = await this.optionalIdeaSeeds(projectPath, projectId);
       const presentation = await this.optionalPresentation(projectPath, projectId);
       const assets = await this.listAssets(projectPath, projectId);
+      const architecture = await this.architectureService.preview(
+        projectPath,
+        projectId,
+        projectModel,
+        acceptedSystemQuestPlan,
+        assets.filter((asset) => asset.category === "scripts" || asset.category === "scenes").map((asset) => asset.relativePath),
+      );
       const combinedQuestIds = projectModel.quests.map((quest) => quest.questId);
       const selectedIsValid = state.selectedQuestId !== null && combinedQuestIds.includes(state.selectedQuestId);
       const selectedQuestId = selectedIsValid ? state.selectedQuestId! : combinedQuestIds[0] ?? null;
@@ -631,6 +679,7 @@ export class GeneratedProjectWorldService {
           lastOpenedAt: entry.lastOpenedAt,
         },
         projectModel,
+        architecture,
         systemQuestPlan: acceptedSystemQuestPlan,
         vision,
         starterAwarePlanning: {
@@ -694,8 +743,17 @@ export class GeneratedProjectWorldService {
 
   async openWorld(projectId: string): Promise<GeneratedProjectWorldSnapshot> {
     const snapshot = await this.loadWorld(projectId);
+    const { projectPath } = await this.resolveProject(projectId);
+    const architecture = await this.architectureService.save(projectPath, snapshot.architecture);
     const opened = await this.registry.markOpened(projectId);
-    return { ...snapshot, project: { ...snapshot.project, lastOpenedAt: opened.lastOpenedAt } };
+    return { ...snapshot, architecture, project: { ...snapshot.project, lastOpenedAt: opened.lastOpenedAt } };
+  }
+
+  async mutateArchitecture(projectId: string, mutation: GameAreaMutation): Promise<GeneratedProjectWorldSnapshot> {
+    await this.openWorld(projectId);
+    const { projectPath } = await this.resolveProject(projectId);
+    await this.architectureService.mutate(projectPath, projectId, mutation);
+    return this.loadWorld(projectId);
   }
 
   async saveSystemRoadmap(projectId: string, roadmapValue: AcceptedSystemRoadmap): Promise<void> {
@@ -747,6 +805,8 @@ export class GeneratedProjectWorldService {
     }
     if (info) await this.ownedPath(projectPath, systemRoadmapRelativePath);
     await writeJsonAtomic(target, canonicalRoadmap);
+    const refreshed = await this.loadWorld(projectId);
+    await this.architectureService.save(projectPath, refreshed.architecture);
   }
 
   async saveSystemQuestBatch(projectId: string, batchValue: AcceptedSystemQuestBatch): Promise<AcceptedSystemQuestPlan> {
@@ -764,7 +824,6 @@ export class GeneratedProjectWorldService {
     const previousIds = nativeQuestIds(previous);
     const baseQuestIds = system.questIds.filter((questId) => !previousIds.has(questId));
     if (!sameList(baseQuestIds, batch.baseQuestIds)) throw new GeneratedProjectWorldConflictError("The selected system's base quests changed before this save.");
-    if (system.questIds.length + batch.quests.length > 5) throw new GeneratedProjectWorldConflictError("A system may contain at most five quests in this alpha.");
     if (batch.quests.some((quest) => current.projectModel.quests.some((existing) => existing.questId === quest.questId))) throw new GeneratedProjectWorldConflictError("A proposed quest ID already exists.");
     const existingSystem = previous?.systems.find((candidate) => candidate.systemId === batch.systemId) ?? null;
     const mergedBatch = existingSystem
@@ -783,6 +842,8 @@ export class GeneratedProjectWorldService {
     if (info && (info.isSymbolicLink() || !info.isFile())) throw new GeneratedProjectWorldConflictError("The system quest target is unsafe.");
     if (info) await this.ownedPath(projectPath, systemQuestRelativePath);
     await writeJsonAtomic(target, next);
+    const refreshed = await this.loadWorld(projectId);
+    await this.architectureService.save(projectPath, refreshed.architecture);
     return next;
   }
 
@@ -851,7 +912,14 @@ export class GeneratedProjectWorldService {
       doneWhen: quest.doneWhen, excludedScope: quest.excludedScope,
       existingFiles: choice.existingFiles, newFiles: choice.newFiles,
     };
-    return { ...review, fingerprint: createHash("sha256").update(JSON.stringify(review), "utf8").digest("hex") };
+    const selectedFiles = [...choice.existingFiles, ...choice.newFiles];
+    const architecture = await this.architectureService.preview(projectPath, projectId, current.projectModel, current.systemQuestPlan, current.assets.filter((asset) => asset.category === "scripts" || asset.category === "scenes").map((asset) => asset.relativePath));
+    return {
+      ...review,
+      fingerprint: createHash("sha256").update(JSON.stringify(review), "utf8").digest("hex"),
+      architectureContext: this.architectureService.selectContext(architecture, questId, selectedFiles),
+      architectureWarnings: this.architectureService.warnings(architecture, questId, selectedFiles),
+    };
   }
 
   async saveSystemQuestWorkOrder(projectId: string, systemId: string, questId: string, choice: SystemQuestFileChoice, fingerprint: string): Promise<AcceptedSystemQuestPlan> {
@@ -877,6 +945,8 @@ export class GeneratedProjectWorldService {
     if (!info?.isFile() || info.isSymbolicLink()) throw new GeneratedProjectWorldConflictError("The system quest target is missing or unsafe.");
     await this.ownedPath(projectPath, systemQuestRelativePath);
     await writeJsonAtomic(target, next);
+    const refreshed = await this.loadWorld(projectId);
+    await this.architectureService.save(projectPath, refreshed.architecture);
     return next;
   }
 
@@ -973,5 +1043,30 @@ export class GeneratedProjectWorldService {
       throw new GeneratedProjectWorldConflictError(error instanceof Error ? error.message : String(error));
     }
     return { launched: true, message: "Godot opened the verified starter project." };
+  }
+
+  async launchAndWait(projectId: string): Promise<GeneratedLaunchResponse> {
+    if (this.launching.has(projectId)) throw new GeneratedProjectWorldConflictError("Godot is already open for this project.");
+    await this.loadWorld(projectId);
+    const { projectPath } = await this.resolveProject(projectId);
+    const godot = await this.resolveGodot({ forgeHome: this.forgeHome });
+    this.launching.add(projectId);
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        this.launching.delete(projectId);
+        resolve();
+      };
+      try {
+        this.launchGodotProcess({ executable: godot.executable, args: ["--path", projectPath], cwd: projectPath, onExit: finish });
+      } catch (error) {
+        settled = true;
+        this.launching.delete(projectId);
+        reject(error);
+      }
+    });
+    return { launched: true, message: "Godot closed. Tell Forgie what you noticed." };
   }
 }

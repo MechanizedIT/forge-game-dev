@@ -13,9 +13,10 @@ import {
 } from "../src/contracts/index.js";
 import type { DashboardSnapshot } from "../src/dashboard/shared.js";
 // @ts-expect-error The base test config omits JSX; the tsx test runner compiles this UI module.
-import { friendlyQuestPlanningError, recommendQuestFiles } from "../src/dashboard-v2/SystemQuestRefinement.js";
+import { friendlyQuestPlanningError, questPlanningDescription, recommendQuestFiles, shouldAutomaticallyStartQuestPlanning } from "../src/dashboard-v2/SystemQuestRefinement.js";
 // @ts-expect-error The base test config omits JSX; the tsx test runner compiles this UI module.
-import { friendlySystemPlanningError } from "../src/dashboard-v2/SystemRoadmapPlanning.js";
+import { composeExperiencePlannerIdea, experienceFieldLimits, friendlySystemPlanningError, validateExperienceFields } from "../src/dashboard-v2/SystemRoadmapPlanning.js";
+import { friendlyRunError, repairActualNote } from "../src/dashboard-v2/forge-workspace/friendly-errors.js";
 import { buildSampleWorkflowPresentation } from "../src/dashboard-v2/sample-workflow.js";
 import { returnToLaunchpad, viewForLaunchChoice } from "../src/dashboard-v2/state.js";
 
@@ -43,6 +44,101 @@ test("live planning schema failures use friendly retry words", () => {
   assert.equal(systemMessage, "Forge could not suggest Experiences this time. Your idea is still here, so you can try again safely.");
   assert.equal(questMessage, "Forge could not suggest Steps this time. Your description is still here, so you can try again safely.");
   assert.doesNotMatch(`${systemMessage} ${questMessage}`, /invalid_json_schema|response_format|oneOf|text\.format\.schema/iu);
+});
+
+test("follow-up Step planning starts fresh instead of reopening a saved Experience session", () => {
+  assert.equal(shouldAutomaticallyStartQuestPlanning(false, true, "ready"), true);
+  assert.equal(shouldAutomaticallyStartQuestPlanning(false, false, "ready"), false);
+  assert.equal(shouldAutomaticallyStartQuestPlanning(true, false, "idle"), true);
+  assert.equal(questPlanningDescription(true, "The beacon should pulse when activated", "The whole relay run crosses the rooftop"), "The beacon should pulse when activated");
+  assert.equal(questPlanningDescription(false, "", "Saved Experience description"), "Saved Experience description");
+});
+
+test("repair reload restores only the actual failure from a combined saved note", () => {
+  assert.equal(repairActualNote("Expected: The beacon pulses.\nActual: Godot could not parse main.gd."), "Godot could not parse main.gd.");
+  assert.equal(repairActualNote("Godot could not parse main.gd."), "Godot could not parse main.gd.");
+});
+
+test("active and stale work messages explain the safe next action", async () => {
+  assert.equal(
+    friendlySystemPlanningError("Finish or cancel the active work session before reshaping systems."),
+    "Another Step is already open. Use the work banner above to continue it or stop it safely, then try this Experience again.",
+  );
+  assert.equal(
+    friendlyRunError("Project HEAD, inventory, or quest revision changed after contract approval."),
+    "Forge's saved safety check is out of date. No game files changed. Choose Stop safely, then start this Step again.",
+  );
+  const dashboard = await readFile(path.join(repositoryRoot, "src", "dashboard-v2", "ForgeDashboard.tsx"), "utf8");
+  const components = await readFile(path.join(repositoryRoot, "src", "dashboard-v2", "forge-workspace", "components.tsx"), "utf8");
+  assert.match(dashboard, /ActiveWorkBanner/u);
+  assert.match(dashboard, /cancelGeneratedQuest/u);
+  assert.match(dashboard, /!onActiveStepPage/u);
+  assert.match(components, /Open active Step/u);
+});
+
+test("Add Experience validates each field and preserves long creator input", () => {
+  const values = {
+    name: "Purple Relay",
+    playerFeeling: "The player feels curious and capable while learning how the purple relay responds.",
+    playableOutcome: "The player can activate the purple relay, see a clear response, and understand what changed in the world.",
+    notes: "Keep the first version bounded to the existing Signal Sweep scene and reuse its current art.",
+  };
+  assert.deepEqual(validateExperienceFields(values), {});
+  const composed = composeExperiencePlannerIdea(values);
+  for (const value of Object.values(values)) assert.match(composed, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"), "u"));
+  assert.equal(validateExperienceFields({ ...values, name: "No" }).name, "Experience name needs at least 3 characters.");
+  assert.equal(validateExperienceFields({ ...values, playerFeeling: "too short" }).playerFeeling, "Player intent needs at least 12 characters.");
+  assert.equal(validateExperienceFields({ ...values, playableOutcome: "too short" }).playableOutcome, "Playable outcome needs at least 12 characters.");
+  assert.deepEqual(validateExperienceFields({
+    name: "N".repeat(experienceFieldLimits.name.maximum),
+    playerFeeling: "F".repeat(experienceFieldLimits.playerFeeling.maximum),
+    playableOutcome: "O".repeat(experienceFieldLimits.playableOutcome.maximum),
+    notes: "C".repeat(experienceFieldLimits.notes.maximum),
+  }), {});
+});
+
+test("creator workflow source keeps active work local, scrollable, and recoverable", async () => {
+  const [dashboard, roadmapPlanning, questPlanning, workScreen, creatorTools, workspaceStyles] = await Promise.all([
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "ForgeDashboard.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "SystemRoadmapPlanning.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "SystemQuestRefinement.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "forge-workspace", "real-project-screens.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "forge-workspace", "creator-tools.tsx"), "utf8"),
+    readFile(path.join(repositoryRoot, "src", "dashboard-v2", "forge-workspace", "styles.css"), "utf8"),
+  ]);
+  assert.match(dashboard, /activeRun && activeStep && !onActiveStepPage/u);
+  assert.match(dashboard, /onStop=\{\(\) => void stopActiveWork\(\)\}/u);
+  assert.match(workspaceStyles, /\.forge-v3-app \{[^}]*min-height: 0[^}]*overflow: hidden/su);
+  assert.match(workspaceStyles, /\.forge-main-viewport \{[^}]*min-height: 0[^}]*overflow-y: auto/su);
+  assert.match(roadmapPlanning, /Recommend Steps/u);
+  assert.match(roadmapPlanning, /Preparing recommendations/u);
+  assert.match(questPlanning, /Review Suggested Steps/u);
+  assert.match(questPlanning, /Create Experience/u);
+  assert.match(workScreen, /Prepare Repair/u);
+  assert.match(workScreen, /Review Failure/u);
+  assert.match(workScreen, /Undo reviewed changes/u);
+  assert.match(workScreen, /Playtest Again/u);
+  assert.match(workScreen, /Building Change to Step/u);
+  assert.match(dashboard, /!\["completed", "cancelled"\]\.includes\(brief\.run\.phase\)/u);
+  assert.match(dashboard, /entry\.linkedFollowUpId === current\.id/u);
+  assert.match(dashboard, /currentFollowUp\?\.originalStepId === part\.id/u);
+  assert.match(dashboard, /isUnresolvedGeneratedRun\(quest\.run\)/u);
+  assert.match(dashboard, /latestRun && isUnresolvedGeneratedRun\(latestRun\)/u);
+  assert.match(dashboard, /Building stopped, but its reviewed changes are still present/u);
+  assert.match(dashboard, /entry\.entityId === entry\.linkedFollowUpId/u);
+  assert.match(dashboard, /routeFollowUpDraft\?\.note/u);
+  assert.match(dashboard, /pendingRepairEntry/u);
+  assert.match(dashboard, /persistedRepairContext/u);
+  assert.match(dashboard, /pendingRepairContext/u);
+  assert.match(dashboard, /prepareRepairGeneratedQuest/u);
+  assert.match(creatorTools, /playtestGeneratedProject/u);
+  assert.match(creatorTools, /if \(!launched && !error\) return null/u);
+  assert.match(creatorTools, /feedbackAlreadyRecorded/u);
+  assert.match(creatorTools, /Preparing Repair…/u);
+  assert.match(creatorTools, /new repair session for this same Step/u);
+  assert.match(workScreen, /New work session for this same Step/u);
+  assert.match(creatorTools, /role="alert"/u);
+  assert.match(workspaceStyles, /\.repair-intake\.real-repair-intake \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/su);
 });
 
 async function readJson(relativePath: string): Promise<unknown> {

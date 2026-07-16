@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -28,6 +28,34 @@ import {
   MutatingCodexExecutor,
   passingProofDependencies,
 } from "./helpers/generated-quest-fixture.js";
+
+test("Forge presentation metadata does not stale an approved game build", async () => {
+  const fixture = await createGeneratedQuestFixture();
+  try {
+    await configureWelcomeBeaconQuest(fixture);
+    const service = new GeneratedQuestRunnerService({
+      forgeHome: fixture.forgeHome,
+      now: () => new Date(fixtureTime),
+      randomId: () => "65656565-6565-6565-6565-656565656565",
+      codexExecutor: new MutatingCodexExecutor(applyWelcomeBeaconChange),
+      proofDependencies: passingProofDependencies,
+    });
+    const prepared = await service.prepare(fixture.projectId, "q1-enter-the-arena");
+    await service.approve(fixture.projectId, "q1-enter-the-arena", prepared.contract.fingerprint, "APPROVE");
+
+    await mkdir(path.join(fixture.projectPath, ".forge", "presentation-assets"), { recursive: true });
+    await Promise.all([
+      writeFile(path.join(fixture.projectPath, ".forge", "architecture.json"), `${JSON.stringify({ schemaVersion: 1, projectId: fixture.projectId, gameAreas: [], projectConstraints: [], updatedAt: fixtureTime }, null, 2)}\n`, "utf8"),
+      writeFile(path.join(fixture.projectPath, ".forge", "presentation.json"), "{}\n", "utf8"),
+      writeFile(path.join(fixture.projectPath, ".forge", "presentation-assets", "world.png"), Buffer.from([137, 80, 78, 71])),
+    ]);
+
+    await service.start(fixture.projectId, "q1-enter-the-arena");
+    const ready = await service.waitForRun(fixture.projectId, "q1-enter-the-arena");
+    assert.equal(ready.phase, "waiting_for_playtest", ready.error ?? "");
+    assert.deepEqual(ready.changedFiles, ["scenes/main.tscn", "scripts/welcome_beacon.gd"]);
+  } finally { await fixture.cleanup(); }
+});
 
 test("profile-free welcome beacon completes with approved existing and new files", async () => {
   const fixture = await createGeneratedQuestFixture();
@@ -72,6 +100,40 @@ test("profile-free welcome beacon completes with approved existing and new files
     const restored = await fresh.getSummary(fixture.projectId, "q1-enter-the-arena");
     assert.equal(restored.run?.phase, "completed");
     assert.equal(restored.run?.contract.schemaVersion, 2);
+  } finally { await fixture.cleanup(); }
+});
+
+test("a failed build prepares a fingerprinted repair work session for the same Step", async () => {
+  const fixture = await createGeneratedQuestFixture();
+  try {
+    await configureWelcomeBeaconQuest(fixture);
+    const ids = ["67676767-6767-6767-6767-676767676767", "68686868-6868-6868-6868-686868686868"];
+    let idIndex = 0;
+    const service = new GeneratedQuestRunnerService({
+      forgeHome: fixture.forgeHome,
+      now: () => new Date(fixtureTime),
+      randomId: () => ids[idIndex++]!,
+      codexExecutor: new MutatingCodexExecutor(applyWelcomeBeaconChange, true),
+      proofDependencies: passingProofDependencies,
+    });
+    const questId = "q1-enter-the-arena";
+    const first = await service.prepare(fixture.projectId, questId);
+    await service.approve(fixture.projectId, questId, first.contract.fingerprint, "APPROVE");
+    await service.start(fixture.projectId, questId);
+    const failed = await service.waitForRun(fixture.projectId, questId);
+    assert.equal(failed.phase, "failed");
+    assert.equal(failed.recovery.action, "rollback");
+
+    const request = "Expected: The welcome beacon appears.\nActual: Godot could not parse the changed script.";
+    const repair = await service.prepareRepair(fixture.projectId, questId, request);
+    assert.equal(repair.questId, questId);
+    assert.notEqual(repair.runId, failed.runId);
+    assert.equal(repair.phase, "contract_review");
+    assert.equal(repair.contract.repairRequest, request);
+    assert.match(repair.contract.steps[0]!.summary, /Repair the failed result/iu);
+    await service.approve(fixture.projectId, questId, repair.contract.fingerprint, "APPROVE");
+    await service.start(fixture.projectId, questId);
+    assert.equal((await service.waitForRun(fixture.projectId, questId)).phase, "failed", "the repair contract must survive the start-time fingerprint recheck");
   } finally { await fixture.cleanup(); }
 });
 
